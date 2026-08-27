@@ -395,6 +395,108 @@
     text-align:center;color:var(--ink-soft);font-size:.85rem;margin-top:26px;
   }
 
+  /* ---------- BOOKING ---------- */
+  .booking{background:color-mix(in srgb, #fff 92%, transparent);backdrop-filter:blur(30px);}
+  html[data-theme="dark"] .booking{background:color-mix(in srgb, #0E2226 90%, transparent);}
+
+  .day-tabs{
+    display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:28px;
+    scrollbar-width:thin;
+  }
+  .day-tab{
+    flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:14px;
+    padding:10px 18px;text-align:center;cursor:pointer;transition:.2s ease;min-width:88px;
+  }
+  html[data-theme="dark"] .day-tab{background:#122A2F;}
+  html[data-theme="dark"] .day-tab.active{background:var(--teal);border-color:var(--teal);}
+  html[data-theme="dark"] .day-tab.active .dt-name{color:#EAF6F6;}
+  html[data-theme="dark"] .day-tab.active .dt-date{color:#fff;}
+  .day-tab .dt-name{display:block;font-size:.78rem;color:var(--ink-soft);font-weight:600;}
+  .day-tab .dt-date{display:block;font-family:'Tajawal',sans-serif;font-weight:800;font-size:1rem;color:var(--heading);margin-top:2px;}
+  .day-tab:hover{border-color:var(--teal);}
+  .day-tab.active{background:var(--deep-teal);border-color:var(--deep-teal);}
+  .day-tab.active .dt-name{color:#B9D9DB;}
+  .day-tab.active .dt-date{color:#fff;}
+
+  .chairs-legend{
+    display:flex;justify-content:center;gap:26px;margin-bottom:24px;font-size:.85rem;
+    color:var(--ink-soft);font-weight:600;
+  }
+  .chairs-legend span{display:inline-flex;align-items:center;gap:8px;}
+  .chair-dot{width:14px;height:14px;border-radius:4px;display:inline-block;}
+  .chair-dot.available{background:var(--teal);}
+  .chair-dot.pending{background:#E0A945;}
+  .chair-dot.booked{background:#DD5353;}
+
+  .chairs-grid{
+    display:grid;grid-template-columns:repeat(auto-fill, minmax(84px, 1fr));gap:12px;
+    margin-bottom:22px;
+  }
+  .seat-btn{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 6px;
+    cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  html[data-theme="dark"] .seat-btn{background:#122A2F;}
+  html[data-theme="dark"] .seat-btn.available:hover{
+    box-shadow:0 0 0 3px rgba(79,199,214,.3), 0 12px 26px -12px rgba(0,0,0,.7);
+    border-color:var(--aqua);
+  }
+  html[data-theme="dark"] .seat-btn.selected{
+    box-shadow:0 0 0 3px rgba(227,179,84,.35);
+  }
+  .seat-btn svg{width:24px;height:24px;}
+  .seat-btn .seat-time{font-size:.74rem;font-weight:700;color:var(--ink-soft);}
+  .seat-btn.available{color:var(--teal);}
+  .seat-btn.available:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--teal);}
+  .seat-btn.available .seat-time{color:var(--heading);}
+  .seat-btn.pending{color:#E0A945;border-color:rgba(224,169,69,.5);cursor:pointer;}
+  .seat-btn.pending .seat-time{color:#B9822A;}
+  .seat-btn.pending:hover{transform:translateY(-3px);box-shadow:0 0 0 3px rgba(224,169,69,.2);}
+  .seat-btn.booked{color:#DD5353;opacity:.6;cursor:not-allowed;}
+  .seat-btn.selected{color:var(--gold-deep);border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,164,65,.25);}
+  .seat-btn.selected .seat-time{color:var(--gold-deep);}
+
+  .booking-note{
+    text-align:center;color:var(--ink-soft);font-size:.82rem;margin-top:8px;
+  }
+
+  /* booking modal */
+  .booking-modal-overlay{
+    position:fixed;inset:0;z-index:80;background:rgba(8,26,30,.55);
+    display:none;align-items:center;justify-content:center;padding:20px;
+    backdrop-filter:blur(4px);
+  }
+  .booking-modal-overlay.open{display:flex;}
+  .booking-modal{
+    background:#fff;border-radius:var(--radius);padding:30px 28px;max-width:400px;width:100%;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.5);position:relative;max-height:90vh;overflow-y:auto;
+  }
+  html[data-theme="dark"] .booking-modal{background:#122A2F;}
+  .booking-modal h3{margin-bottom:12px;font-size:1.15rem;}
+  .modal-close{
+    position:absolute;top:16px;left:16px;background:var(--pale-aqua);border:none;
+    width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--heading);font-size:.9rem;
+  }
+  .modal-slot-info{
+    background:var(--pale-aqua);color:var(--heading);font-weight:700;font-size:.9rem;
+    padding:10px 14px;border-radius:12px;margin-bottom:20px;text-align:center;
+  }
+  .modal-field{margin-bottom:14px;}
+  .modal-field label{display:block;font-size:.82rem;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
+  .modal-field input{
+    width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--line);
+    font-family:inherit;font-size:.92rem;background:var(--ivory);color:var(--ink);
+  }
+  .modal-field input:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  .status-box{
+    background:var(--pale-aqua);border-radius:12px;padding:14px 16px;margin:18px 0;
+    font-size:.86rem;color:var(--ink-soft);
+  }
+  .status-box strong{color:var(--heading);display:block;margin-bottom:4px;font-family:'Tajawal',sans-serif;}
+  .modal-hint{font-size:.76rem;color:var(--ink-soft);text-align:center;margin-top:12px;line-height:1.6;}
+  .modal-error{color:#DD5353;font-size:.82rem;text-align:center;margin-top:8px;min-height:1em;font-weight:600;}
+
   /* ---------- WHY ---------- */
   .why{background:var(--deep-teal);color:#fff;}
   .why .sec-head h2{color:#fff;}
@@ -434,6 +536,23 @@
   .foot-bottom{
     border-top:1px solid rgba(255,255,255,.08);padding-top:22px;
     text-align:center;font-size:.78rem;color:#6E999D;
+  }
+  .designer-credit{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);
+    font-size:.74rem;letter-spacing:.03em;color:#6E999D;text-decoration:none;
+    transition:color .2s ease;
+  }
+  .designer-credit:hover{color:#CFE7E9;}
+  .designer-credit .badge{
+    width:24px;height:24px;border-radius:50%;flex:0 0 auto;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .designer-credit .badge img{width:100%;height:100%;object-fit:cover;display:block;}
+  .designer-credit:hover .badge{
+    transform:scale(1.22) translateY(-2px);
+    box-shadow:0 6px 16px -4px rgba(79,199,214,.7);
   }
 
   /* whatsapp float */
@@ -561,6 +680,9 @@
     .social-float.fb-float{bottom:166px;}
     .music-float{width:42px;height:42px;bottom:216px;left:16px;}
     .music-hint,.music-panel{left:66px;bottom:218px;}
+    .chairs-grid{grid-template-columns:repeat(auto-fill, minmax(70px, 1fr));gap:8px;}
+    .seat-btn{padding:9px 4px;}
+    .seat-btn .seat-time{font-size:.68rem;}
   }
 </style>
 </head>
@@ -595,6 +717,7 @@
       <a href="#team">طاقم العيادة</a>
       <a href="#services">الخدمات</a>
       <a href="#pricing">الأسعار</a>
+      <a href="#booking">احجز موعد</a>
       <a href="#contact">تواصل معنا</a>
     </nav>
     <div class="nav-actions">
@@ -890,6 +1013,87 @@
   </div>
 </section>
 
+<section class="sec booking" id="booking">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-eyebrow">احجز ميعادك</span>
+      <h2>اختار اليوم والميعاد اللي يناسبك</h2>
+      <p>اختار كرسي فاضي (أزرق) وسجّل بياناتك لحجز الميعاد، والحجز بيتأكد نهائيًا لما تتواصل مع فريق العيادة على واتساب أو لما توصل العيادة.</p>
+    </div>
+
+    <div class="day-tabs" id="dayTabs"></div>
+
+    <div class="chairs-legend">
+      <span><i class="chair-dot available"></i> متاح</span>
+      <span><i class="chair-dot pending"></i> محجوز (لسه ماتأكدش)</span>
+      <span><i class="chair-dot booked"></i> تم التأكيد</span>
+    </div>
+
+    <div class="chairs-grid" id="chairsGrid"></div>
+
+    <p class="booking-note">* العيادة مغلقة يوم الجمعة. الكرسي الأصفر يبقى محجوز مبدئيًا، وفريق العيادة بس هو اللي يقدر يأكد أو يلغي الحجز.</p>
+  </div>
+</section>
+
+<div class="booking-modal-overlay" id="bookingOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="modalClose" aria-label="إغلاق">✕</button>
+    <h3>حجز ميعاد</h3>
+    <p class="modal-slot-info" id="modalSlotInfo"></p>
+
+    <div class="modal-field">
+      <label>الاسم</label>
+      <input type="text" id="patientName" placeholder="اكتب اسمك">
+    </div>
+    <div class="modal-field">
+      <label>رقم الموبايل</label>
+      <input type="tel" id="patientPhone" placeholder="01xxxxxxxxx">
+    </div>
+
+    <div class="status-box">
+      <strong>الحجز مبدئي</strong>
+      هيبان الكرسي بلون أصفر لحد ما تأكد ميعادك مع فريق العيادة على واتساب أو لما توصل العيادة يوم الكشف.
+    </div>
+
+    <button class="cta-btn gold" id="confirmBookingBtn" style="width:100%;justify-content:center;">تسجيل الحجز عبر واتساب</button>
+    <p class="modal-hint">هيتفتح واتساب برسالة جاهزة فيها بيانات ميعادك عشان تأكده مع الفريق.</p>
+    <p class="modal-error" id="modalError"></p>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="staffPinOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="staffPinClose" aria-label="إغلاق">✕</button>
+    <h3>🔒 خاص بفريق العيادة</h3>
+    <p class="modal-slot-info">أدخل كود الفريق للتحكم في هذا الحجز</p>
+
+    <div class="modal-field">
+      <label>كود الفريق</label>
+      <input type="password" id="staffPinInput" placeholder="••••" inputmode="numeric">
+    </div>
+
+    <button class="cta-btn gold" id="staffPinSubmit" style="width:100%;justify-content:center;">دخول</button>
+    <p class="modal-error" id="staffPinError"></p>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="confirmOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="confirmModalClose" aria-label="إغلاق">✕</button>
+    <h3>تأكيد الحجز</h3>
+    <p class="modal-slot-info" id="confirmSlotInfo"></p>
+
+    <div class="status-box">
+      <strong id="confirmPatientName"></strong>
+      <span id="confirmPatientPhone"></span>
+    </div>
+
+    <button class="cta-btn gold" id="finalConfirmBtn" style="width:100%;justify-content:center;">تأكيد الحجز نهائيًا</button>
+    <button class="cta-btn" id="cancelBookingBtn" style="width:100%;justify-content:center;margin-top:10px;background:transparent;border:1px solid var(--line);color:var(--ink-soft);">إلغاء الحجز وإفراغ الكرسي</button>
+    <p class="modal-hint">دوس "تأكيد الحجز نهائيًا" بعد ما المريض يوصل العيادة أو يأكد معاك على واتساب.</p>
+  </div>
+</div>
+
 <section class="sec why">
   <div class="wrap">
     <div class="sec-head">
@@ -965,7 +1169,13 @@
         <a href="#contact">تواصل معنا</a>
       </div>
     </div>
-    <div class="foot-bottom">© 2026 عيادة د. أبانوب سليم لطب الأسنان — جميع الحقوق محفوظة</div>
+    <div class="foot-bottom">
+      © 2026 عيادة د. أبانوب سليم لطب الأسنان — جميع الحقوق محفوظة
+    </div>
+    <a href="https://www.instagram.com/1hassan_h1" target="_blank" rel="noopener" class="designer-credit">
+      <span class="badge"><img src="data:image/webp;base64,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" alt="Hassan Hamdy"></span>
+      Designed by Hassan Hamdy
+    </a>
   </div>
 </footer>
 
@@ -1003,6 +1213,38 @@
   <button id="volUp" aria-label="رفع الصوت">+</button>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  // ====== Firebase setup ======
+  // 1) Create a free project at https://console.firebase.google.com
+  // 2) Enable "Firestore Database" (see the setup guide sent alongside this file)
+  // 3) Paste your project's config below, replacing the placeholder values.
+  var firebaseConfig = {
+    apiKey: "AIzaSyAXoB_WHtLStu0mr4dnZKG8YeXOn_R1dg4",
+    authDomain: "abanoub-clinic.firebaseapp.com",
+    projectId: "abanoub-clinic",
+    storageBucket: "abanoub-clinic.firebasestorage.app",
+    messagingSenderId: "904420382642",
+    appId: "1:904420382642:web:2c048976c4d04e2d8436ab"
+  };
+
+  var firestoreDb = null;
+  var firebaseReady = false;
+  (function initFirebase(){
+    try{
+      if(firebaseConfig.apiKey === "YOUR_API_KEY"){
+        console.warn('Firebase config not set yet — booking data will be stored locally only (per device). See the setup guide.');
+        return;
+      }
+      firebase.initializeApp(firebaseConfig);
+      firestoreDb = firebase.firestore();
+      firebaseReady = true;
+    }catch(e){
+      console.warn('Firebase failed to initialize — falling back to local storage.', e);
+    }
+  })();
+</script>
 <script>
   (function(){
     var root = document.documentElement;
@@ -1180,6 +1422,19 @@
       master.gain.linearRampToValueAtTime(target, now + rampSeconds);
     }
 
+    var panelHideTimer = null;
+    function showPanel(){
+      panel.classList.add('show');
+      clearTimeout(panelHideTimer);
+      panelHideTimer = setTimeout(function(){
+        panel.classList.remove('show');
+      }, 2800);
+    }
+    function hidePanelNow(){
+      clearTimeout(panelHideTimer);
+      panel.classList.remove('show');
+    }
+
     btn.addEventListener('click', function(){
       if(!ctx){ buildEngine(); }
       if(ctx.state === 'suspended'){
@@ -1189,7 +1444,7 @@
       if(!playing){
         playing = true;
         btn.classList.add('playing');
-        panel.classList.add('show');
+        showPanel();
         setPadVolume(currentPadTarget(), 1.8);
         clearInterval(chordTimer);
         scheduleChords();
@@ -1199,6 +1454,7 @@
       } else {
         playing = false;
         btn.classList.remove('playing');
+        hidePanelNow();
         setPadVolume(0, 1.2);
         clearInterval(chordTimer);
         clearTimeout(bellTimer);
@@ -1209,14 +1465,334 @@
       userVolume = Math.min(1, Math.round((userVolume + 0.1) * 10) / 10);
       updateVolLabel();
       if(playing){ setPadVolume(currentPadTarget(), 0.4); }
+      showPanel();
     });
     volDown.addEventListener('click', function(){
       userVolume = Math.max(0, Math.round((userVolume - 0.1) * 10) / 10);
       updateVolLabel();
       if(playing){ setPadVolume(currentPadTarget(), 0.4); }
+      showPanel();
     });
 
     updateVolLabel();
+  })();
+
+  // Booking system: day tabs, seat grid (available -> pending -> confirmed), WhatsApp
+  // Uses Firestore (shared, real-time, across every visitor) when configured above,
+  // otherwise falls back to this browser's local storage only.
+  (function(){
+    var dayTabsEl = document.getElementById('dayTabs');
+    var chairsGridEl = document.getElementById('chairsGrid');
+
+    var overlay = document.getElementById('bookingOverlay');
+    var modalClose = document.getElementById('modalClose');
+    var modalSlotInfo = document.getElementById('modalSlotInfo');
+    var nameInput = document.getElementById('patientName');
+    var phoneInput = document.getElementById('patientPhone');
+    var confirmBtn = document.getElementById('confirmBookingBtn');
+    var modalError = document.getElementById('modalError');
+
+    var confirmOverlay = document.getElementById('confirmOverlay');
+    var confirmModalClose = document.getElementById('confirmModalClose');
+    var confirmSlotInfo = document.getElementById('confirmSlotInfo');
+    var confirmPatientName = document.getElementById('confirmPatientName');
+    var confirmPatientPhone = document.getElementById('confirmPatientPhone');
+    var finalConfirmBtn = document.getElementById('finalConfirmBtn');
+    var cancelBookingBtn = document.getElementById('cancelBookingBtn');
+
+    var staffPinOverlay = document.getElementById('staffPinOverlay');
+    var staffPinClose = document.getElementById('staffPinClose');
+    var staffPinInput = document.getElementById('staffPinInput');
+    var staffPinSubmit = document.getElementById('staffPinSubmit');
+    var staffPinError = document.getElementById('staffPinError');
+
+    // Staff-only code — change this to whatever the clinic team wants.
+    // Note: this is a front-end gate only (it stops casual patients from
+    // clicking around), not real security — anyone who reads the page's
+    // source code can see it. For real access control, Firebase Auth
+    // (a proper staff login) would be needed.
+    var STAFF_PIN = '2026';
+    var pendingUnlock = null; // {day, slot, entry} — set while the PIN modal is open
+
+    if(!dayTabsEl || !chairsGridEl) return;
+
+    var STORAGE_KEY = 'clinicBookingsV1';
+    var WEEKDAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    var SLOTS = [
+      {v:'14:00', l:'2:00 ظ'}, {v:'14:30', l:'2:30 ظ'},
+      {v:'15:00', l:'3:00 ظ'}, {v:'15:30', l:'3:30 ظ'},
+      {v:'16:00', l:'4:00 ظ'}, {v:'16:30', l:'4:30 ظ'},
+      {v:'17:00', l:'5:00 م'}, {v:'17:30', l:'5:30 م'},
+      {v:'18:00', l:'6:00 م'}, {v:'18:30', l:'6:30 م'},
+      {v:'19:00', l:'7:00 م'}, {v:'19:30', l:'7:30 م'},
+      {v:'20:00', l:'8:00 م'}, {v:'20:30', l:'8:30 م'},
+      {v:'21:00', l:'9:00 م'}, {v:'21:30', l:'9:30 م'}
+    ];
+    var CHAIR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor">' +
+      '<rect x="5" y="3" width="3" height="10" rx="1"></rect>' +
+      '<rect x="5" y="11" width="14" height="3" rx="1"></rect>' +
+      '<rect x="6" y="15" width="2" height="7" rx="1"></rect>' +
+      '<rect x="16" y="15" width="2" height="7" rx="1"></rect>' +
+      '</svg>';
+
+    var days = [];
+    (function buildDays(){
+      var d = new Date();
+      while(days.length < 6){
+        if(d.getDay() !== 5){ // skip Friday (closed)
+          days.push({
+            iso: d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'),
+            weekday: WEEKDAY_NAMES[d.getDay()],
+            dateLabel: d.getDate() + '/' + (d.getMonth()+1)
+          });
+        }
+        d = new Date(d.getTime() + 24*60*60*1000);
+      }
+    })();
+
+    var selectedDayIndex = 0;
+    var selection = null;        // {dayIndex, slotIndex} — for the "book" modal
+    var confirmSelection = null; // {dayIndex, slotIndex, key} — for the "confirm/cancel" modal
+    var bookingsCache = {};      // always-current snapshot of bookings, keyed by "dayIso_slotValue"
+
+    function bookingKey(dayIso, slotValue){
+      return dayIso + '_' + slotValue;
+    }
+
+    // ---- Data layer: Firestore when configured, else localStorage ----
+    function localGetAll(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+      catch(e){ return {}; }
+    }
+    function localSaveAll(all){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    }
+
+    function watchBookings(onChange){
+      if(firebaseReady && firestoreDb){
+        firestoreDb.collection('bookings').onSnapshot(function(snap){
+          var all = {};
+          snap.forEach(function(doc){ all[doc.id] = doc.data(); });
+          bookingsCache = all;
+          onChange();
+        }, function(err){
+          console.warn('Firestore listener error — falling back to local storage.', err);
+          bookingsCache = localGetAll();
+          onChange();
+        });
+      } else {
+        bookingsCache = localGetAll();
+        onChange();
+      }
+    }
+
+    function setBooking(key, data){
+      if(firebaseReady && firestoreDb){
+        return firestoreDb.collection('bookings').doc(key).set(data, { merge: true });
+      }
+      var all = localGetAll();
+      all[key] = data;
+      localSaveAll(all);
+      bookingsCache = all;
+      return Promise.resolve();
+    }
+    function updateBookingStatus(key, status){
+      if(firebaseReady && firestoreDb){
+        return firestoreDb.collection('bookings').doc(key).update({ status: status });
+      }
+      var all = localGetAll();
+      if(all[key]){ all[key].status = status; }
+      localSaveAll(all);
+      bookingsCache = all;
+      return Promise.resolve();
+    }
+    function deleteBooking(key){
+      if(firebaseReady && firestoreDb){
+        return firestoreDb.collection('bookings').doc(key).delete();
+      }
+      var all = localGetAll();
+      delete all[key];
+      localSaveAll(all);
+      bookingsCache = all;
+      return Promise.resolve();
+    }
+
+    function renderDayTabs(){
+      dayTabsEl.innerHTML = '';
+      days.forEach(function(day, i){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'day-tab' + (i === selectedDayIndex ? ' active' : '');
+        btn.innerHTML = '<span class="dt-name">' + day.weekday + '</span><span class="dt-date">' + day.dateLabel + '</span>';
+        btn.addEventListener('click', function(){
+          selectedDayIndex = i;
+          renderDayTabs();
+          renderChairs();
+        });
+        dayTabsEl.appendChild(btn);
+      });
+    }
+
+    function renderChairs(){
+      chairsGridEl.innerHTML = '';
+      var day = days[selectedDayIndex];
+      SLOTS.forEach(function(slot, si){
+        var key = bookingKey(day.iso, slot.v);
+        var entry = bookingsCache[key];
+        var status = entry ? entry.status : 'available'; // available | pending | confirmed
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'seat-btn ' + (status === 'confirmed' ? 'booked' : status === 'pending' ? 'pending' : 'available');
+        btn.innerHTML = CHAIR_SVG + '<span class="seat-time">' + slot.l + '</span>';
+
+        if(status === 'confirmed'){
+          btn.disabled = true;
+          btn.setAttribute('aria-label', slot.l + ' — تم التأكيد');
+        } else if(status === 'pending'){
+          btn.setAttribute('aria-label', slot.l + ' — محجوز، لسه ماتأكدش');
+          btn.addEventListener('click', function(){
+            openPinGate(day, slot, entry, si, key);
+          });
+        } else {
+          btn.setAttribute('aria-label', slot.l + ' — متاح');
+          btn.addEventListener('click', function(){
+            selection = { dayIndex: selectedDayIndex, slotIndex: si };
+            openModal(day, slot);
+          });
+        }
+        chairsGridEl.appendChild(btn);
+      });
+    }
+
+    // ---- Book modal (available -> pending) ----
+    function openModal(day, slot){
+      modalSlotInfo.textContent = day.weekday + ' ' + day.dateLabel + ' — الساعة ' + slot.l;
+      nameInput.value = '';
+      phoneInput.value = '';
+      modalError.textContent = '';
+      overlay.classList.add('open');
+      setTimeout(function(){ nameInput.focus(); }, 50);
+    }
+    function closeModal(){
+      overlay.classList.remove('open');
+      selection = null;
+    }
+    modalClose.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function(e){
+      if(e.target === overlay){ closeModal(); }
+    });
+
+    confirmBtn.addEventListener('click', function(){
+      if(!selection) return;
+      var name = nameInput.value.trim();
+      var phone = phoneInput.value.trim();
+
+      if(name.length < 3){
+        modalError.textContent = 'من فضلك اكتب اسمك كامل.';
+        return;
+      }
+      if(!/^01\d{9}$/.test(phone)){
+        modalError.textContent = 'من فضلك اكتب رقم موبايل مصري صحيح (01xxxxxxxxx).';
+        return;
+      }
+      modalError.textContent = '';
+
+      var day = days[selection.dayIndex];
+      var slot = SLOTS[selection.slotIndex];
+      var key = bookingKey(day.iso, slot.v);
+
+      confirmBtn.disabled = true;
+      setBooking(key, { name: name, phone: phone, status: 'pending', ts: Date.now() })
+        .catch(function(err){ console.warn('Could not save booking:', err); })
+        .then(function(){
+          confirmBtn.disabled = false;
+          if(!firebaseReady){ renderChairs(); } // Firestore path re-renders via the live listener
+
+          var msg = 'مرحبًا، عايز أسجل حجز ميعاد كشف في عيادة د. أبانوب سليم:' +
+            '\nالاسم: ' + name +
+            '\nرقم الموبايل: ' + phone +
+            '\nاليوم: ' + day.weekday + ' ' + day.dateLabel +
+            '\nالميعاد: ' + slot.l +
+            '\nمنتظر تأكيدكم للحجز.';
+          var waUrl = 'https://wa.me/201094696497?text=' + encodeURIComponent(msg);
+
+          closeModal();
+          window.open(waUrl, '_blank');
+        });
+    });
+
+    // ---- Staff PIN gate (only staff can open the confirm/cancel modal) ----
+    function openPinGate(day, slot, entry, si, key){
+      pendingUnlock = { day: day, slot: slot, entry: entry, si: si, key: key };
+      staffPinInput.value = '';
+      staffPinError.textContent = '';
+      staffPinOverlay.classList.add('open');
+      setTimeout(function(){ staffPinInput.focus(); }, 50);
+    }
+    function closePinGate(){
+      staffPinOverlay.classList.remove('open');
+      pendingUnlock = null;
+    }
+    staffPinClose.addEventListener('click', closePinGate);
+    staffPinOverlay.addEventListener('click', function(e){
+      if(e.target === staffPinOverlay){ closePinGate(); }
+    });
+    staffPinInput.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ staffPinSubmit.click(); }
+    });
+    staffPinSubmit.addEventListener('click', function(){
+      if(!pendingUnlock) return;
+      if(staffPinInput.value.trim() !== STAFF_PIN){
+        staffPinError.textContent = 'الكود غير صحيح.';
+        staffPinInput.value = '';
+        staffPinInput.focus();
+        return;
+      }
+      var p = pendingUnlock;
+      closePinGate();
+      confirmSelection = { dayIndex: selectedDayIndex, slotIndex: p.si, key: p.key };
+      openConfirmModal(p.day, p.slot, p.entry);
+    });
+
+    // ---- Confirm modal (pending -> confirmed, or cancel) ----
+    function openConfirmModal(day, slot, entry){
+      confirmSlotInfo.textContent = day.weekday + ' ' + day.dateLabel + ' — الساعة ' + slot.l;
+      confirmPatientName.textContent = entry.name;
+      confirmPatientPhone.textContent = entry.phone;
+      confirmOverlay.classList.add('open');
+    }
+    function closeConfirmModal(){
+      confirmOverlay.classList.remove('open');
+      confirmSelection = null;
+    }
+    confirmModalClose.addEventListener('click', closeConfirmModal);
+    confirmOverlay.addEventListener('click', function(e){
+      if(e.target === confirmOverlay){ closeConfirmModal(); }
+    });
+
+    finalConfirmBtn.addEventListener('click', function(){
+      if(!confirmSelection) return;
+      updateBookingStatus(confirmSelection.key, 'confirmed')
+        .catch(function(err){ console.warn('Could not confirm booking:', err); })
+        .then(function(){
+          closeConfirmModal();
+          if(!firebaseReady){ renderChairs(); }
+        });
+    });
+
+    cancelBookingBtn.addEventListener('click', function(){
+      if(!confirmSelection) return;
+      deleteBooking(confirmSelection.key)
+        .catch(function(err){ console.warn('Could not cancel booking:', err); })
+        .then(function(){
+          closeConfirmModal();
+          if(!firebaseReady){ renderChairs(); }
+        });
+    });
+
+    renderDayTabs();
+    watchBookings(renderChairs);
   })();
 </script>
 </body>
