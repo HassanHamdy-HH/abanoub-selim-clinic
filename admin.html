@@ -285,6 +285,13 @@
   .reminder-row.sent .rr-send{background:var(--pale-aqua);color:var(--ink-soft);}
 
   .modal-field{margin-bottom:14px;}
+  .modal-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .edit-remaining-line{
+    text-align:center;font-size:.85rem;font-weight:700;color:var(--ink-soft);
+    background:var(--pale-aqua);border-radius:10px;padding:8px 12px;margin-bottom:16px;
+  }
+  .edit-remaining-line.settled{color:#1E9E5A;background:#E7F6EE;}
+  .edit-remaining-line.open{color:#E0A945;background:#FBF3E3;}
   .modal-field label{display:block;font-size:.82rem;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
   .modal-field input, .modal-field select{
     width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--line);
@@ -490,6 +497,7 @@
         <button class="view-tab active" id="tabTable">جدول</button>
         <button class="view-tab" id="tabCalendar">تقويم</button>
         <button class="view-tab" id="tabPatients">المرضى</button>
+        <button class="view-tab" id="tabAccounts">الحسابات</button>
         <button class="view-tab" id="tabAnalytics">التحليلات</button>
       </div>
       <button class="btn btn-gold" id="remindBtn">
@@ -559,6 +567,60 @@
       </div>
       <div class="patients-list" id="patientsList"></div>
       <div class="empty-mini" id="patientsEmpty" style="display:none;">مفيش مرضى يطابقوا البحث</div>
+    </div>
+
+    <div class="accounts-view" id="accountsView" style="display:none;">
+      <div class="stats-grid analytics-stats">
+        <div class="stat-card revenue">
+          <div class="stat-ic">💰</div>
+          <div class="stat-num" id="statTotalCollected">–</div>
+          <div class="stat-label">إجمالي المحصّل</div>
+        </div>
+        <div class="stat-card pending">
+          <div class="stat-ic">⏳</div>
+          <div class="stat-num" id="statTotalRemaining">–</div>
+          <div class="stat-label">إجمالي المتبقي</div>
+        </div>
+        <div class="stat-card confirmed">
+          <div class="stat-ic">📋</div>
+          <div class="stat-num" id="statTotalGrand">–</div>
+          <div class="stat-label">إجمالي قيمة الإجراءات</div>
+        </div>
+        <div class="stat-card today">
+          <div class="stat-ic">🧾</div>
+          <div class="stat-num" id="statOpenAccounts">–</div>
+          <div class="stat-label">حالات عليها باقي</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="accountsSearchInput" placeholder="دور باسم المريض...">
+        <select id="accountsFilter">
+          <option value="all">كل الحالات</option>
+          <option value="open">عليها باقي بس</option>
+          <option value="settled">متحصّلة بالكامل</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <div class="table-wrap">
+          <table class="bookings">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>اسم المريض</th>
+                <th>الإجراء</th>
+                <th>المدفوع</th>
+                <th>الباقي</th>
+                <th>الإجمالي</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="accountsBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-mini" id="accountsEmpty" style="display:none;">مفيش حالات ليها حساب مسجّل لسه — استخدم زرار "تعديل" على أي حجز وحدد الإجراء والمبلغ.</div>
+      </div>
     </div>
 
     <div class="analytics-view" id="analyticsView" style="display:none;">
@@ -707,11 +769,22 @@
       </select>
     </div>
     <div class="modal-field">
-      <label>الخدمة المطلوبة</label>
+      <label>الخدمة / الإجراء</label>
       <select id="editServiceInput">
         <option value="">بدون تحديد</option>
       </select>
     </div>
+    <div class="modal-field-row">
+      <div class="modal-field">
+        <label>الإجمالي المطلوب (جنيه)</label>
+        <input type="number" id="editTotalInput" placeholder="0" min="0">
+      </div>
+      <div class="modal-field">
+        <label>المدفوع حتى الآن (جنيه)</label>
+        <input type="number" id="editPaidInput" placeholder="0" min="0">
+      </div>
+    </div>
+    <p class="edit-remaining-line" id="editRemainingLine"></p>
 
     <button class="cta-btn gold" id="editBookingSaveBtn" style="width:100%;justify-content:center;">حفظ التعديلات</button>
     <p class="modal-error" id="editBookingError"></p>
@@ -896,6 +969,8 @@
           bookedBy: data.bookedBy || 'patient',
           notes: data.notes || '',
           service: data.service || '',
+          totalAmount: typeof data.totalAmount === 'number' ? data.totalAmount : 0,
+          paidAmount: typeof data.paidAmount === 'number' ? data.paidAmount : 0,
           ts: data.ts || 0
         });
       });
@@ -1002,12 +1077,25 @@
       if(e.target.id === 'editBookingOverlay'){ closeEditBookingModal(); }
     });
     document.getElementById('editBookingSaveBtn').addEventListener('click', saveEditBooking);
+    document.getElementById('editServiceInput').addEventListener('change', function(){
+      var svc = SERVICE_BY_ID[this.value];
+      var totalInput = document.getElementById('editTotalInput');
+      if(svc && svc.price != null && !totalInput.value){
+        totalInput.value = svc.price;
+      }
+      updateRemainingLine();
+    });
+    document.getElementById('editTotalInput').addEventListener('input', updateRemainingLine);
+    document.getElementById('editPaidInput').addEventListener('input', updateRemainingLine);
 
     document.getElementById('tabTable').addEventListener('click', function(){ switchView('table'); });
     document.getElementById('tabCalendar').addEventListener('click', function(){ switchView('calendar'); });
     document.getElementById('tabAnalytics').addEventListener('click', function(){ switchView('analytics'); });
     document.getElementById('tabPatients').addEventListener('click', function(){ switchView('patients'); });
+    document.getElementById('tabAccounts').addEventListener('click', function(){ switchView('accounts'); });
     document.getElementById('patientSearchInput').addEventListener('input', renderPatients);
+    document.getElementById('accountsSearchInput').addEventListener('input', renderAccounts);
+    document.getElementById('accountsFilter').addEventListener('change', renderAccounts);
   }
 
   function renderStats(){
@@ -1028,19 +1116,23 @@
     var tableEl = document.getElementById('tableView');
     var calEl = document.getElementById('calendarView');
     var patientsEl = document.getElementById('patientsView');
+    var accountsEl = document.getElementById('accountsView');
     var analyticsEl = document.getElementById('analyticsView');
     var tabTable = document.getElementById('tabTable');
     var tabCal = document.getElementById('tabCalendar');
     var tabPatients = document.getElementById('tabPatients');
+    var tabAccounts = document.getElementById('tabAccounts');
     var tabAnalytics = document.getElementById('tabAnalytics');
 
     tableEl.style.display = 'none';
     calEl.style.display = 'none';
     patientsEl.style.display = 'none';
+    accountsEl.style.display = 'none';
     analyticsEl.style.display = 'none';
     tabTable.classList.remove('active');
     tabCal.classList.remove('active');
     tabPatients.classList.remove('active');
+    tabAccounts.classList.remove('active');
     tabAnalytics.classList.remove('active');
 
     if(view === 'calendar'){
@@ -1050,6 +1142,10 @@
       patientsEl.style.display = 'block';
       tabPatients.classList.add('active');
       renderPatients();
+    } else if(view === 'accounts'){
+      accountsEl.style.display = 'block';
+      tabAccounts.classList.add('active');
+      renderAccounts();
     } else if(view === 'analytics'){
       analyticsEl.style.display = 'block';
       tabAnalytics.classList.add('active');
@@ -1238,6 +1334,105 @@
     } else if(action === 'إلغاء'){
       if(confirm('تأكيد إلغاء حجز ' + b.name + '؟')){ deleteBooking(b.id); }
     }
+  }
+
+  function renderAccounts(){
+    var body = document.getElementById('accountsBody');
+    var emptyEl = document.getElementById('accountsEmpty');
+    if(!body) return;
+
+    var q = document.getElementById('accountsSearchInput').value.trim().toLowerCase();
+    var filter = document.getElementById('accountsFilter').value;
+
+    var rows = allBookings.filter(function(b){ return b.totalAmount > 0; });
+
+    if(q){
+      rows = rows.filter(function(b){ return b.name.toLowerCase().indexOf(q) !== -1; });
+    }
+    if(filter === 'open'){
+      rows = rows.filter(function(b){ return (b.totalAmount - b.paidAmount) > 0; });
+    } else if(filter === 'settled'){
+      rows = rows.filter(function(b){ return (b.totalAmount - b.paidAmount) <= 0; });
+    }
+
+    rows.sort(function(a, b){
+      var ka = a.dayIso + ' ' + a.slotValue;
+      var kb = b.dayIso + ' ' + b.slotValue;
+      return kb < ka ? -1 : kb > ka ? 1 : 0;
+    });
+
+    // ---- summary stats across ALL billed bookings (not just filtered rows) ----
+    var billed = allBookings.filter(function(b){ return b.totalAmount > 0; });
+    var totalCollected = 0, totalRemaining = 0, totalGrand = 0, openCount = 0;
+    billed.forEach(function(b){
+      var remaining = b.totalAmount - b.paidAmount;
+      totalCollected += b.paidAmount;
+      totalGrand += b.totalAmount;
+      if(remaining > 0){ totalRemaining += remaining; openCount++; }
+    });
+    document.getElementById('statTotalCollected').textContent = totalCollected.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('statTotalRemaining').textContent = totalRemaining.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('statTotalGrand').textContent = totalGrand.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('statOpenAccounts').textContent = openCount;
+
+    body.innerHTML = '';
+    if(rows.length === 0){
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    rows.forEach(function(b){
+      var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
+      var svc = SERVICE_BY_ID[b.service];
+      var serviceName = svc ? svc.name : '—';
+      var remaining = b.totalAmount - b.paidAmount;
+
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + formatDateLabel(b.dayIso) + '</td>' +
+        '<td class="name-cell">' + escapeHtml(b.name) + '</td>' +
+        '<td>' + escapeHtml(serviceName) + '</td>' +
+        '<td>' + b.paidAmount.toLocaleString('ar-EG') + '</td>' +
+        '<td>' + (remaining > 0
+          ? '<span class="badge pending">' + remaining.toLocaleString('ar-EG') + '</span>'
+          : '<span class="badge confirmed">متحصّل</span>') + '</td>' +
+        '<td>' + b.totalAmount.toLocaleString('ar-EG') + '</td>' +
+        '<td><div class="row-actions"></div></td>';
+
+      var actions = tr.querySelector('.row-actions');
+      if(remaining > 0){
+        var payBtn = document.createElement('button');
+        payBtn.className = 'mini-btn confirm';
+        payBtn.textContent = 'تسجيل دفعة';
+        payBtn.addEventListener('click', function(){ recordPayment(b); });
+        actions.appendChild(payBtn);
+      }
+      var editBtn = document.createElement('button');
+      editBtn.className = 'mini-btn edit';
+      editBtn.textContent = 'تعديل';
+      editBtn.addEventListener('click', function(){ openEditBookingModal(b); });
+      actions.appendChild(editBtn);
+
+      body.appendChild(tr);
+    });
+  }
+
+  function recordPayment(b){
+    var remaining = b.totalAmount - b.paidAmount;
+    var amountStr = prompt('قيمة الدفعة الجديدة من ' + b.name + ' (الباقي حاليًا: ' + remaining.toLocaleString('ar-EG') + ' جنيه):', '');
+    if(amountStr === null) return;
+    var amount = parseFloat(amountStr);
+    if(isNaN(amount) || amount <= 0){
+      alert('من فضلك اكتب رقم صحيح أكبر من صفر.');
+      return;
+    }
+    var newPaid = Math.min(b.totalAmount, b.paidAmount + amount);
+    firestoreDb.collection('bookings').doc(b.id).update({ paidAmount: newPaid })
+      .then(function(){
+        logActivity('payment', 'تسجيل دفعة ' + amount.toLocaleString('ar-EG') + ' جنيه من ' + b.name + ' — الإجمالي المحصّل الآن ' + newPaid.toLocaleString('ar-EG') + ' جنيه');
+      })
+      .catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
   function renderPatients(){
@@ -1459,7 +1654,7 @@
     if(activityLog.length === 0){
       activityListEl.innerHTML = '<div class="empty-mini">لسه مفيش أي نشاط مسجل</div>';
     } else {
-      var iconMap = { confirm: '✅', cancel: '❌', block_day: '🔒', unblock_day: '🔓', notes: '📝', no_show: '🚫', backup: '💾', edit: '✏️' };
+      var iconMap = { confirm: '✅', cancel: '❌', block_day: '🔒', unblock_day: '🔓', notes: '📝', no_show: '🚫', backup: '💾', edit: '✏️', payment: '💵' };
       activityLog.forEach(function(entry){
         var item = document.createElement('div');
         item.className = 'activity-item';
@@ -1679,12 +1874,34 @@
     });
     serviceSel.value = b.service || '';
 
+    var totalInput = document.getElementById('editTotalInput');
+    var paidInput = document.getElementById('editPaidInput');
+    totalInput.value = b.totalAmount || '';
+    paidInput.value = b.paidAmount || '';
+    updateRemainingLine();
+
     document.getElementById('editBookingError').textContent = '';
     document.getElementById('editBookingOverlay').classList.add('open');
   }
   function closeEditBookingModal(){
     document.getElementById('editBookingOverlay').classList.remove('open');
     pendingEditBooking = null;
+  }
+  function updateRemainingLine(){
+    var total = parseFloat(document.getElementById('editTotalInput').value) || 0;
+    var paid = parseFloat(document.getElementById('editPaidInput').value) || 0;
+    var remaining = total - paid;
+    var line = document.getElementById('editRemainingLine');
+    if(total <= 0){
+      line.textContent = 'محددش إجمالي لسه';
+      line.className = 'edit-remaining-line';
+    } else if(remaining <= 0){
+      line.textContent = 'متحصّل بالكامل ✓';
+      line.className = 'edit-remaining-line settled';
+    } else {
+      line.textContent = 'الباقي: ' + remaining.toLocaleString('ar-EG') + ' جنيه من إجمالي ' + total.toLocaleString('ar-EG') + ' جنيه';
+      line.className = 'edit-remaining-line open';
+    }
   }
   function saveEditBooking(){
     if(!pendingEditBooking) return;
@@ -1693,6 +1910,8 @@
     var phone = document.getElementById('editPhoneInput').value.trim();
     var status = document.getElementById('editStatusInput').value;
     var service = document.getElementById('editServiceInput').value;
+    var totalAmount = parseFloat(document.getElementById('editTotalInput').value) || 0;
+    var paidAmount = parseFloat(document.getElementById('editPaidInput').value) || 0;
     var errorEl = document.getElementById('editBookingError');
 
     if(name.length < 3){
@@ -1703,14 +1922,23 @@
       errorEl.textContent = 'من فضلك اكتب رقم موبايل مصري صحيح (01xxxxxxxxx).';
       return;
     }
+    if(paidAmount > totalAmount && totalAmount > 0){
+      errorEl.textContent = 'المبلغ المدفوع أكبر من الإجمالي — راجع الرقمين.';
+      return;
+    }
 
     var changes = [];
     if(name !== b.name) changes.push('الاسم');
     if(phone !== b.phone) changes.push('رقم الموبايل');
     if(status !== b.status) changes.push('الحالة');
     if(service !== (b.service || '')) changes.push('الخدمة');
+    if(totalAmount !== (b.totalAmount || 0)) changes.push('الإجمالي');
+    if(paidAmount !== (b.paidAmount || 0)) changes.push('المدفوع');
 
-    firestoreDb.collection('bookings').doc(b.id).update({ name: name, phone: phone, status: status, service: service })
+    firestoreDb.collection('bookings').doc(b.id).update({
+      name: name, phone: phone, status: status, service: service,
+      totalAmount: totalAmount, paidAmount: paidAmount
+    })
       .then(function(){
         if(changes.length){
           var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
