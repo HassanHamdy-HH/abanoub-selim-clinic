@@ -106,6 +106,7 @@
   .stat-card.pending .stat-ic{background:var(--pending-bg);color:var(--pending);}
   .stat-card.confirmed .stat-ic{background:var(--confirmed-bg);color:var(--confirmed);}
   .stat-card.week .stat-ic{background:#FFF3E0;color:var(--gold-deep);}
+  .stat-card.revenue .stat-ic{background:#E7F6EE;color:#1E9E5A;}
 
   /* ---------- TOOLBAR ---------- */
   .toolbar{
@@ -584,6 +585,29 @@
         </div>
       </div>
 
+      <div class="stats-grid analytics-stats">
+        <div class="stat-card revenue">
+          <div class="stat-ic">💰</div>
+          <div class="stat-num" id="statRevenueToday">–</div>
+          <div class="stat-label">إيرادات اليوم (تقديرية)</div>
+        </div>
+        <div class="stat-card revenue">
+          <div class="stat-ic">📅</div>
+          <div class="stat-num" id="statRevenueWeek">–</div>
+          <div class="stat-label">إيرادات الأسبوع ده</div>
+        </div>
+        <div class="stat-card revenue">
+          <div class="stat-ic">📈</div>
+          <div class="stat-num" id="statRevenueMonth">–</div>
+          <div class="stat-label">إيرادات الشهر ده</div>
+        </div>
+        <div class="stat-card revenue">
+          <div class="stat-ic">⭐</div>
+          <div class="stat-num" id="statTopService">–</div>
+          <div class="stat-label">أكتر خدمة مطلوبة</div>
+        </div>
+      </div>
+
       <div class="chart-card">
         <h3>الحجوزات حسب يوم الأسبوع</h3>
         <div class="bar-chart" id="chartWeekday"></div>
@@ -592,6 +616,12 @@
       <div class="chart-card">
         <h3>أكتر المواعيد طلبًا</h3>
         <div class="bar-chart" id="chartSlots"></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>الإيرادات حسب نوع الخدمة (الحجوزات المؤكدة فقط)</h3>
+        <span class="chart-hint">مبني على الخدمة المحددة لكل حجز من زرار "تعديل" — الخدمات اللي سعرها "حسب المعمل" مش بتتحسب هنا</span>
+        <div class="bar-chart" id="chartRevenue"></div>
       </div>
 
       <div class="chart-card">
@@ -676,6 +706,12 @@
         <option value="no_show">لم يحضر</option>
       </select>
     </div>
+    <div class="modal-field">
+      <label>الخدمة المطلوبة</label>
+      <select id="editServiceInput">
+        <option value="">بدون تحديد</option>
+      </select>
+    </div>
 
     <button class="cta-btn gold" id="editBookingSaveBtn" style="width:100%;justify-content:center;">حفظ التعديلات</button>
     <p class="modal-error" id="editBookingError"></p>
@@ -714,6 +750,29 @@
     '18:00':'6:00 م', '18:30':'6:30 م', '19:00':'7:00 م', '19:30':'7:30 م',
     '20:00':'8:00 م', '20:30':'8:30 م', '21:00':'9:00 م', '21:30':'9:30 م'
   };
+
+  // price list (matches the clinic's public pricing) — price: null means "حسب المعمل" (variable, not counted in revenue totals)
+  var SERVICES = [
+    { id: 'checkup', name: 'الكشف', price: 150 },
+    { id: 'xray', name: 'الأشعة', price: 50 },
+    { id: 'extract_normal', name: 'الخلع العادي', price: 500 },
+    { id: 'extract_surgical', name: 'الخلع الجراحي', price: 1200 },
+    { id: 'extract_impacted', name: 'الخلع المدفون', price: 2500 },
+    { id: 'filling_amalgam', name: 'حشو عادي — أملغم', price: 750 },
+    { id: 'filling_composite', name: 'حشو عادي — كمبوزيت', price: 950 },
+    { id: 'root_canal', name: 'حشو عصب', price: 2500 },
+    { id: 'calcium_amalgam', name: 'تغطية بكالسيوم — أملغم', price: 1000 },
+    { id: 'calcium_composite', name: 'تغطية بكالسيوم — كمبوزيت', price: 1250 },
+    { id: 'scaling', name: 'تنظيف الجير', price: 750 },
+    { id: 'porcelain', name: 'تركيبة بورسلين', price: 1750 },
+    { id: 'zircon', name: 'تركيبة زيركون', price: 2500 },
+    { id: 'denture_acrylic', name: 'تركيبة متحركة أكريل', price: null },
+    { id: 'denture_flex', name: 'تركيبة متحركة فيلكس', price: null },
+    { id: 'post', name: 'دعامة', price: 1000 },
+    { id: 'night_guard', name: 'عضاضة ليلية', price: 1300 }
+  ];
+  var SERVICE_BY_ID = {};
+  SERVICES.forEach(function(s){ SERVICE_BY_ID[s.id] = s; });
 
   function buildUpcomingDays(n){
     var days = [];
@@ -836,6 +895,7 @@
           status: data.status || 'pending',
           bookedBy: data.bookedBy || 'patient',
           notes: data.notes || '',
+          service: data.service || '',
           ts: data.ts || 0
         });
       });
@@ -1318,6 +1378,59 @@
 
     document.getElementById('statMonthTotal').textContent = monthTotal;
 
+    // ---- Revenue (confirmed bookings with a fixed-price service assigned) ----
+    var todayIsoStr = todayIso();
+    var daysSinceSaturday = (now.getDay() - 6 + 7) % 7;
+    var weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceSaturday);
+    var weekStartIso = weekStart.getFullYear() + '-' + String(weekStart.getMonth()+1).padStart(2,'0') + '-' + String(weekStart.getDate()).padStart(2,'0');
+
+    var revenueToday = 0, revenueWeek = 0, revenueMonth = 0;
+    var serviceRevenue = {}; // id -> sum
+    var serviceCounts = {};  // id -> count
+
+    allBookings.forEach(function(b){
+      if(b.status !== 'confirmed' || !b.service) return;
+      var svc = SERVICE_BY_ID[b.service];
+      if(!svc) return;
+
+      serviceCounts[b.service] = (serviceCounts[b.service] || 0) + 1;
+
+      if(svc.price == null) return; // "حسب المعمل" — not counted in totals
+      serviceRevenue[b.service] = (serviceRevenue[b.service] || 0) + svc.price;
+
+      var parts = b.dayIso.split('-').map(Number);
+      if(b.dayIso === todayIsoStr) revenueToday += svc.price;
+      if(b.dayIso >= weekStartIso) revenueWeek += svc.price;
+      if(parts[0] === now.getFullYear() && parts[1]-1 === now.getMonth()) revenueMonth += svc.price;
+    });
+
+    document.getElementById('statRevenueToday').textContent = revenueToday ? revenueToday.toLocaleString('ar-EG') + ' جنيه' : '–';
+    document.getElementById('statRevenueWeek').textContent = revenueWeek ? revenueWeek.toLocaleString('ar-EG') + ' جنيه' : '–';
+    document.getElementById('statRevenueMonth').textContent = revenueMonth ? revenueMonth.toLocaleString('ar-EG') + ' جنيه' : '–';
+
+    var topServiceId = null, topServiceCount = 0;
+    Object.keys(serviceCounts).forEach(function(sid){
+      if(serviceCounts[sid] > topServiceCount){ topServiceCount = serviceCounts[sid]; topServiceId = sid; }
+    });
+    document.getElementById('statTopService').textContent = topServiceId ? SERVICE_BY_ID[topServiceId].name : '–';
+
+    var chartRevenue = document.getElementById('chartRevenue');
+    if(chartRevenue){
+      chartRevenue.innerHTML = '';
+      var revEntries = Object.keys(serviceRevenue).map(function(sid){
+        return { name: SERVICE_BY_ID[sid].name, amount: serviceRevenue[sid] };
+      }).sort(function(a,b){ return b.amount - a.amount; }).slice(0, 8);
+
+      if(revEntries.length === 0){
+        chartRevenue.innerHTML = '<div class="empty-mini">لسه مفيش خدمات محددة على حجوزات مؤكدة</div>';
+      } else {
+        var maxRev = Math.max.apply(null, revEntries.map(function(e){ return e.amount; }));
+        revEntries.forEach(function(e){
+          chartRevenue.appendChild(buildBarRow(e.name, e.amount, maxRev));
+        });
+      }
+    }
+
     // ---- Weekday bar chart (Sat -> Thu, skipping Friday: always closed) ----
     var order = [6,0,1,2,3,4]; // Sat, Sun, Mon, Tue, Wed, Thu
     var maxWeekday = Math.max.apply(null, order.map(function(idx){ return weekdayCounts[idx]; }).concat([1]));
@@ -1555,6 +1668,17 @@
     document.getElementById('editNameInput').value = b.name;
     document.getElementById('editPhoneInput').value = b.phone;
     document.getElementById('editStatusInput').value = b.status;
+
+    var serviceSel = document.getElementById('editServiceInput');
+    serviceSel.innerHTML = '<option value="">بدون تحديد</option>';
+    SERVICES.forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name + (s.price != null ? ' — ' + s.price + ' جنيه' : ' — حسب المعمل');
+      serviceSel.appendChild(opt);
+    });
+    serviceSel.value = b.service || '';
+
     document.getElementById('editBookingError').textContent = '';
     document.getElementById('editBookingOverlay').classList.add('open');
   }
@@ -1568,6 +1692,7 @@
     var name = document.getElementById('editNameInput').value.trim();
     var phone = document.getElementById('editPhoneInput').value.trim();
     var status = document.getElementById('editStatusInput').value;
+    var service = document.getElementById('editServiceInput').value;
     var errorEl = document.getElementById('editBookingError');
 
     if(name.length < 3){
@@ -1583,8 +1708,9 @@
     if(name !== b.name) changes.push('الاسم');
     if(phone !== b.phone) changes.push('رقم الموبايل');
     if(status !== b.status) changes.push('الحالة');
+    if(service !== (b.service || '')) changes.push('الخدمة');
 
-    firestoreDb.collection('bookings').doc(b.id).update({ name: name, phone: phone, status: status })
+    firestoreDb.collection('bookings').doc(b.id).update({ name: name, phone: phone, status: status, service: service })
       .then(function(){
         if(changes.length){
           var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
