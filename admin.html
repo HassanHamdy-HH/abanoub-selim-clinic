@@ -1188,21 +1188,25 @@
 
     var q = document.getElementById('patientSearchInput').value.trim().toLowerCase();
 
-    // group all bookings by phone number
-    var byPhone = {};
+    // group bookings by patient identity: phone + name together, so a shared
+    // phone number with a different name is treated as a separate patient
+    var byPatient = {};
     allBookings.forEach(function(b){
       if(!b.phone) return;
-      if(!byPhone[b.phone]) byPhone[b.phone] = [];
-      byPhone[b.phone].push(b);
+      var normName = (b.name || '').trim().toLowerCase();
+      var key = b.phone + '|' + normName;
+      if(!byPatient[key]) byPatient[key] = [];
+      byPatient[key].push(b);
     });
 
-    var patients = Object.keys(byPhone).map(function(phone){
-      var visits = byPhone[phone].slice().sort(function(a, b){
+    var patients = Object.keys(byPatient).map(function(key){
+      var visits = byPatient[key].slice().sort(function(a, b){
         var ka = a.dayIso + ' ' + a.slotValue;
         var kb = b.dayIso + ' ' + b.slotValue;
         return kb < ka ? -1 : kb > ka ? 1 : 0; // most recent first
       });
       var name = visits[0].name;
+      var phone = visits[0].phone;
       var noShowCount = visits.filter(function(v){ return v.status === 'no_show'; }).length;
       return { phone: phone, name: name, visits: visits, noShowCount: noShowCount };
     });
