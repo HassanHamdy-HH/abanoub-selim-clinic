@@ -157,9 +157,12 @@
     background:var(--pale-aqua);
   }
   .day-chip.blocked{background:#FBEAEA;border-color:#F3C9C9;}
+  .day-chip.partial{background:#FFF3E0;border-color:#F0DCB0;}
   .day-chip .dc-name{font-size:.74rem;color:var(--ink-soft);font-weight:700;}
   .day-chip .dc-date{font-family:'Tajawal',sans-serif;font-weight:800;color:var(--deep-teal);font-size:.95rem;}
   .day-chip.blocked .dc-date{color:#C0392B;}
+  .day-chip.partial .dc-date{color:var(--gold-deep);}
+  .day-chip .dc-partial{font-size:.66rem;color:var(--gold-deep);font-weight:700;margin-top:2px;display:block;}
   .day-chip button{
     font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:999px;border:none;
     background:#fff;color:var(--ink-soft);border:1px solid var(--line);
@@ -188,6 +191,7 @@
   .cal-head-cell .cal-day-name{display:block;}
   .cal-head-cell .cal-day-date{display:block;font-family:'Tajawal',sans-serif;font-weight:800;color:var(--deep-teal);font-size:.9rem;}
   .cal-head-cell.blocked-col{color:#D64545;}
+  .cal-head-cell.partial-col{color:var(--gold-deep);}
   .cal-time-cell{
     font-size:.74rem;color:var(--ink-soft);padding:6px 8px;white-space:nowrap;display:flex;align-items:center;
   }
@@ -197,6 +201,8 @@
   }
   .cal-cell.pending{background:var(--pending);border-color:var(--pending);cursor:pointer;}
   .cal-cell.confirmed{background:var(--confirmed);border-color:var(--confirmed);cursor:pointer;}
+  .cal-cell.awaiting-cell{background:#4F85C7;border-color:#4F85C7;cursor:pointer;}
+  .cal-cell.noshow-cell{background:#B0B0B0;border-color:#B0B0B0;cursor:pointer;}
   .cal-cell.blocked{background:repeating-linear-gradient(45deg,#F3C9C9,#F3C9C9 4px,#FBEAEA 4px,#FBEAEA 8px);}
   .cal-cell.pending:hover,.cal-cell.confirmed:hover{transform:scale(1.08);}
 
@@ -277,6 +283,18 @@
   .reminder-row.sent{opacity:.55;}
   .reminder-row.sent .rr-send{background:var(--pale-aqua);color:var(--ink-soft);}
 
+  .modal-field{margin-bottom:14px;}
+  .modal-field label{display:block;font-size:.82rem;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
+  .modal-field input, .modal-field select{
+    width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--line);
+    font-family:inherit;font-size:.9rem;background:var(--pale-aqua);color:var(--ink);
+  }
+  .modal-field input:focus, .modal-field select:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  .modal-error{color:#D64545;font-size:.82rem;text-align:center;margin-top:10px;min-height:1em;font-weight:600;}
+  .block-scope-choice{display:flex;gap:16px;margin-bottom:16px;}
+  .scope-option{display:flex;align-items:center;gap:7px;font-size:.86rem;color:var(--ink);cursor:pointer;}
+  .block-range-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
   /* ---------- PATIENTS ---------- */
   .patients-toolbar{
     display:flex;align-items:center;gap:14px;margin-bottom:16px;
@@ -350,6 +368,7 @@
   .badge.pending{background:var(--pending-bg);color:var(--pending);}
   .badge.confirmed{background:var(--confirmed-bg);color:var(--confirmed);}
   .badge.noshow{background:#F0F0F0;color:#7A7A7A;}
+  .badge.awaiting{background:rgba(79,133,199,.12);color:#3F6FA8;}
   .badge .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
 
   .row-actions{display:flex;gap:8px;flex-wrap:wrap;}
@@ -363,8 +382,12 @@
   .mini-btn.cancel:hover{background:#D64545;color:#fff;}
   .mini-btn.wa{background:#E7F6EE;color:#1E9E5A;}
   .mini-btn.wa:hover{background:#1E9E5A;color:#fff;}
+  .mini-btn.edit{background:var(--pale-aqua);color:var(--teal);}
+  .mini-btn.edit:hover{background:var(--teal);color:#fff;}
   .mini-btn.noshow{background:#F0F0F0;color:#7A7A7A;}
   .mini-btn.noshow:hover{background:#7A7A7A;color:#fff;}
+  .mini-btn.awaiting{background:rgba(79,133,199,.12);color:#3F6FA8;}
+  .mini-btn.awaiting:hover{background:#3F6FA8;color:#fff;}
 
   .empty-state{padding:70px 20px;text-align:center;color:var(--ink-soft);}
   .empty-state .ic{font-size:2.4rem;margin-bottom:14px;}
@@ -592,6 +615,73 @@
   </div>
 </div>
 
+<div class="booking-modal-overlay" id="blockDayOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="blockDayClose" aria-label="إغلاق">✕</button>
+    <h3>قفل يوم</h3>
+    <p class="modal-slot-info" id="blockDayLabel"></p>
+
+    <div class="modal-field">
+      <label>سبب القفل (اختياري)</label>
+      <input type="text" id="blockReasonInput" placeholder="زي: إجازة، مناسبة...">
+    </div>
+
+    <div class="block-scope-choice">
+      <label class="scope-option">
+        <input type="radio" name="blockScope" value="full" id="scopeFull" checked>
+        <span>قفل اليوم كله</span>
+      </label>
+      <label class="scope-option">
+        <input type="radio" name="blockScope" value="partial" id="scopePartial">
+        <span>قفل فترة معيّنة بس</span>
+      </label>
+    </div>
+
+    <div class="block-range-fields" id="blockRangeFields" style="display:none;">
+      <div class="modal-field">
+        <label>من الساعة</label>
+        <select id="blockFromSlot"></select>
+      </div>
+      <div class="modal-field">
+        <label>لحد الساعة</label>
+        <select id="blockToSlot"></select>
+      </div>
+    </div>
+
+    <button class="cta-btn gold" id="blockDayConfirmBtn" style="width:100%;justify-content:center;">تأكيد القفل</button>
+    <p class="modal-error" id="blockDayError"></p>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="editBookingOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="editBookingClose" aria-label="إغلاق">✕</button>
+    <h3>تعديل بيانات الحجز</h3>
+    <p class="modal-slot-info" id="editBookingSlotInfo"></p>
+
+    <div class="modal-field">
+      <label>اسم المريض</label>
+      <input type="text" id="editNameInput" placeholder="اسم المريض">
+    </div>
+    <div class="modal-field">
+      <label>رقم الموبايل</label>
+      <input type="tel" id="editPhoneInput" placeholder="01xxxxxxxxx">
+    </div>
+    <div class="modal-field">
+      <label>حالة الحجز</label>
+      <select id="editStatusInput">
+        <option value="pending">في الانتظار</option>
+        <option value="awaiting">لسه المريض ما أكدش</option>
+        <option value="confirmed">تم التأكيد</option>
+        <option value="no_show">لم يحضر</option>
+      </select>
+    </div>
+
+    <button class="cta-btn gold" id="editBookingSaveBtn" style="width:100%;justify-content:center;">حفظ التعديلات</button>
+    <p class="modal-error" id="editBookingError"></p>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
@@ -805,6 +895,54 @@
       if(e.target.id === 'reminderOverlay'){ closeReminderModal(); }
     });
 
+    document.getElementById('blockDayClose').addEventListener('click', closeBlockDayModal);
+    document.getElementById('blockDayOverlay').addEventListener('click', function(e){
+      if(e.target.id === 'blockDayOverlay'){ closeBlockDayModal(); }
+    });
+    document.getElementById('scopeFull').addEventListener('change', function(){
+      document.getElementById('blockRangeFields').style.display = 'none';
+    });
+    document.getElementById('scopePartial').addEventListener('change', function(){
+      document.getElementById('blockRangeFields').style.display = 'grid';
+    });
+    document.getElementById('blockDayConfirmBtn').addEventListener('click', function(){
+      if(!pendingBlockDay) return;
+      var day = pendingBlockDay;
+      var reason = document.getElementById('blockReasonInput').value.trim();
+      var isFull = document.getElementById('scopeFull').checked;
+      var errorEl = document.getElementById('blockDayError');
+
+      var data = { reason: reason, ts: Date.now(), fullDay: isFull };
+      var logText;
+
+      if(isFull){
+        logText = 'قفل يوم ' + day.weekday + ' ' + day.dateLabel + (reason ? ' — ' + reason : '');
+      } else {
+        var fromSlot = document.getElementById('blockFromSlot').value;
+        var toSlot = document.getElementById('blockToSlot').value;
+        if(SLOT_ORDER.indexOf(fromSlot) > SLOT_ORDER.indexOf(toSlot)){
+          errorEl.textContent = 'ميعاد "من" لازم يكون قبل ميعاد "لحد".';
+          return;
+        }
+        data.fromSlot = fromSlot;
+        data.toSlot = toSlot;
+        logText = 'قفل يوم ' + day.weekday + ' ' + day.dateLabel + ' من ' + SLOT_LABELS[fromSlot] + ' لحد ' + SLOT_LABELS[toSlot] + (reason ? ' — ' + reason : '');
+      }
+
+      firestoreDb.collection('blockedDays').doc(day.iso).set(data)
+        .then(function(){
+          logActivity('block_day', logText);
+          closeBlockDayModal();
+        })
+        .catch(function(err){ errorEl.textContent = 'حصل خطأ: ' + err.message; });
+    });
+
+    document.getElementById('editBookingClose').addEventListener('click', closeEditBookingModal);
+    document.getElementById('editBookingOverlay').addEventListener('click', function(e){
+      if(e.target.id === 'editBookingOverlay'){ closeEditBookingModal(); }
+    });
+    document.getElementById('editBookingSaveBtn').addEventListener('click', saveEditBooking);
+
     document.getElementById('tabTable').addEventListener('click', function(){ switchView('table'); });
     document.getElementById('tabCalendar').addEventListener('click', function(){ switchView('calendar'); });
     document.getElementById('tabAnalytics').addEventListener('click', function(){ switchView('analytics'); });
@@ -867,21 +1005,24 @@
     var wrap = document.getElementById('dayChips');
     wrap.innerHTML = '';
     upcomingDays.forEach(function(day){
-      var isBlocked = !!blockedDays[day.iso];
+      var info = blockedDays[day.iso];
+      var isFullyBlocked = !!info && info.fullDay !== false;
+      var isPartlyBlocked = !!info && info.fullDay === false;
       var chip = document.createElement('div');
-      chip.className = 'day-chip' + (isBlocked ? ' blocked' : '');
+      chip.className = 'day-chip' + (isFullyBlocked ? ' blocked' : isPartlyBlocked ? ' partial' : '');
       chip.style.cursor = 'pointer';
       chip.title = 'دوس هنا لعرض حجوزات ومرضى اليوم ده';
+      var extra = isPartlyBlocked ? '<span class="dc-partial">' + SLOT_LABELS[info.fromSlot] + ' - ' + SLOT_LABELS[info.toSlot] + '</span>' : '';
       chip.innerHTML =
         '<span class="dc-name">' + day.weekday + '</span>' +
-        '<span class="dc-date">' + day.dateLabel + '</span>';
+        '<span class="dc-date">' + day.dateLabel + '</span>' + extra;
       chip.addEventListener('click', function(e){
         if(e.target.tagName === 'BUTTON') return; // let the block/unblock button handle its own click
         showDayPatients(day);
       });
       var btn = document.createElement('button');
-      btn.textContent = isBlocked ? 'إلغاء القفل' : 'قفل اليوم';
-      btn.addEventListener('click', function(e){ e.stopPropagation(); toggleBlockDay(day, isBlocked); });
+      btn.textContent = (isFullyBlocked || isPartlyBlocked) ? 'إلغاء القفل' : 'قفل اليوم';
+      btn.addEventListener('click', function(e){ e.stopPropagation(); toggleBlockDay(day, isFullyBlocked || isPartlyBlocked); });
       chip.appendChild(btn);
       wrap.appendChild(chip);
     });
@@ -906,6 +1047,8 @@
     document.getElementById('tableView').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  var pendingBlockDay = null;
+
   function toggleBlockDay(day, isCurrentlyBlocked){
     if(isCurrentlyBlocked){
       if(!confirm('تأكيد فتح يوم ' + day.weekday + ' ' + day.dateLabel + ' تاني للحجز؟')) return;
@@ -913,15 +1056,53 @@
         .then(function(){ logActivity('unblock_day', 'فتح يوم ' + day.weekday + ' ' + day.dateLabel); })
         .catch(function(err){ alert('حصل خطأ: ' + err.message); });
     } else {
-      var reason = prompt('سبب القفل (اختياري) — ' + day.weekday + ' ' + day.dateLabel + ':', '');
-      if(reason === null) return; // cancelled
-      firestoreDb.collection('blockedDays').doc(day.iso).set({ reason: reason || '', ts: Date.now() })
-        .then(function(){ logActivity('block_day', 'قفل يوم ' + day.weekday + ' ' + day.dateLabel + (reason ? ' — ' + reason : '')); })
-        .catch(function(err){ alert('حصل خطأ: ' + err.message); });
+      openBlockDayModal(day);
     }
   }
 
+  function openBlockDayModal(day){
+    pendingBlockDay = day;
+    document.getElementById('blockDayLabel').textContent = day.weekday + ' ' + day.dateLabel;
+    document.getElementById('blockReasonInput').value = '';
+    document.getElementById('blockDayError').textContent = '';
+    document.getElementById('scopeFull').checked = true;
+    document.getElementById('blockRangeFields').style.display = 'none';
+
+    var fromSel = document.getElementById('blockFromSlot');
+    var toSel = document.getElementById('blockToSlot');
+    fromSel.innerHTML = '';
+    toSel.innerHTML = '';
+    SLOT_ORDER.forEach(function(sv){
+      var o1 = document.createElement('option');
+      o1.value = sv; o1.textContent = SLOT_LABELS[sv];
+      fromSel.appendChild(o1);
+      var o2 = document.createElement('option');
+      o2.value = sv; o2.textContent = SLOT_LABELS[sv];
+      toSel.appendChild(o2);
+    });
+    toSel.value = SLOT_ORDER[SLOT_ORDER.length - 1];
+
+    document.getElementById('blockDayOverlay').classList.add('open');
+  }
+  function closeBlockDayModal(){
+    document.getElementById('blockDayOverlay').classList.remove('open');
+    pendingBlockDay = null;
+  }
+
   // ---- Calendar view ----
+  function isSlotBlockedInfo(dayIso, slotValue){
+    var info = blockedDays[dayIso];
+    if(!info) return false;
+    if(info.fullDay === false){
+      var i = SLOT_ORDER.indexOf(slotValue);
+      var fromI = SLOT_ORDER.indexOf(info.fromSlot);
+      var toI = SLOT_ORDER.indexOf(info.toSlot);
+      if(fromI === -1 || toI === -1) return info;
+      return (i >= fromI && i <= toI) ? info : false;
+    }
+    return info; // whole day
+  }
+
   function renderCalendar(){
     var grid = document.getElementById('calGrid');
     if(!grid) return;
@@ -934,9 +1115,11 @@
     var corner = document.createElement('div');
     grid.appendChild(corner);
     upcomingDays.forEach(function(day){
-      var isBlocked = !!blockedDays[day.iso];
+      var info = blockedDays[day.iso];
+      var isFullyBlocked = !!info && info.fullDay !== false;
+      var isPartlyBlocked = !!info && info.fullDay === false;
       var head = document.createElement('div');
-      head.className = 'cal-head-cell' + (day.iso === t ? ' today' : '') + (isBlocked ? ' blocked-col' : '');
+      head.className = 'cal-head-cell' + (day.iso === t ? ' today' : '') + (isFullyBlocked ? ' blocked-col' : isPartlyBlocked ? ' partial-col' : '');
       head.innerHTML =
         '<span class="cal-day-name">' + day.weekday + '</span>' +
         '<span class="cal-day-date">' + day.dateLabel + '</span>';
@@ -955,15 +1138,16 @@
 
       upcomingDays.forEach(function(day){
         var cell = document.createElement('div');
-        var isBlocked = !!blockedDays[day.iso];
-        if(isBlocked){
+        var blockInfo = isSlotBlockedInfo(day.iso, slotValue);
+        if(blockInfo){
           cell.className = 'cal-cell blocked';
-          cell.title = day.weekday + ' ' + day.dateLabel + ' — اليوم مقفول' + (blockedDays[day.iso].reason ? ' (' + blockedDays[day.iso].reason + ')' : '');
+          cell.title = day.weekday + ' ' + day.dateLabel + ' — الميعاد ده مقفول' + (blockInfo.reason ? ' (' + blockInfo.reason + ')' : '');
         } else {
           var b = byKey[day.iso + '_' + slotValue];
           if(b){
-            cell.className = 'cal-cell ' + b.status;
-            cell.title = b.name + ' — ' + b.phone + ' — ' + (b.status === 'confirmed' ? 'مؤكد' : 'في الانتظار') + (b.notes ? '\nملاحظات: ' + b.notes : '');
+            cell.className = 'cal-cell ' + (b.status === 'no_show' ? 'noshow-cell' : b.status === 'awaiting' ? 'awaiting-cell' : b.status);
+            var statusLabel = b.status === 'confirmed' ? 'مؤكد' : b.status === 'no_show' ? 'لم يحضر' : b.status === 'awaiting' ? 'لسه ما أكدش' : 'في الانتظار';
+            cell.title = b.name + ' — ' + b.phone + ' — ' + statusLabel + (b.notes ? '\nملاحظات: ' + b.notes : '');
             cell.addEventListener('click', function(){ openCellDetails(b); });
           } else {
             cell.className = 'cal-cell';
@@ -981,7 +1165,7 @@
       'المريض: ' + b.name,
       'الموبايل: ' + b.phone,
       'الميعاد: ' + formatDateLabel(b.dayIso) + ' — ' + slotLabel,
-      'الحالة: ' + (b.status === 'confirmed' ? 'تم التأكيد' : 'في الانتظار'),
+      'الحالة: ' + (b.status === 'confirmed' ? 'تم التأكيد' : b.status === 'no_show' ? 'لم يحضر' : b.status === 'awaiting' ? 'لسه المريض ما أكدش' : 'في الانتظار'),
       'المصدر: ' + (b.bookedBy === 'staff' ? 'الفريق' : 'الموقع')
     ];
     if(b.notes) lines.push('ملاحظات: ' + b.notes);
@@ -1158,7 +1342,7 @@
     if(activityLog.length === 0){
       activityListEl.innerHTML = '<div class="empty-mini">لسه مفيش أي نشاط مسجل</div>';
     } else {
-      var iconMap = { confirm: '✅', cancel: '❌', block_day: '🔒', unblock_day: '🔓', notes: '📝', no_show: '🚫', backup: '💾' };
+      var iconMap = { confirm: '✅', cancel: '❌', block_day: '🔒', unblock_day: '🔓', notes: '📝', no_show: '🚫', backup: '💾', edit: '✏️' };
       activityLog.forEach(function(entry){
         var item = document.createElement('div');
         item.className = 'activity-item';
@@ -1237,8 +1421,8 @@
       if(b.dayIso === t) tr.className = 'is-today';
 
       var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
-      var badgeClass = b.status === 'confirmed' ? 'confirmed' : b.status === 'no_show' ? 'noshow' : 'pending';
-      var badgeText = b.status === 'confirmed' ? 'تم التأكيد' : b.status === 'no_show' ? 'لم يحضر' : 'في الانتظار';
+      var badgeClass = b.status === 'confirmed' ? 'confirmed' : b.status === 'no_show' ? 'noshow' : b.status === 'awaiting' ? 'awaiting' : 'pending';
+      var badgeText = b.status === 'confirmed' ? 'تم التأكيد' : b.status === 'no_show' ? 'لم يحضر' : b.status === 'awaiting' ? 'لسه المريض ما أكدش' : 'في الانتظار';
       var sourceText = b.bookedBy === 'staff' ? '👤 الفريق' : '🌐 الموقع';
 
       var waMsg = encodeURIComponent('مرحبًا ' + b.name + '، بخصوص حجزك يوم ' + formatDateLabel(b.dayIso) + ' الساعة ' + slotLabel + ' في عيادة د. أبانوب سليم.');
@@ -1270,7 +1454,7 @@
 
       var actions = tr.querySelector('.row-actions');
 
-      if(b.status === 'pending'){
+      if(b.status === 'pending' || b.status === 'awaiting'){
         var confirmBtn = document.createElement('button');
         confirmBtn.className = 'mini-btn confirm';
         confirmBtn.textContent = 'تأكيد';
@@ -1279,6 +1463,12 @@
       }
 
       if(b.status === 'confirmed'){
+        var awaitingBtn = document.createElement('button');
+        awaitingBtn.className = 'mini-btn awaiting';
+        awaitingBtn.textContent = 'لسه ما أكدش';
+        awaitingBtn.addEventListener('click', function(){ updateStatus(b.id, 'awaiting'); });
+        actions.appendChild(awaitingBtn);
+
         var noShowBtn = document.createElement('button');
         noShowBtn.className = 'mini-btn noshow';
         noShowBtn.textContent = 'لم يحضر';
@@ -1289,6 +1479,12 @@
         });
         actions.appendChild(noShowBtn);
       }
+
+      var editBtn = document.createElement('button');
+      editBtn.className = 'mini-btn edit';
+      editBtn.textContent = 'تعديل';
+      editBtn.addEventListener('click', function(){ openEditBookingModal(b); });
+      actions.appendChild(editBtn);
 
       var cancelBtn = document.createElement('button');
       cancelBtn.className = 'mini-btn cancel';
@@ -1344,6 +1540,55 @@
         logActivity('notes', 'تعديل ملاحظة حجز ' + b.name);
       })
       .catch(function(err){ alert('حصل خطأ أثناء حفظ الملاحظة: ' + err.message); });
+  }
+
+  var pendingEditBooking = null;
+
+  function openEditBookingModal(b){
+    pendingEditBooking = b;
+    var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
+    document.getElementById('editBookingSlotInfo').textContent = formatDateLabel(b.dayIso) + ' — ' + slotLabel;
+    document.getElementById('editNameInput').value = b.name;
+    document.getElementById('editPhoneInput').value = b.phone;
+    document.getElementById('editStatusInput').value = b.status;
+    document.getElementById('editBookingError').textContent = '';
+    document.getElementById('editBookingOverlay').classList.add('open');
+  }
+  function closeEditBookingModal(){
+    document.getElementById('editBookingOverlay').classList.remove('open');
+    pendingEditBooking = null;
+  }
+  function saveEditBooking(){
+    if(!pendingEditBooking) return;
+    var b = pendingEditBooking;
+    var name = document.getElementById('editNameInput').value.trim();
+    var phone = document.getElementById('editPhoneInput').value.trim();
+    var status = document.getElementById('editStatusInput').value;
+    var errorEl = document.getElementById('editBookingError');
+
+    if(name.length < 3){
+      errorEl.textContent = 'من فضلك اكتب اسم صحيح.';
+      return;
+    }
+    if(!/^01\d{9}$/.test(phone)){
+      errorEl.textContent = 'من فضلك اكتب رقم موبايل مصري صحيح (01xxxxxxxxx).';
+      return;
+    }
+
+    var changes = [];
+    if(name !== b.name) changes.push('الاسم');
+    if(phone !== b.phone) changes.push('رقم الموبايل');
+    if(status !== b.status) changes.push('الحالة');
+
+    firestoreDb.collection('bookings').doc(b.id).update({ name: name, phone: phone, status: status })
+      .then(function(){
+        if(changes.length){
+          var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
+          logActivity('edit', 'تعديل ' + changes.join(' و') + ' — حجز ' + name + ' — ' + formatDateLabel(b.dayIso) + ' ' + slotLabel);
+        }
+        closeEditBookingModal();
+      })
+      .catch(function(err){ errorEl.textContent = 'حصل خطأ: ' + err.message; });
   }
 
   function escapeHtml(s){
@@ -1417,7 +1662,7 @@
     var tomorrowIso = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth()+1).padStart(2,'0') + '-' + String(tomorrow.getDate()).padStart(2,'0');
 
     var dayInfo = upcomingDays.filter(function(d){ return d.iso === tomorrowIso; })[0];
-    var dayLabel = (dayInfo ? dayInfo.weekday + ' ' : '') + formatDateLabel(tomorrowIso);
+    var dayLabel = formatDateLabel(tomorrowIso);
     document.getElementById('reminderDateLabel').textContent = dayLabel;
 
     var bookings = allBookings
@@ -1470,7 +1715,7 @@
       .sort(function(a, b){ return a.slotValue < b.slotValue ? -1 : a.slotValue > b.slotValue ? 1 : 0; });
 
     var dayInfo = upcomingDays.filter(function(d){ return d.iso === targetIso; })[0];
-    var dayLabel = (dayInfo ? dayInfo.weekday + ' ' : '') + formatDateLabel(targetIso);
+    var dayLabel = formatDateLabel(targetIso);
     var isBlocked = !!blockedDays[targetIso];
     var logoSrc = document.querySelector('.topbar-brand img').src;
 
