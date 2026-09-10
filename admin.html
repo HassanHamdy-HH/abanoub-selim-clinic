@@ -131,6 +131,113 @@
   .btn-outline{background:#fff;color:var(--deep-teal);border:1px solid var(--line);}
   .btn-outline:hover{background:var(--pale-aqua);}
 
+  .view-tabs{display:flex;gap:6px;background:var(--pale-aqua);padding:4px;border-radius:10px;}
+  .view-tab{
+    padding:8px 16px;border-radius:8px;border:none;background:transparent;color:var(--ink-soft);
+    font-weight:700;font-size:.84rem;transition:background .2s ease, color .2s ease;
+  }
+  .view-tab.active{background:#fff;color:var(--deep-teal);box-shadow:0 2px 8px -2px rgba(11,59,71,.25);}
+
+  /* ---------- BLOCKED DAYS ---------- */
+  .blocked-days-card{
+    background:#fff;border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
+    border:1px solid var(--line);margin-bottom:20px;
+  }
+  .blocked-days-head{margin-bottom:14px;}
+  .blocked-days-head h3{font-size:1rem;margin-bottom:3px;}
+  .blocked-days-hint{font-size:.8rem;color:var(--ink-soft);}
+  .day-chips{display:flex;flex-wrap:wrap;gap:10px;}
+  .day-chip{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-width:78px;
+    background:var(--pale-aqua);
+  }
+  .day-chip.blocked{background:#FBEAEA;border-color:#F3C9C9;}
+  .day-chip .dc-name{font-size:.74rem;color:var(--ink-soft);font-weight:700;}
+  .day-chip .dc-date{font-family:'Tajawal',sans-serif;font-weight:800;color:var(--deep-teal);font-size:.95rem;}
+  .day-chip.blocked .dc-date{color:#C0392B;}
+  .day-chip button{
+    font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:999px;border:none;
+    background:#fff;color:var(--ink-soft);border:1px solid var(--line);
+  }
+  .day-chip.blocked button{background:#D64545;color:#fff;border-color:#D64545;}
+  .day-chip:not(.blocked) button:hover{background:var(--deep-teal);color:#fff;}
+
+  /* ---------- CALENDAR ---------- */
+  .calendar-card{
+    background:#fff;border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
+    border:1px solid var(--line);
+  }
+  .cal-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px;font-size:.8rem;color:var(--ink-soft);}
+  .cal-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .cal-dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .cal-dot.available{background:var(--pale-aqua);border:1px solid var(--line);}
+  .cal-dot.pending{background:var(--pending);}
+  .cal-dot.confirmed{background:var(--confirmed);}
+  .cal-dot.blocked{background:#D64545;}
+  .cal-scroll{overflow-x:auto;}
+  .cal-grid{display:grid;gap:4px;min-width:760px;}
+  .cal-head-cell{
+    text-align:center;font-size:.76rem;font-weight:700;color:var(--ink-soft);padding:6px 4px;
+  }
+  .cal-head-cell.today{color:var(--deep-teal);}
+  .cal-head-cell .cal-day-name{display:block;}
+  .cal-head-cell .cal-day-date{display:block;font-family:'Tajawal',sans-serif;font-weight:800;color:var(--deep-teal);font-size:.9rem;}
+  .cal-head-cell.blocked-col{color:#D64545;}
+  .cal-time-cell{
+    font-size:.74rem;color:var(--ink-soft);padding:6px 8px;white-space:nowrap;display:flex;align-items:center;
+  }
+  .cal-cell{
+    border-radius:6px;min-height:30px;background:var(--pale-aqua);border:1px solid var(--line);
+    cursor:default;transition:transform .1s ease;
+  }
+  .cal-cell.pending{background:var(--pending);border-color:var(--pending);cursor:pointer;}
+  .cal-cell.confirmed{background:var(--confirmed);border-color:var(--confirmed);cursor:pointer;}
+  .cal-cell.blocked{background:repeating-linear-gradient(45deg,#F3C9C9,#F3C9C9 4px,#FBEAEA 4px,#FBEAEA 8px);}
+  .cal-cell.pending:hover,.cal-cell.confirmed:hover{transform:scale(1.08);}
+
+  .notes-cell{max-width:160px;white-space:normal;font-size:.82rem;color:var(--ink-soft);}
+  .notes-btn{
+    background:var(--pale-aqua);border:none;width:30px;height:30px;border-radius:8px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--teal);
+  }
+  .notes-btn.has-notes{background:#FFF3E0;color:var(--gold-deep);}
+
+  /* ---------- ANALYTICS ---------- */
+  .analytics-stats{margin-bottom:20px;}
+  .chart-card{
+    background:#fff;border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);
+    border:1px solid var(--line);margin-bottom:18px;
+  }
+  .chart-card h3{font-size:1rem;margin-bottom:4px;}
+  .chart-hint{font-size:.8rem;color:var(--ink-soft);display:block;margin-bottom:14px;}
+  .bar-chart{display:flex;flex-direction:column;gap:10px;}
+  .bar-row{display:flex;align-items:center;gap:12px;}
+  .bar-row .bar-label{font-size:.82rem;color:var(--ink-soft);min-width:88px;flex:0 0 auto;}
+  .bar-row .bar-track{flex:1;background:var(--pale-aqua);border-radius:999px;height:22px;overflow:hidden;position:relative;}
+  .bar-row .bar-fill{
+    height:100%;background:linear-gradient(90deg, var(--teal), var(--aqua));border-radius:999px;
+    display:flex;align-items:center;justify-content:flex-end;padding-left:8px;min-width:26px;
+    transition:width .4s ease;
+  }
+  .bar-row .bar-count{font-size:.76rem;font-weight:800;color:#fff;}
+  .bar-row .bar-count.outside{color:var(--deep-teal);padding-right:6px;}
+
+  .activity-list{display:flex;flex-direction:column;gap:2px;max-height:360px;overflow-y:auto;}
+  .activity-item{
+    display:flex;align-items:flex-start;gap:12px;padding:10px 6px;border-bottom:1px solid var(--line);font-size:.85rem;
+  }
+  .activity-item:last-child{border-bottom:none;}
+  .activity-item .act-ic{
+    width:30px;height:30px;border-radius:8px;background:var(--pale-aqua);color:var(--teal);
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:.9rem;
+  }
+  .activity-item .act-body{flex:1;}
+  .activity-item .act-text{color:var(--ink);}
+  .activity-item .act-text strong{color:var(--deep-teal);}
+  .activity-item .act-meta{font-size:.74rem;color:var(--ink-soft);margin-top:2px;}
+  .empty-mini{padding:24px;text-align:center;color:var(--ink-soft);font-size:.85rem;}
+
   /* ---------- TABLE ---------- */
   .table-card{
     background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line);
@@ -191,6 +298,27 @@
     .stat-card{padding:16px;}
     .stat-card .stat-num{font-size:1.6rem;}
     .toolbar{flex-direction:column;align-items:stretch;}
+    .view-tabs{justify-content:center;}
+    .day-chip{min-width:64px;padding:8px 10px;}
+  }
+
+  /* ---------- PRINT: today's schedule ---------- */
+  .print-only{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printSchedule, #printSchedule *{visibility:visible;}
+    #printSchedule{
+      display:block;position:absolute;top:0;right:0;left:0;width:100%;padding:20px;
+    }
+    .print-head{text-align:center;margin-bottom:20px;border-bottom:2px solid #0B3B47;padding-bottom:14px;}
+    .print-head h1{font-family:'Tajawal',sans-serif;font-size:1.4rem;color:#0B3B47;margin-bottom:4px;}
+    .print-head p{color:#4A6067;font-size:.9rem;}
+    table.print-table{width:100%;border-collapse:collapse;}
+    table.print-table th{
+      text-align:right;padding:10px 12px;border-bottom:2px solid #0B3B47;font-size:.85rem;color:#0B3B47;
+    }
+    table.print-table td{padding:10px 12px;border-bottom:1px solid #DCE8E8;font-size:.9rem;}
+    .print-footer{margin-top:24px;text-align:center;font-size:.78rem;color:#4A6067;}
   }
 </style>
 </head>
@@ -263,12 +391,28 @@
         <option value="upcoming">القادمة فقط</option>
       </select>
       <div class="spacer"></div>
+      <div class="view-tabs">
+        <button class="view-tab active" id="tabTable">جدول</button>
+        <button class="view-tab" id="tabCalendar">تقويم</button>
+        <button class="view-tab" id="tabAnalytics">التحليلات</button>
+      </div>
+      <button class="btn btn-outline" id="printBtn">
+        🖨️ طباعة جدول اليوم
+      </button>
       <button class="btn btn-outline" id="exportBtn">
         تصدير CSV
       </button>
     </div>
 
-    <div class="table-card">
+    <div class="blocked-days-card" id="blockedDaysCard">
+      <div class="blocked-days-head">
+        <h3>إدارة أيام العمل</h3>
+        <span class="blocked-days-hint">اقفل أي يوم مش هيكون فيه عمل (إجازة، مناسبة...) عشان محدش يقدر يحجز فيه</span>
+      </div>
+      <div class="day-chips" id="dayChips"></div>
+    </div>
+
+    <div class="table-card" id="tableView">
       <div class="table-wrap">
         <table class="bookings">
           <thead>
@@ -278,6 +422,8 @@
               <th>اسم المريض</th>
               <th>رقم الموبايل</th>
               <th>الحالة</th>
+              <th>المصدر</th>
+              <th>ملاحظات</th>
               <th>الإجراءات</th>
             </tr>
           </thead>
@@ -291,9 +437,83 @@
         <p>جرّب تغيّر الفلتر أو كلمة البحث</p>
       </div>
     </div>
+
+    <div class="calendar-card" id="calendarView" style="display:none;">
+      <div class="cal-legend">
+        <span><i class="cal-dot available"></i> متاح</span>
+        <span><i class="cal-dot pending"></i> في الانتظار</span>
+        <span><i class="cal-dot confirmed"></i> مؤكد</span>
+        <span><i class="cal-dot blocked"></i> اليوم مقفول</span>
+      </div>
+      <div class="cal-scroll">
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </div>
+
+    <div class="analytics-view" id="analyticsView" style="display:none;">
+      <div class="stats-grid analytics-stats">
+        <div class="stat-card today">
+          <div class="stat-ic">🔥</div>
+          <div class="stat-num" id="statBusiestDay">–</div>
+          <div class="stat-label">أكتر يوم زحمة</div>
+        </div>
+        <div class="stat-card pending">
+          <div class="stat-ic">⏰</div>
+          <div class="stat-num" id="statBusiestTime">–</div>
+          <div class="stat-label">أكتر وقت مطلوب</div>
+        </div>
+        <div class="stat-card confirmed">
+          <div class="stat-ic">✅</div>
+          <div class="stat-num" id="statConfirmRate">–</div>
+          <div class="stat-label">نسبة التأكيد</div>
+        </div>
+        <div class="stat-card week">
+          <div class="stat-ic">📆</div>
+          <div class="stat-num" id="statMonthTotal">–</div>
+          <div class="stat-label">حجوزات الشهر ده</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>الحجوزات حسب يوم الأسبوع</h3>
+        <div class="bar-chart" id="chartWeekday"></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>أكتر المواعيد طلبًا</h3>
+        <div class="bar-chart" id="chartSlots"></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>سجل النشاط الأخير</h3>
+        <span class="chart-hint">آخر الإجراءات اللي تمت من لوحة التحكم، ومين عملها</span>
+        <div class="activity-list" id="activityList"></div>
+      </div>
+    </div>
   </main>
 
   <footer class="foot-note">لوحة تحكم داخلية — عيادة د. أبانوب سليم لطب الأسنان</footer>
+</div>
+
+<div id="printSchedule" class="print-only">
+  <div class="print-head">
+    <h1 id="printTitle">جدول مواعيد اليوم</h1>
+    <p id="printDate"></p>
+  </div>
+  <table class="print-table">
+    <thead>
+      <tr>
+        <th>الساعة</th>
+        <th>اسم المريض</th>
+        <th>رقم الموبايل</th>
+        <th>الحالة</th>
+        <th>ملاحظات</th>
+      </tr>
+    </thead>
+    <tbody id="printBody"></tbody>
+  </table>
+  <p id="printEmpty" style="display:none;">مفيش أي حجوزات النهاردة.</p>
+  <p class="print-footer">عيادة د. أبانوب سليم لطب الأسنان — طُبع بتاريخ <span id="printStamp"></span></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -321,12 +541,30 @@
   var STAFF_PIN = "2026";
 
   var WEEKDAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var SLOT_ORDER = ['14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'];
   var SLOT_LABELS = {
     '14:00':'2:00 ظ', '14:30':'2:30 ظ', '15:00':'3:00 ظ', '15:30':'3:30 ظ',
     '16:00':'4:00 ظ', '16:30':'4:30 ظ', '17:00':'5:00 م', '17:30':'5:30 م',
     '18:00':'6:00 م', '18:30':'6:30 م', '19:00':'7:00 م', '19:30':'7:30 م',
     '20:00':'8:00 م', '20:30':'8:30 م', '21:00':'9:00 م', '21:30':'9:30 م'
   };
+
+  function buildUpcomingDays(n){
+    var days = [];
+    var d = new Date();
+    while(days.length < n){
+      if(d.getDay() !== 5){ // skip Friday (closed)
+        var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        days.push({
+          iso: iso,
+          weekday: WEEKDAY_NAMES[d.getDay()],
+          dateLabel: d.getDate() + '/' + (d.getMonth()+1)
+        });
+      }
+      d = new Date(d.getTime() + 24*60*60*1000);
+    }
+    return days;
+  }
 
   function todayIso(){
     var d = new Date();
@@ -353,6 +591,7 @@
         gate.style.display = 'none';
         app.classList.add('show');
         sessionStorage.setItem('clinicAdminUnlocked', '1');
+        ensureStaffName();
         initDashboard();
       } else {
         error.textContent = 'الكود غير صحيح، حاول تاني.';
@@ -374,13 +613,37 @@
     if(sessionStorage.getItem('clinicAdminUnlocked') === '1'){
       gate.style.display = 'none';
       app.classList.add('show');
+      ensureStaffName();
       initDashboard();
     }
   })();
 
+  // ---- Staff identity (for the activity log) ----
+  function ensureStaffName(){
+    if(!sessionStorage.getItem('staffName')){
+      var name = prompt('اسمك (عشان يتسجل في سجل النشاط):', '');
+      sessionStorage.setItem('staffName', (name && name.trim()) ? name.trim() : 'الفريق');
+    }
+  }
+  function getStaffName(){
+    return sessionStorage.getItem('staffName') || 'الفريق';
+  }
+  function logActivity(action, text){
+    if(!firestoreDb) return;
+    firestoreDb.collection('activityLog').add({
+      action: action,
+      text: text,
+      staffName: getStaffName(),
+      ts: Date.now()
+    }).catch(function(err){ console.warn('Could not write activity log.', err); });
+  }
+
   // ---- Dashboard ----
   var dashboardStarted = false;
-  var allBookings = []; // [{id, dayIso, slotValue, name, phone, status, ts}]
+  var allBookings = []; // [{id, dayIso, slotValue, name, phone, status, bookedBy, notes, ts}]
+  var blockedDays = {}; // { dayIso: { reason, ts } }
+  var activityLog = []; // [{action, text, staffName, ts}]
+  var upcomingDays = buildUpcomingDays(14);
 
   function initDashboard(){
     if(dashboardStarted) return;
@@ -405,6 +668,8 @@
           name: data.name || '',
           phone: data.phone || '',
           status: data.status || 'pending',
+          bookedBy: data.bookedBy || 'patient',
+          notes: data.notes || '',
           ts: data.ts || 0
         });
       });
@@ -415,15 +680,41 @@
       });
       renderStats();
       renderTable();
+      renderCalendar();
     }, function(err){
       console.warn('Firestore listener error on admin dashboard.', err);
       document.getElementById('loadingState').textContent = 'حصل خطأ في تحميل الحجوزات.';
+    });
+
+    firestoreDb.collection('blockedDays').onSnapshot(function(snap){
+      blockedDays = {};
+      snap.forEach(function(doc){
+        blockedDays[doc.id] = doc.data();
+      });
+      renderDayChips();
+      renderCalendar();
+      renderAnalytics();
+    }, function(err){
+      console.warn('Firestore listener error for blockedDays.', err);
+    });
+
+    firestoreDb.collection('activityLog').orderBy('ts', 'desc').limit(30).onSnapshot(function(snap){
+      activityLog = [];
+      snap.forEach(function(doc){ activityLog.push(doc.data()); });
+      renderAnalytics();
+    }, function(err){
+      console.warn('Firestore listener error for activityLog.', err);
     });
 
     document.getElementById('searchInput').addEventListener('input', renderTable);
     document.getElementById('statusFilter').addEventListener('change', renderTable);
     document.getElementById('dateFilter').addEventListener('change', renderTable);
     document.getElementById('exportBtn').addEventListener('click', exportCsv);
+    document.getElementById('printBtn').addEventListener('click', printTodaySchedule);
+
+    document.getElementById('tabTable').addEventListener('click', function(){ switchView('table'); });
+    document.getElementById('tabCalendar').addEventListener('click', function(){ switchView('calendar'); });
+    document.getElementById('tabAnalytics').addEventListener('click', function(){ switchView('analytics'); });
   }
 
   function renderStats(){
@@ -437,6 +728,245 @@
     document.getElementById('statPending').textContent = pending;
     document.getElementById('statConfirmed').textContent = confirmed;
     document.getElementById('statTotal').textContent = total;
+  }
+
+  // ---- View switching (table / calendar) ----
+  function switchView(view){
+    var tableEl = document.getElementById('tableView');
+    var calEl = document.getElementById('calendarView');
+    var analyticsEl = document.getElementById('analyticsView');
+    var tabTable = document.getElementById('tabTable');
+    var tabCal = document.getElementById('tabCalendar');
+    var tabAnalytics = document.getElementById('tabAnalytics');
+
+    tableEl.style.display = 'none';
+    calEl.style.display = 'none';
+    analyticsEl.style.display = 'none';
+    tabTable.classList.remove('active');
+    tabCal.classList.remove('active');
+    tabAnalytics.classList.remove('active');
+
+    if(view === 'calendar'){
+      calEl.style.display = 'block';
+      tabCal.classList.add('active');
+    } else if(view === 'analytics'){
+      analyticsEl.style.display = 'block';
+      tabAnalytics.classList.add('active');
+      renderAnalytics();
+    } else {
+      tableEl.style.display = '';
+      tabTable.classList.add('active');
+    }
+  }
+
+  // ---- Blocked days ----
+  function renderDayChips(){
+    var wrap = document.getElementById('dayChips');
+    wrap.innerHTML = '';
+    upcomingDays.forEach(function(day){
+      var isBlocked = !!blockedDays[day.iso];
+      var chip = document.createElement('div');
+      chip.className = 'day-chip' + (isBlocked ? ' blocked' : '');
+      chip.innerHTML =
+        '<span class="dc-name">' + day.weekday + '</span>' +
+        '<span class="dc-date">' + day.dateLabel + '</span>';
+      var btn = document.createElement('button');
+      btn.textContent = isBlocked ? 'إلغاء القفل' : 'قفل اليوم';
+      btn.addEventListener('click', function(){ toggleBlockDay(day, isBlocked); });
+      chip.appendChild(btn);
+      wrap.appendChild(chip);
+    });
+  }
+
+  function toggleBlockDay(day, isCurrentlyBlocked){
+    if(isCurrentlyBlocked){
+      if(!confirm('تأكيد فتح يوم ' + day.weekday + ' ' + day.dateLabel + ' تاني للحجز؟')) return;
+      firestoreDb.collection('blockedDays').doc(day.iso).delete()
+        .then(function(){ logActivity('unblock_day', 'فتح يوم ' + day.weekday + ' ' + day.dateLabel); })
+        .catch(function(err){ alert('حصل خطأ: ' + err.message); });
+    } else {
+      var reason = prompt('سبب القفل (اختياري) — ' + day.weekday + ' ' + day.dateLabel + ':', '');
+      if(reason === null) return; // cancelled
+      firestoreDb.collection('blockedDays').doc(day.iso).set({ reason: reason || '', ts: Date.now() })
+        .then(function(){ logActivity('block_day', 'قفل يوم ' + day.weekday + ' ' + day.dateLabel + (reason ? ' — ' + reason : '')); })
+        .catch(function(err){ alert('حصل خطأ: ' + err.message); });
+    }
+  }
+
+  // ---- Calendar view ----
+  function renderCalendar(){
+    var grid = document.getElementById('calGrid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = '70px repeat(' + upcomingDays.length + ', 1fr)';
+
+    var t = todayIso();
+
+    // header row
+    var corner = document.createElement('div');
+    grid.appendChild(corner);
+    upcomingDays.forEach(function(day){
+      var isBlocked = !!blockedDays[day.iso];
+      var head = document.createElement('div');
+      head.className = 'cal-head-cell' + (day.iso === t ? ' today' : '') + (isBlocked ? ' blocked-col' : '');
+      head.innerHTML =
+        '<span class="cal-day-name">' + day.weekday + '</span>' +
+        '<span class="cal-day-date">' + day.dateLabel + '</span>';
+      grid.appendChild(head);
+    });
+
+    // build a lookup for quick access
+    var byKey = {};
+    allBookings.forEach(function(b){ byKey[b.dayIso + '_' + b.slotValue] = b; });
+
+    SLOT_ORDER.forEach(function(slotValue){
+      var timeCell = document.createElement('div');
+      timeCell.className = 'cal-time-cell';
+      timeCell.textContent = SLOT_LABELS[slotValue];
+      grid.appendChild(timeCell);
+
+      upcomingDays.forEach(function(day){
+        var cell = document.createElement('div');
+        var isBlocked = !!blockedDays[day.iso];
+        if(isBlocked){
+          cell.className = 'cal-cell blocked';
+          cell.title = day.weekday + ' ' + day.dateLabel + ' — اليوم مقفول' + (blockedDays[day.iso].reason ? ' (' + blockedDays[day.iso].reason + ')' : '');
+        } else {
+          var b = byKey[day.iso + '_' + slotValue];
+          if(b){
+            cell.className = 'cal-cell ' + b.status;
+            cell.title = b.name + ' — ' + b.phone + ' — ' + (b.status === 'confirmed' ? 'مؤكد' : 'في الانتظار') + (b.notes ? '\nملاحظات: ' + b.notes : '');
+            cell.addEventListener('click', function(){ openCellDetails(b); });
+          } else {
+            cell.className = 'cal-cell';
+            cell.title = day.weekday + ' ' + day.dateLabel + ' — ' + SLOT_LABELS[slotValue] + ' — متاح';
+          }
+        }
+        grid.appendChild(cell);
+      });
+    });
+  }
+
+  function openCellDetails(b){
+    var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
+    var lines = [
+      'المريض: ' + b.name,
+      'الموبايل: ' + b.phone,
+      'الميعاد: ' + formatDateLabel(b.dayIso) + ' — ' + slotLabel,
+      'الحالة: ' + (b.status === 'confirmed' ? 'تم التأكيد' : 'في الانتظار'),
+      'المصدر: ' + (b.bookedBy === 'staff' ? 'الفريق' : 'الموقع')
+    ];
+    if(b.notes) lines.push('ملاحظات: ' + b.notes);
+    var msg = lines.join('\n') + '\n\nاختر إجراء:\n- اكتب "تأكيد" للتأكيد\n- اكتب "إلغاء" للإلغاء\n- سيب فاضي وألغِ للخروج';
+    var action = prompt(msg, '');
+    if(action === null) return;
+    action = action.trim();
+    if(action === 'تأكيد' && b.status !== 'confirmed'){
+      updateStatus(b.id, 'confirmed');
+    } else if(action === 'إلغاء'){
+      if(confirm('تأكيد إلغاء حجز ' + b.name + '؟')){ deleteBooking(b.id); }
+    }
+  }
+
+  function renderAnalytics(){
+    var chartWeekday = document.getElementById('chartWeekday');
+    var chartSlots = document.getElementById('chartSlots');
+    var activityListEl = document.getElementById('activityList');
+    if(!chartWeekday || !chartSlots || !activityListEl) return;
+
+    // ---- Busiest weekday / time slot / confirm rate / month total ----
+    var weekdayCounts = [0,0,0,0,0,0,0]; // index = getDay()
+    var slotCounts = {};
+    var confirmedCount = 0, pendingCount = 0;
+    var now = new Date();
+    var monthTotal = 0;
+
+    allBookings.forEach(function(b){
+      var parts = b.dayIso.split('-').map(Number);
+      var d = new Date(parts[0], parts[1]-1, parts[2]);
+      weekdayCounts[d.getDay()]++;
+      slotCounts[b.slotValue] = (slotCounts[b.slotValue] || 0) + 1;
+      if(b.status === 'confirmed') confirmedCount++;
+      else pendingCount++;
+      if(parts[0] === now.getFullYear() && parts[1]-1 === now.getMonth()) monthTotal++;
+    });
+
+    var maxWeekdayIdx = 0;
+    for(var i=1;i<7;i++){ if(weekdayCounts[i] > weekdayCounts[maxWeekdayIdx]) maxWeekdayIdx = i; }
+    document.getElementById('statBusiestDay').textContent =
+      weekdayCounts.some(function(c){ return c>0; }) ? WEEKDAY_NAMES[maxWeekdayIdx] : '–';
+
+    var topSlot = null, topSlotCount = 0;
+    Object.keys(slotCounts).forEach(function(sv){
+      if(slotCounts[sv] > topSlotCount){ topSlotCount = slotCounts[sv]; topSlot = sv; }
+    });
+    document.getElementById('statBusiestTime').textContent = topSlot ? SLOT_LABELS[topSlot] : '–';
+
+    var totalStatused = confirmedCount + pendingCount;
+    document.getElementById('statConfirmRate').textContent = totalStatused
+      ? Math.round((confirmedCount / totalStatused) * 100) + '%' : '–';
+
+    document.getElementById('statMonthTotal').textContent = monthTotal;
+
+    // ---- Weekday bar chart (Sat -> Thu, skipping Friday: always closed) ----
+    var order = [6,0,1,2,3,4]; // Sat, Sun, Mon, Tue, Wed, Thu
+    var maxWeekday = Math.max.apply(null, order.map(function(idx){ return weekdayCounts[idx]; }).concat([1]));
+    chartWeekday.innerHTML = '';
+    order.forEach(function(idx){
+      chartWeekday.appendChild(buildBarRow(WEEKDAY_NAMES[idx], weekdayCounts[idx], maxWeekday));
+    });
+
+    // ---- Top time slots bar chart ----
+    var slotEntries = SLOT_ORDER.map(function(sv){ return { sv: sv, count: slotCounts[sv] || 0 }; })
+      .filter(function(e){ return e.count > 0; })
+      .sort(function(a,b){ return b.count - a.count; })
+      .slice(0, 8);
+    chartSlots.innerHTML = '';
+    if(slotEntries.length === 0){
+      chartSlots.innerHTML = '<div class="empty-mini">مفيش بيانات كفاية لسه</div>';
+    } else {
+      var maxSlot = Math.max.apply(null, slotEntries.map(function(e){ return e.count; }));
+      slotEntries.forEach(function(e){
+        chartSlots.appendChild(buildBarRow(SLOT_LABELS[e.sv], e.count, maxSlot));
+      });
+    }
+
+    // ---- Activity log ----
+    activityListEl.innerHTML = '';
+    if(activityLog.length === 0){
+      activityListEl.innerHTML = '<div class="empty-mini">لسه مفيش أي نشاط مسجل</div>';
+    } else {
+      var iconMap = { confirm: '✅', cancel: '❌', block_day: '🔒', unblock_day: '🔓', notes: '📝' };
+      activityLog.forEach(function(entry){
+        var item = document.createElement('div');
+        item.className = 'activity-item';
+        var dt = new Date(entry.ts);
+        var timeStr = dt.getDate() + '/' + (dt.getMonth()+1) + ' — ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0');
+        item.innerHTML =
+          '<span class="act-ic">' + (iconMap[entry.action] || '•') + '</span>' +
+          '<span class="act-body">' +
+            '<span class="act-text">' + escapeHtml(entry.text || '') + '</span>' +
+            '<span class="act-meta">' + escapeHtml(entry.staffName || 'الفريق') + ' — ' + timeStr + '</span>' +
+          '</span>';
+        activityListEl.appendChild(item);
+      });
+    }
+  }
+
+  function buildBarRow(label, count, max){
+    var row = document.createElement('div');
+    row.className = 'bar-row';
+    var pct = max > 0 ? Math.max(6, Math.round((count / max) * 100)) : 0;
+    var showInside = pct > 18;
+    row.innerHTML =
+      '<span class="bar-label">' + escapeHtml(label) + '</span>' +
+      '<span class="bar-track">' +
+        '<span class="bar-fill" style="width:' + pct + '%">' +
+          (showInside ? '<span class="bar-count">' + count + '</span>' : '') +
+        '</span>' +
+        (showInside ? '' : '<span class="bar-count outside" style="position:absolute;right:' + pct + '%;top:0;line-height:22px;">' + count + '</span>') +
+      '</span>';
+    return row;
   }
 
   function getFiltered(){
@@ -480,6 +1010,7 @@
       var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
       var badgeClass = b.status === 'confirmed' ? 'confirmed' : 'pending';
       var badgeText = b.status === 'confirmed' ? 'تم التأكيد' : 'في الانتظار';
+      var sourceText = b.bookedBy === 'staff' ? '👤 الفريق' : '🌐 الموقع';
 
       var waMsg = encodeURIComponent('مرحبًا ' + b.name + '، بخصوص حجزك يوم ' + formatDateLabel(b.dayIso) + ' الساعة ' + slotLabel + ' في عيادة د. أبانوب سليم.');
       var waPhone = b.phone.replace(/^0/, '20');
@@ -490,7 +1021,23 @@
         '<td class="name-cell">' + escapeHtml(b.name) + '</td>' +
         '<td class="phone-cell">' + escapeHtml(b.phone) + '</td>' +
         '<td><span class="badge ' + badgeClass + '"><span class="dot"></span>' + badgeText + '</span></td>' +
+        '<td>' + sourceText + '</td>' +
+        '<td class="notes-cell"></td>' +
         '<td><div class="row-actions"></div></td>';
+
+      var notesCell = tr.querySelector('.notes-cell');
+      var notesBtn = document.createElement('button');
+      notesBtn.className = 'notes-btn' + (b.notes ? ' has-notes' : '');
+      notesBtn.title = b.notes ? b.notes : 'إضافة ملاحظة';
+      notesBtn.textContent = '📝';
+      notesBtn.addEventListener('click', function(){ editNotes(b); });
+      notesCell.appendChild(notesBtn);
+      if(b.notes){
+        var notesPreview = document.createElement('span');
+        notesPreview.style.marginRight = '6px';
+        notesPreview.textContent = b.notes.length > 30 ? b.notes.slice(0, 30) + '…' : b.notes;
+        notesCell.appendChild(notesPreview);
+      }
 
       var actions = tr.querySelector('.row-actions');
 
@@ -525,12 +1072,33 @@
   }
 
   function updateStatus(id, status){
+    var b = allBookings.filter(function(x){ return x.id === id; })[0];
     firestoreDb.collection('bookings').doc(id).update({ status: status })
+      .then(function(){
+        if(status === 'confirmed' && b){
+          logActivity('confirm', 'تأكيد حجز ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue));
+        }
+      })
       .catch(function(err){ alert('حصل خطأ أثناء التحديث: ' + err.message); });
   }
   function deleteBooking(id){
+    var b = allBookings.filter(function(x){ return x.id === id; })[0];
     firestoreDb.collection('bookings').doc(id).delete()
+      .then(function(){
+        if(b){
+          logActivity('cancel', 'إلغاء حجز ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue));
+        }
+      })
       .catch(function(err){ alert('حصل خطأ أثناء الحذف: ' + err.message); });
+  }
+  function editNotes(b){
+    var note = prompt('ملاحظات على حجز ' + b.name + ':', b.notes || '');
+    if(note === null) return;
+    firestoreDb.collection('bookings').doc(b.id).update({ notes: note })
+      .then(function(){
+        logActivity('notes', 'تعديل ملاحظة حجز ' + b.name);
+      })
+      .catch(function(err){ alert('حصل خطأ أثناء حفظ الملاحظة: ' + err.message); });
   }
 
   function escapeHtml(s){
@@ -541,12 +1109,13 @@
 
   function exportCsv(){
     var rows = getFiltered();
-    var header = ['Date','Time','Name','Phone','Status'];
+    var header = ['Date','Time','Name','Phone','Status','Source'];
     var lines = [header.join(',')];
     rows.forEach(function(b){
       var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
       var status = b.status === 'confirmed' ? 'Confirmed' : 'Pending';
-      var line = [b.dayIso, slotLabel, '"' + b.name.replace(/"/g,'""') + '"', b.phone, status].join(',');
+      var source = b.bookedBy === 'staff' ? 'Staff' : 'Website';
+      var line = [b.dayIso, slotLabel, '"' + b.name.replace(/"/g,'""') + '"', b.phone, status, source].join(',');
       lines.push(line);
     });
     var csv = '\uFEFF' + lines.join('\n');
@@ -559,6 +1128,50 @@
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  function printTodaySchedule(){
+    var t = todayIso();
+    var todaysBookings = allBookings
+      .filter(function(b){ return b.dayIso === t; })
+      .sort(function(a, b){ return a.slotValue < b.slotValue ? -1 : a.slotValue > b.slotValue ? 1 : 0; });
+
+    var dayInfo = upcomingDays.filter(function(d){ return d.iso === t; })[0];
+    var isBlocked = !!blockedDays[t];
+
+    document.getElementById('printTitle').textContent = 'جدول مواعيد اليوم';
+    document.getElementById('printDate').textContent =
+      (dayInfo ? dayInfo.weekday + ' ' : '') + formatDateLabel(t) +
+      (isBlocked ? ' — العيادة مقفولة النهاردة' : '');
+
+    var body = document.getElementById('printBody');
+    var emptyMsg = document.getElementById('printEmpty');
+    body.innerHTML = '';
+
+    if(todaysBookings.length === 0){
+      emptyMsg.style.display = 'block';
+    } else {
+      emptyMsg.style.display = 'none';
+      todaysBookings.forEach(function(b){
+        var tr = document.createElement('tr');
+        var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
+        var statusText = b.status === 'confirmed' ? 'مؤكد' : 'في الانتظار';
+        tr.innerHTML =
+          '<td>' + slotLabel + '</td>' +
+          '<td>' + escapeHtml(b.name) + '</td>' +
+          '<td>' + escapeHtml(b.phone) + '</td>' +
+          '<td>' + statusText + '</td>' +
+          '<td>' + escapeHtml(b.notes || '') + '</td>';
+        body.appendChild(tr);
+      });
+    }
+
+    var now = new Date();
+    document.getElementById('printStamp').textContent =
+      now.getDate() + '/' + (now.getMonth()+1) + '/' + now.getFullYear() + ' — ' +
+      String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+    window.print();
   }
 </script>
 </body>
