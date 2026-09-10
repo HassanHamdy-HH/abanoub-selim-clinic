@@ -457,13 +457,20 @@
   .day-tab.active .dt-name{color:#B9D9DB;}
   .day-tab.active .dt-date{color:#fff;}
   .day-tab.day-closed{opacity:.6;}
+  .day-tab.day-partial{opacity:.85;}
   .dt-closed-tag{
     display:block;margin-top:3px;font-size:.66rem;font-weight:800;color:#D64545;
     background:rgba(214,69,69,.12);border-radius:999px;padding:1px 8px;
   }
+  .dt-partial-tag{color:var(--gold-deep);background:rgba(217,164,65,.14);}
   .day-closed-msg{
     grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--ink-soft);
     background:var(--pale-aqua);border-radius:14px;font-weight:600;
+  }
+  .day-partial-msg{
+    grid-column:1/-1;text-align:center;padding:14px 18px;color:var(--gold-deep);
+    background:rgba(217,164,65,.1);border-radius:12px;font-weight:600;font-size:.86rem;
+    margin-bottom:14px;
   }
 
   .chairs-legend{
@@ -503,6 +510,9 @@
   .seat-btn.pending:hover{transform:translateY(-3px);box-shadow:0 0 0 3px rgba(224,169,69,.2);}
   .seat-btn.booked{color:#DD5353;opacity:.75;cursor:pointer;}
   .seat-btn.booked:hover{transform:translateY(-2px);box-shadow:0 0 0 3px rgba(221,83,83,.18);}
+  .seat-btn.awaiting-status{color:#3F6FA8;opacity:.85;cursor:pointer;}
+  .seat-btn.awaiting-status .seat-time{color:#3F6FA8;}
+  .seat-btn.awaiting-status:hover{transform:translateY(-2px);box-shadow:0 0 0 3px rgba(79,133,199,.2);}
   .seat-btn.past{color:var(--ink-soft);opacity:.4;cursor:not-allowed;}
   .seat-btn.past .seat-time{color:var(--ink-soft);}
   .seat-btn.past-staff{opacity:.7;cursor:pointer;border-style:dashed;border-color:var(--gold);}
@@ -1167,6 +1177,7 @@
     <div class="chairs-legend">
       <span><i class="chair-dot available"></i> متاح</span>
       <span><i class="chair-dot pending"></i> محجوز (لسه ماتأكدش)</span>
+      <span><i class="chair-dot" style="background:#3F6FA8;"></i> لسه المريض ما أكدش</span>
       <span><i class="chair-dot booked"></i> تم التأكيد</span>
       <span><i class="chair-dot" style="background:var(--ink-soft);opacity:.5;"></i> فات معاده</span>
     </div>
@@ -1234,6 +1245,7 @@
     </div>
 
     <button class="cta-btn gold" id="finalConfirmBtn" style="width:100%;justify-content:center;">تأكيد الحجز نهائيًا</button>
+    <button class="cta-btn" id="awaitingBtn" style="width:100%;justify-content:center;margin-top:10px;background:rgba(79,133,199,.12);border:1px solid rgba(79,133,199,.3);color:#3F6FA8;">لسه المريض ما أكدش</button>
     <button class="cta-btn" id="cancelBookingBtn" style="width:100%;justify-content:center;margin-top:10px;background:transparent;border:1px solid var(--line);color:var(--ink-soft);">إلغاء الحجز وإفراغ الكرسي</button>
     <p class="modal-hint">دوس "تأكيد الحجز نهائيًا" بعد ما المريض يوصل العيادة أو يأكد معاك على واتساب.</p>
   </div>
@@ -1526,6 +1538,7 @@
     var confirmPatientName = document.getElementById('confirmPatientName');
     var confirmPatientPhone = document.getElementById('confirmPatientPhone');
     var finalConfirmBtn = document.getElementById('finalConfirmBtn');
+    var awaitingBtn = document.getElementById('awaitingBtn');
     var cancelBookingBtn = document.getElementById('cancelBookingBtn');
 
     var staffPinOverlay = document.getElementById('staffPinOverlay');
@@ -1594,6 +1607,21 @@
 
     function bookingKey(dayIso, slotValue){
       return dayIso + '_' + slotValue;
+    }
+
+    var SLOT_ORDER = SLOTS.map(function(s){ return s.v; });
+
+    function isSlotBlocked(day, slot){
+      var info = blockedDaysCache[day.iso];
+      if(!info) return false;
+      if(info.fullDay === false){
+        var i = SLOT_ORDER.indexOf(slot.v);
+        var fromI = SLOT_ORDER.indexOf(info.fromSlot);
+        var toI = SLOT_ORDER.indexOf(info.toSlot);
+        if(fromI === -1 || toI === -1) return true; // malformed range: fail safe to blocked
+        return i >= fromI && i <= toI;
+      }
+      return true; // whole day blocked (default, and legacy entries with no fullDay field)
     }
 
     function watchBlockedDays(onChange){
@@ -1670,12 +1698,15 @@
     function renderDayTabs(){
       dayTabsEl.innerHTML = '';
       days.forEach(function(day, i){
-        var isBlocked = !!blockedDaysCache[day.iso];
+        var info = blockedDaysCache[day.iso];
+        var isFullyBlocked = !!info && info.fullDay !== false;
+        var isPartlyBlocked = !!info && info.fullDay === false;
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'day-tab' + (i === selectedDayIndex ? ' active' : '') + (isBlocked ? ' day-closed' : '');
-        btn.innerHTML = '<span class="dt-name">' + day.weekday + '</span><span class="dt-date">' + day.dateLabel + '</span>' +
-          (isBlocked ? '<span class="dt-closed-tag">مغلق</span>' : '');
+        btn.className = 'day-tab' + (i === selectedDayIndex ? ' active' : '') + (isFullyBlocked ? ' day-closed' : isPartlyBlocked ? ' day-partial' : '');
+        var tag = isFullyBlocked ? '<span class="dt-closed-tag">مغلق</span>' :
+          isPartlyBlocked ? '<span class="dt-closed-tag dt-partial-tag">مغلق جزئيًا</span>' : '';
+        btn.innerHTML = '<span class="dt-name">' + day.weekday + '</span><span class="dt-date">' + day.dateLabel + '</span>' + tag;
         btn.addEventListener('click', function(){
           selectedDayIndex = i;
           renderDayTabs();
@@ -1698,14 +1729,25 @@
     function renderChairs(){
       chairsGridEl.innerHTML = '';
       var day = days[selectedDayIndex];
+      var dayInfo = blockedDaysCache[day.iso];
 
-      if(blockedDaysCache[day.iso]){
+      if(dayInfo && dayInfo.fullDay !== false){
         var closedMsg = document.createElement('div');
         closedMsg.className = 'day-closed-msg';
-        var reason = blockedDaysCache[day.iso].reason;
+        var reason = dayInfo.reason;
         closedMsg.textContent = 'العيادة مغلقة يوم ' + day.weekday + ' ' + day.dateLabel + (reason ? ' — ' + reason : '') + '. اختار يوم تاني من فوق.';
         chairsGridEl.appendChild(closedMsg);
         return;
+      }
+
+      if(dayInfo && dayInfo.fullDay === false){
+        var fromLabel = SLOTS.filter(function(s){ return s.v === dayInfo.fromSlot; })[0];
+        var toLabel = SLOTS.filter(function(s){ return s.v === dayInfo.toSlot; })[0];
+        var partialMsg = document.createElement('div');
+        partialMsg.className = 'day-partial-msg';
+        partialMsg.textContent = 'العيادة مغلقة من ' + (fromLabel ? fromLabel.l : dayInfo.fromSlot) + ' لحد ' + (toLabel ? toLabel.l : dayInfo.toSlot) +
+          (dayInfo.reason ? ' — ' + dayInfo.reason : '') + '. باقي المواعيد متاحة عادي.';
+        chairsGridEl.appendChild(partialMsg);
       }
 
       SLOTS.forEach(function(slot, si){
@@ -1713,14 +1755,25 @@
         var entry = bookingsCache[key];
         var status = entry ? entry.status : 'available'; // available | pending | confirmed
         var past = status === 'available' && isPastSlot(day, slot);
+        var slotClosed = status === 'available' && isSlotBlocked(day, slot);
 
         var btn = document.createElement('button');
         btn.type = 'button';
         var pastStaffBookable = past && staffModeActive;
-        btn.className = 'seat-btn ' + (pastStaffBookable ? 'past past-staff' : past ? 'past' : status === 'confirmed' ? 'booked' : status === 'pending' ? 'pending' : 'available');
+        btn.className = 'seat-btn ' + (
+          slotClosed ? 'past' :
+          pastStaffBookable ? 'past past-staff' :
+          past ? 'past' :
+          status === 'confirmed' ? 'booked' :
+          status === 'awaiting' ? 'awaiting-status' :
+          status === 'pending' ? 'pending' : 'available'
+        );
         btn.innerHTML = CHAIR_SVG + '<span class="seat-time">' + slot.l + '</span>';
 
-        if(pastStaffBookable){
+        if(slotClosed){
+          btn.disabled = true;
+          btn.setAttribute('aria-label', slot.l + ' — العيادة مغلقة في الميعاد ده');
+        } else if(pastStaffBookable){
           btn.setAttribute('aria-label', slot.l + ' — فات معاده، دوس لتسجيل حجز فريق');
           btn.addEventListener('click', function(){
             selection = { dayIndex: selectedDayIndex, slotIndex: si };
@@ -1731,6 +1784,11 @@
           btn.setAttribute('aria-label', slot.l + ' — الميعاد ده فات معاده');
         } else if(status === 'confirmed'){
           btn.setAttribute('aria-label', slot.l + ' — تم التأكيد (اضغط لإلغائه)');
+          btn.addEventListener('click', function(){
+            openPinGate(day, slot, entry, si, key);
+          });
+        } else if(status === 'awaiting'){
+          btn.setAttribute('aria-label', slot.l + ' — لسه المريض ما أكدش (اضغط للإدارة)');
           btn.addEventListener('click', function(){
             openPinGate(day, slot, entry, si, key);
           });
@@ -1905,9 +1963,18 @@
       confirmPatientPhone.textContent = entry.phone;
       if(entry.status === 'confirmed'){
         finalConfirmBtn.style.display = 'none';
+        awaitingBtn.style.display = '';
+        awaitingBtn.textContent = 'لسه المريض ما أكدش';
         cancelBookingBtn.textContent = 'إلغاء الحجز المؤكد وإفراغ الكرسي';
+      } else if(entry.status === 'awaiting'){
+        finalConfirmBtn.style.display = '';
+        finalConfirmBtn.textContent = 'تأكيد الحجز نهائيًا';
+        awaitingBtn.style.display = 'none';
+        cancelBookingBtn.textContent = 'إلغاء الحجز وإفراغ الكرسي';
       } else {
         finalConfirmBtn.style.display = '';
+        finalConfirmBtn.textContent = 'تأكيد الحجز نهائيًا';
+        awaitingBtn.style.display = 'none';
         cancelBookingBtn.textContent = 'إلغاء الحجز وإفراغ الكرسي';
       }
       confirmOverlay.classList.add('open');
@@ -1925,6 +1992,16 @@
       if(!confirmSelection) return;
       updateBookingStatus(confirmSelection.key, 'confirmed')
         .catch(function(err){ console.warn('Could not confirm booking:', err); })
+        .then(function(){
+          closeConfirmModal();
+          if(!firebaseReady){ renderChairs(); }
+        });
+    });
+
+    awaitingBtn.addEventListener('click', function(){
+      if(!confirmSelection) return;
+      updateBookingStatus(confirmSelection.key, 'awaiting')
+        .catch(function(err){ console.warn('Could not update booking:', err); })
         .then(function(){
           closeConfirmModal();
           if(!firebaseReady){ renderChairs(); }
