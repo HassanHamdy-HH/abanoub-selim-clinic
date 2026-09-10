@@ -505,6 +505,9 @@
   .seat-btn.booked:hover{transform:translateY(-2px);box-shadow:0 0 0 3px rgba(221,83,83,.18);}
   .seat-btn.past{color:var(--ink-soft);opacity:.4;cursor:not-allowed;}
   .seat-btn.past .seat-time{color:var(--ink-soft);}
+  .seat-btn.past-staff{opacity:.7;cursor:pointer;border-style:dashed;border-color:var(--gold);}
+  .seat-btn.past-staff .seat-time{color:var(--gold-deep);}
+  .seat-btn.past-staff:hover{opacity:1;transform:translateY(-3px);box-shadow:0 0 0 3px rgba(217,164,65,.2);}
   .seat-btn.selected{color:var(--gold-deep);border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,164,65,.25);}
   .seat-btn.selected .seat-time{color:var(--gold-deep);}
 
@@ -1713,10 +1716,17 @@
 
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'seat-btn ' + (past ? 'past' : status === 'confirmed' ? 'booked' : status === 'pending' ? 'pending' : 'available');
+        var pastStaffBookable = past && staffModeActive;
+        btn.className = 'seat-btn ' + (pastStaffBookable ? 'past past-staff' : past ? 'past' : status === 'confirmed' ? 'booked' : status === 'pending' ? 'pending' : 'available');
         btn.innerHTML = CHAIR_SVG + '<span class="seat-time">' + slot.l + '</span>';
 
-        if(past){
+        if(pastStaffBookable){
+          btn.setAttribute('aria-label', slot.l + ' — فات معاده، دوس لتسجيل حجز فريق');
+          btn.addEventListener('click', function(){
+            selection = { dayIndex: selectedDayIndex, slotIndex: si };
+            openModal(day, slot, 'staff');
+          });
+        } else if(past){
           btn.disabled = true;
           btn.setAttribute('aria-label', slot.l + ' — الميعاد ده فات معاده');
         } else if(status === 'confirmed'){
@@ -1798,7 +1808,6 @@
         : { name: name, phone: phone, status: 'pending', bookedBy: 'patient', ts: Date.now() };
 
       setBooking(key, bookingData)
-        .catch(function(err){ console.warn('Could not save booking:', err); })
         .then(function(){
           confirmBtn.disabled = false;
           if(!firebaseReady){ renderChairs(); } // Firestore path re-renders via the live listener
@@ -1818,6 +1827,11 @@
 
           closeModal();
           window.open(waUrl, '_blank');
+        })
+        .catch(function(err){
+          console.warn('Could not save booking:', err);
+          confirmBtn.disabled = false;
+          modalError.textContent = 'حصل خطأ ومقدرناش نسجل الحجز. جرّب تاني أو كلّم العيادة مباشرة.';
         });
     });
 
