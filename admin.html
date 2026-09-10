@@ -238,6 +238,52 @@
   .activity-item .act-meta{font-size:.74rem;color:var(--ink-soft);margin-top:2px;}
   .empty-mini{padding:24px;text-align:center;color:var(--ink-soft);font-size:.85rem;}
 
+  /* ---------- PATIENTS ---------- */
+  .patients-toolbar{
+    display:flex;align-items:center;gap:14px;margin-bottom:16px;
+  }
+  .patients-toolbar input{
+    flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--line);
+    background:#fff;font-size:.9rem;color:var(--ink);
+  }
+  .patients-count{font-size:.82rem;color:var(--ink-soft);white-space:nowrap;}
+  .patients-list{display:flex;flex-direction:column;gap:10px;}
+  .patient-card{
+    background:#fff;border-radius:var(--radius);border:1px solid var(--line);box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .patient-head{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:16px 20px;cursor:pointer;
+  }
+  .patient-head:hover{background:var(--pale-aqua);}
+  .patient-main{display:flex;align-items:center;gap:14px;}
+  .patient-avatar{
+    width:40px;height:40px;border-radius:50%;background:var(--deep-teal);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-family:'Tajawal',sans-serif;font-weight:800;
+    flex:0 0 auto;
+  }
+  .patient-name{font-weight:700;color:var(--deep-teal);font-size:.95rem;}
+  .patient-phone{font-size:.8rem;color:var(--ink-soft);direction:ltr;text-align:right;}
+  .patient-stats{display:flex;gap:8px;flex-wrap:wrap;}
+  .patient-tag{
+    font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .patient-tag.visits{background:var(--pale-aqua);color:var(--teal);}
+  .patient-tag.noshow{background:#FBEAEA;color:#C0392B;}
+  .patient-tag.last{background:#FFF3E0;color:var(--gold-deep);}
+  .patient-chevron{color:var(--ink-soft);transition:transform .2s ease;flex:0 0 auto;}
+  .patient-card.open .patient-chevron{transform:rotate(180deg);}
+  .patient-history{display:none;border-top:1px solid var(--line);}
+  .patient-card.open .patient-history{display:block;}
+  .ph-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:10px 20px;border-bottom:1px solid var(--line);font-size:.85rem;
+  }
+  .ph-row:last-child{border-bottom:none;}
+  .ph-row .ph-date{color:var(--ink-soft);min-width:120px;}
+  .ph-row .ph-notes{flex:1;color:var(--ink-soft);font-size:.8rem;}
+
   /* ---------- TABLE ---------- */
   .table-card{
     background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line);
@@ -264,9 +310,10 @@
   }
   .badge.pending{background:var(--pending-bg);color:var(--pending);}
   .badge.confirmed{background:var(--confirmed-bg);color:var(--confirmed);}
+  .badge.noshow{background:#F0F0F0;color:#7A7A7A;}
   .badge .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
 
-  .row-actions{display:flex;gap:8px;}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap;}
   .mini-btn{
     padding:7px 12px;border-radius:8px;border:none;font-size:.78rem;font-weight:700;
     display:inline-flex;align-items:center;gap:5px;transition:background .2s ease;
@@ -277,6 +324,8 @@
   .mini-btn.cancel:hover{background:#D64545;color:#fff;}
   .mini-btn.wa{background:#E7F6EE;color:#1E9E5A;}
   .mini-btn.wa:hover{background:#1E9E5A;color:#fff;}
+  .mini-btn.noshow{background:#F0F0F0;color:#7A7A7A;}
+  .mini-btn.noshow:hover{background:#7A7A7A;color:#fff;}
 
   .empty-state{padding:70px 20px;text-align:center;color:var(--ink-soft);}
   .empty-state .ic{font-size:2.4rem;margin-bottom:14px;}
@@ -300,25 +349,6 @@
     .toolbar{flex-direction:column;align-items:stretch;}
     .view-tabs{justify-content:center;}
     .day-chip{min-width:64px;padding:8px 10px;}
-  }
-
-  /* ---------- PRINT: today's schedule ---------- */
-  .print-only{display:none;}
-  @media print{
-    body *{visibility:hidden;}
-    #printSchedule, #printSchedule *{visibility:visible;}
-    #printSchedule{
-      display:block;position:absolute;top:0;right:0;left:0;width:100%;padding:20px;
-    }
-    .print-head{text-align:center;margin-bottom:20px;border-bottom:2px solid #0B3B47;padding-bottom:14px;}
-    .print-head h1{font-family:'Tajawal',sans-serif;font-size:1.4rem;color:#0B3B47;margin-bottom:4px;}
-    .print-head p{color:#4A6067;font-size:.9rem;}
-    table.print-table{width:100%;border-collapse:collapse;}
-    table.print-table th{
-      text-align:right;padding:10px 12px;border-bottom:2px solid #0B3B47;font-size:.85rem;color:#0B3B47;
-    }
-    table.print-table td{padding:10px 12px;border-bottom:1px solid #DCE8E8;font-size:.9rem;}
-    .print-footer{margin-top:24px;text-align:center;font-size:.78rem;color:#4A6067;}
   }
 </style>
 </head>
@@ -389,11 +419,13 @@
         <option value="all">كل التواريخ</option>
         <option value="today">النهاردة بس</option>
         <option value="upcoming">القادمة فقط</option>
+        <optgroup label="يوم معيّن" id="dateFilterDays"></optgroup>
       </select>
       <div class="spacer"></div>
       <div class="view-tabs">
         <button class="view-tab active" id="tabTable">جدول</button>
         <button class="view-tab" id="tabCalendar">تقويم</button>
+        <button class="view-tab" id="tabPatients">المرضى</button>
         <button class="view-tab" id="tabAnalytics">التحليلات</button>
       </div>
       <button class="btn btn-outline" id="printBtn">
@@ -450,6 +482,15 @@
       </div>
     </div>
 
+    <div class="patients-view" id="patientsView" style="display:none;">
+      <div class="patients-toolbar">
+        <input type="text" id="patientSearchInput" placeholder="دور باسم مريض أو رقم موبايله...">
+        <span class="patients-count" id="patientsCount"></span>
+      </div>
+      <div class="patients-list" id="patientsList"></div>
+      <div class="empty-mini" id="patientsEmpty" style="display:none;">مفيش مرضى يطابقوا البحث</div>
+    </div>
+
     <div class="analytics-view" id="analyticsView" style="display:none;">
       <div class="stats-grid analytics-stats">
         <div class="stat-card today">
@@ -493,27 +534,6 @@
   </main>
 
   <footer class="foot-note">لوحة تحكم داخلية — عيادة د. أبانوب سليم لطب الأسنان</footer>
-</div>
-
-<div id="printSchedule" class="print-only">
-  <div class="print-head">
-    <h1 id="printTitle">جدول مواعيد اليوم</h1>
-    <p id="printDate"></p>
-  </div>
-  <table class="print-table">
-    <thead>
-      <tr>
-        <th>الساعة</th>
-        <th>اسم المريض</th>
-        <th>رقم الموبايل</th>
-        <th>الحالة</th>
-        <th>ملاحظات</th>
-      </tr>
-    </thead>
-    <tbody id="printBody"></tbody>
-  </table>
-  <p id="printEmpty" style="display:none;">مفيش أي حجوزات النهاردة.</p>
-  <p class="print-footer">عيادة د. أبانوب سليم لطب الأسنان — طُبع بتاريخ <span id="printStamp"></span></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -681,6 +701,7 @@
       renderStats();
       renderTable();
       renderCalendar();
+      renderPatients();
     }, function(err){
       console.warn('Firestore listener error on admin dashboard.', err);
       document.getElementById('loadingState').textContent = 'حصل خطأ في تحميل الحجوزات.';
@@ -692,6 +713,7 @@
         blockedDays[doc.id] = doc.data();
       });
       renderDayChips();
+      populateDateFilterOptions();
       renderCalendar();
       renderAnalytics();
     }, function(err){
@@ -715,6 +737,8 @@
     document.getElementById('tabTable').addEventListener('click', function(){ switchView('table'); });
     document.getElementById('tabCalendar').addEventListener('click', function(){ switchView('calendar'); });
     document.getElementById('tabAnalytics').addEventListener('click', function(){ switchView('analytics'); });
+    document.getElementById('tabPatients').addEventListener('click', function(){ switchView('patients'); });
+    document.getElementById('patientSearchInput').addEventListener('input', renderPatients);
   }
 
   function renderStats(){
@@ -734,21 +758,29 @@
   function switchView(view){
     var tableEl = document.getElementById('tableView');
     var calEl = document.getElementById('calendarView');
+    var patientsEl = document.getElementById('patientsView');
     var analyticsEl = document.getElementById('analyticsView');
     var tabTable = document.getElementById('tabTable');
     var tabCal = document.getElementById('tabCalendar');
+    var tabPatients = document.getElementById('tabPatients');
     var tabAnalytics = document.getElementById('tabAnalytics');
 
     tableEl.style.display = 'none';
     calEl.style.display = 'none';
+    patientsEl.style.display = 'none';
     analyticsEl.style.display = 'none';
     tabTable.classList.remove('active');
     tabCal.classList.remove('active');
+    tabPatients.classList.remove('active');
     tabAnalytics.classList.remove('active');
 
     if(view === 'calendar'){
       calEl.style.display = 'block';
       tabCal.classList.add('active');
+    } else if(view === 'patients'){
+      patientsEl.style.display = 'block';
+      tabPatients.classList.add('active');
+      renderPatients();
     } else if(view === 'analytics'){
       analyticsEl.style.display = 'block';
       tabAnalytics.classList.add('active');
@@ -767,15 +799,40 @@
       var isBlocked = !!blockedDays[day.iso];
       var chip = document.createElement('div');
       chip.className = 'day-chip' + (isBlocked ? ' blocked' : '');
+      chip.style.cursor = 'pointer';
+      chip.title = 'دوس هنا لعرض حجوزات ومرضى اليوم ده';
       chip.innerHTML =
         '<span class="dc-name">' + day.weekday + '</span>' +
         '<span class="dc-date">' + day.dateLabel + '</span>';
+      chip.addEventListener('click', function(e){
+        if(e.target.tagName === 'BUTTON') return; // let the block/unblock button handle its own click
+        showDayPatients(day);
+      });
       var btn = document.createElement('button');
       btn.textContent = isBlocked ? 'إلغاء القفل' : 'قفل اليوم';
-      btn.addEventListener('click', function(){ toggleBlockDay(day, isBlocked); });
+      btn.addEventListener('click', function(e){ e.stopPropagation(); toggleBlockDay(day, isBlocked); });
       chip.appendChild(btn);
       wrap.appendChild(chip);
     });
+  }
+
+  function populateDateFilterOptions(){
+    var group = document.getElementById('dateFilterDays');
+    if(!group) return;
+    group.innerHTML = '';
+    upcomingDays.forEach(function(day){
+      var opt = document.createElement('option');
+      opt.value = day.iso;
+      opt.textContent = day.weekday + ' ' + day.dateLabel + (blockedDays[day.iso] ? ' (مقفول)' : '');
+      group.appendChild(opt);
+    });
+  }
+
+  function showDayPatients(day){
+    document.getElementById('dateFilter').value = day.iso;
+    switchView('table');
+    renderTable();
+    document.getElementById('tableView').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function toggleBlockDay(day, isCurrentlyBlocked){
@@ -868,6 +925,100 @@
     }
   }
 
+  function renderPatients(){
+    var listEl = document.getElementById('patientsList');
+    var emptyEl = document.getElementById('patientsEmpty');
+    var countEl = document.getElementById('patientsCount');
+    if(!listEl) return;
+
+    var q = document.getElementById('patientSearchInput').value.trim().toLowerCase();
+
+    // group all bookings by phone number
+    var byPhone = {};
+    allBookings.forEach(function(b){
+      if(!b.phone) return;
+      if(!byPhone[b.phone]) byPhone[b.phone] = [];
+      byPhone[b.phone].push(b);
+    });
+
+    var patients = Object.keys(byPhone).map(function(phone){
+      var visits = byPhone[phone].slice().sort(function(a, b){
+        var ka = a.dayIso + ' ' + a.slotValue;
+        var kb = b.dayIso + ' ' + b.slotValue;
+        return kb < ka ? -1 : kb > ka ? 1 : 0; // most recent first
+      });
+      var name = visits[0].name;
+      var noShowCount = visits.filter(function(v){ return v.status === 'no_show'; }).length;
+      return { phone: phone, name: name, visits: visits, noShowCount: noShowCount };
+    });
+
+    if(q){
+      patients = patients.filter(function(p){
+        return p.name.toLowerCase().indexOf(q) !== -1 || p.phone.indexOf(q) !== -1;
+      });
+    }
+
+    patients.sort(function(a, b){
+      var ka = a.visits[0].dayIso + ' ' + a.visits[0].slotValue;
+      var kb = b.visits[0].dayIso + ' ' + b.visits[0].slotValue;
+      return kb < ka ? -1 : kb > ka ? 1 : 0;
+    });
+
+    countEl.textContent = patients.length + ' مريض';
+    listEl.innerHTML = '';
+
+    if(patients.length === 0){
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    patients.forEach(function(p){
+      var card = document.createElement('div');
+      card.className = 'patient-card';
+
+      var initials = p.name.trim().split(/\s+/).slice(0,2).map(function(w){ return w[0] || ''; }).join('');
+      var lastVisit = p.visits[0];
+      var lastLabel = formatDateLabel(lastVisit.dayIso);
+
+      var head = document.createElement('div');
+      head.className = 'patient-head';
+      head.innerHTML =
+        '<div class="patient-main">' +
+          '<span class="patient-avatar">' + escapeHtml(initials) + '</span>' +
+          '<div>' +
+            '<div class="patient-name">' + escapeHtml(p.name) + '</div>' +
+            '<div class="patient-phone">' + escapeHtml(p.phone) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="patient-stats">' +
+          '<span class="patient-tag visits">' + p.visits.length + ' زيارة</span>' +
+          (p.noShowCount > 0 ? '<span class="patient-tag noshow">' + p.noShowCount + ' غياب</span>' : '') +
+          '<span class="patient-tag last">آخر زيارة ' + lastLabel + '</span>' +
+        '</div>' +
+        '<span class="patient-chevron">▾</span>';
+      head.addEventListener('click', function(){ card.classList.toggle('open'); });
+      card.appendChild(head);
+
+      var history = document.createElement('div');
+      history.className = 'patient-history';
+      p.visits.forEach(function(v){
+        var slotLabel = SLOT_LABELS[v.slotValue] || v.slotValue;
+        var statusText = v.status === 'confirmed' ? 'تم التأكيد' : v.status === 'no_show' ? 'لم يحضر' : 'في الانتظار';
+        var row = document.createElement('div');
+        row.className = 'ph-row';
+        row.innerHTML =
+          '<span class="ph-date">' + formatDateLabel(v.dayIso) + ' — ' + slotLabel + '</span>' +
+          '<span class="badge ' + (v.status === 'confirmed' ? 'confirmed' : v.status === 'no_show' ? 'noshow' : 'pending') + '"><span class="dot"></span>' + statusText + '</span>' +
+          '<span class="ph-notes">' + escapeHtml(v.notes || '') + '</span>';
+        history.appendChild(row);
+      });
+      card.appendChild(history);
+
+      listEl.appendChild(card);
+    });
+  }
+
   function renderAnalytics(){
     var chartWeekday = document.getElementById('chartWeekday');
     var chartSlots = document.getElementById('chartSlots');
@@ -936,7 +1087,7 @@
     if(activityLog.length === 0){
       activityListEl.innerHTML = '<div class="empty-mini">لسه مفيش أي نشاط مسجل</div>';
     } else {
-      var iconMap = { confirm: '✅', cancel: '❌', block_day: '🔒', unblock_day: '🔓', notes: '📝' };
+      var iconMap = { confirm: '✅', cancel: '❌', block_day: '🔒', unblock_day: '🔓', notes: '📝', no_show: '🚫' };
       activityLog.forEach(function(entry){
         var item = document.createElement('div');
         item.className = 'activity-item';
@@ -979,6 +1130,7 @@
       if(status !== 'all' && b.status !== status) return false;
       if(dateF === 'today' && b.dayIso !== t) return false;
       if(dateF === 'upcoming' && b.dayIso < t) return false;
+      if(dateF !== 'all' && dateF !== 'today' && dateF !== 'upcoming' && b.dayIso !== dateF) return false;
       if(q){
         var hay = (b.name + ' ' + b.phone).toLowerCase();
         if(hay.indexOf(q) === -1) return false;
@@ -1008,8 +1160,8 @@
       if(b.dayIso === t) tr.className = 'is-today';
 
       var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
-      var badgeClass = b.status === 'confirmed' ? 'confirmed' : 'pending';
-      var badgeText = b.status === 'confirmed' ? 'تم التأكيد' : 'في الانتظار';
+      var badgeClass = b.status === 'confirmed' ? 'confirmed' : b.status === 'no_show' ? 'noshow' : 'pending';
+      var badgeText = b.status === 'confirmed' ? 'تم التأكيد' : b.status === 'no_show' ? 'لم يحضر' : 'في الانتظار';
       var sourceText = b.bookedBy === 'staff' ? '👤 الفريق' : '🌐 الموقع';
 
       var waMsg = encodeURIComponent('مرحبًا ' + b.name + '، بخصوص حجزك يوم ' + formatDateLabel(b.dayIso) + ' الساعة ' + slotLabel + ' في عيادة د. أبانوب سليم.');
@@ -1049,6 +1201,18 @@
         actions.appendChild(confirmBtn);
       }
 
+      if(b.status === 'confirmed'){
+        var noShowBtn = document.createElement('button');
+        noShowBtn.className = 'mini-btn noshow';
+        noShowBtn.textContent = 'لم يحضر';
+        noShowBtn.addEventListener('click', function(){
+          if(confirm('تسجيل إن ' + b.name + ' لم يحضر الميعاد؟')){
+            updateStatus(b.id, 'no_show');
+          }
+        });
+        actions.appendChild(noShowBtn);
+      }
+
       var cancelBtn = document.createElement('button');
       cancelBtn.className = 'mini-btn cancel';
       cancelBtn.textContent = 'إلغاء';
@@ -1075,8 +1239,12 @@
     var b = allBookings.filter(function(x){ return x.id === id; })[0];
     firestoreDb.collection('bookings').doc(id).update({ status: status })
       .then(function(){
-        if(status === 'confirmed' && b){
-          logActivity('confirm', 'تأكيد حجز ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue));
+        if(b){
+          if(status === 'confirmed'){
+            logActivity('confirm', 'تأكيد حجز ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue));
+          } else if(status === 'no_show'){
+            logActivity('no_show', 'تسجيل عدم حضور ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue));
+          }
         }
       })
       .catch(function(err){ alert('حصل خطأ أثناء التحديث: ' + err.message); });
@@ -1131,47 +1299,100 @@
   }
 
   function printTodaySchedule(){
-    var t = todayIso();
-    var todaysBookings = allBookings
-      .filter(function(b){ return b.dayIso === t; })
+    var dateF = document.getElementById('dateFilter').value;
+    var targetIso = (dateF !== 'all' && dateF !== 'today' && dateF !== 'upcoming') ? dateF : todayIso();
+
+    var dayBookings = allBookings
+      .filter(function(b){ return b.dayIso === targetIso; })
       .sort(function(a, b){ return a.slotValue < b.slotValue ? -1 : a.slotValue > b.slotValue ? 1 : 0; });
 
-    var dayInfo = upcomingDays.filter(function(d){ return d.iso === t; })[0];
-    var isBlocked = !!blockedDays[t];
+    var dayInfo = upcomingDays.filter(function(d){ return d.iso === targetIso; })[0];
+    var dayLabel = (dayInfo ? dayInfo.weekday + ' ' : '') + formatDateLabel(targetIso);
+    var isBlocked = !!blockedDays[targetIso];
+    var logoSrc = document.querySelector('.topbar-brand img').src;
 
-    document.getElementById('printTitle').textContent = 'جدول مواعيد اليوم';
-    document.getElementById('printDate').textContent =
-      (dayInfo ? dayInfo.weekday + ' ' : '') + formatDateLabel(t) +
-      (isBlocked ? ' — العيادة مقفولة النهاردة' : '');
+    var now = new Date();
+    var stamp = now.getDate() + '/' + (now.getMonth()+1) + '/' + now.getFullYear() + ' — ' +
+      String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
 
-    var body = document.getElementById('printBody');
-    var emptyMsg = document.getElementById('printEmpty');
-    body.innerHTML = '';
-
-    if(todaysBookings.length === 0){
-      emptyMsg.style.display = 'block';
+    var rowsHtml = '';
+    if(dayBookings.length === 0){
+      rowsHtml = '<tr><td colspan="5" class="empty-row">مفيش أي حجوزات في اليوم ده.</td></tr>';
     } else {
-      emptyMsg.style.display = 'none';
-      todaysBookings.forEach(function(b){
-        var tr = document.createElement('tr');
+      dayBookings.forEach(function(b, i){
         var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
+        var statusClass = b.status === 'confirmed' ? 'st-confirmed' : 'st-pending';
         var statusText = b.status === 'confirmed' ? 'مؤكد' : 'في الانتظار';
-        tr.innerHTML =
-          '<td>' + slotLabel + '</td>' +
-          '<td>' + escapeHtml(b.name) + '</td>' +
-          '<td>' + escapeHtml(b.phone) + '</td>' +
-          '<td>' + statusText + '</td>' +
-          '<td>' + escapeHtml(b.notes || '') + '</td>';
-        body.appendChild(tr);
+        rowsHtml +=
+          '<tr class="' + (i % 2 === 0 ? 'row-a' : 'row-b') + '">' +
+            '<td class="cell-time">' + slotLabel + '</td>' +
+            '<td class="cell-name">' + escapeHtml(b.name) + '</td>' +
+            '<td class="cell-phone">' + escapeHtml(b.phone) + '</td>' +
+            '<td><span class="st-badge ' + statusClass + '">' + statusText + '</span></td>' +
+            '<td class="cell-notes">' + escapeHtml(b.notes || '—') + '</td>' +
+          '</tr>';
       });
     }
 
-    var now = new Date();
-    document.getElementById('printStamp').textContent =
-      now.getDate() + '/' + (now.getMonth()+1) + '/' + now.getFullYear() + ' — ' +
-      String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
+      '<title>جدول مواعيد — ' + dayLabel + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">' +
+      '<style>' +
+        '*{box-sizing:border-box;margin:0;padding:0;}' +
+        'body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#0E2B30;padding:36px 40px;}' +
+        '.ps-head{display:flex;align-items:center;gap:18px;border-bottom:3px solid #0B3B47;padding-bottom:20px;margin-bottom:26px;}' +
+        '.ps-head img{width:64px;height:64px;border-radius:50%;box-shadow:0 4px 14px -4px rgba(11,59,71,.4);}' +
+        '.ps-head-text strong{display:block;font-family:"Tajawal",sans-serif;font-weight:800;font-size:1.3rem;color:#0B3B47;}' +
+        '.ps-head-text span{display:block;font-size:.85rem;color:#4A6067;margin-top:2px;}' +
+        '.ps-title-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;}' +
+        '.ps-title-row h1{font-family:"Tajawal",sans-serif;font-weight:800;font-size:1.15rem;color:#0B3B47;}' +
+        '.ps-title-row .ps-count{font-size:.85rem;color:#4A6067;background:#EAF6F6;padding:5px 14px;border-radius:999px;}' +
+        '.ps-closed{background:#FBEAEA;color:#C0392B;padding:10px 16px;border-radius:10px;font-weight:700;font-size:.9rem;margin-bottom:18px;}' +
+        'table{width:100%;border-collapse:collapse;}' +
+        'thead th{text-align:right;font-family:"Tajawal",sans-serif;font-weight:700;font-size:.82rem;color:#fff;background:#0B3B47;padding:12px 14px;}' +
+        'thead th:first-child{border-radius:10px 0 0 0;} thead th:last-child{border-radius:0 10px 0 0;}' +
+        'tbody td{padding:11px 14px;font-size:.88rem;border-bottom:1px solid #DCE8E8;}' +
+        'tr.row-b{background:#F6FBFB;}' +
+        '.cell-time{font-weight:700;color:#0B3B47;white-space:nowrap;}' +
+        '.cell-name{font-weight:700;}' +
+        '.cell-phone{direction:ltr;text-align:right;color:#4A6067;}' +
+        '.st-badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.76rem;font-weight:700;}' +
+        '.st-confirmed{background:#E7F6EE;color:#2E9E6B;}' +
+        '.st-pending{background:#FBF3E3;color:#E0A945;}' +
+        '.cell-notes{color:#4A6067;font-size:.82rem;}' +
+        '.empty-row{text-align:center;padding:40px;color:#4A6067;}' +
+        '.ps-footer{margin-top:30px;text-align:center;font-size:.76rem;color:#4A6067;border-top:1px solid #DCE8E8;padding-top:14px;}' +
+        '@media print{ body{padding:14px 18px;} }' +
+      '</style></head><body>' +
+        '<div class="ps-head">' +
+          '<img src="' + logoSrc + '" alt="شعار العيادة">' +
+          '<div class="ps-head-text">' +
+            '<strong>عيادة د. أبانوب سليم لطب الأسنان</strong>' +
+            '<span>DENTAL & ORAL SURGERY</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ps-title-row">' +
+          '<h1>جدول مواعيد يوم ' + dayLabel + '</h1>' +
+          '<span class="ps-count">' + dayBookings.length + ' حجز</span>' +
+        '</div>' +
+        (isBlocked ? '<div class="ps-closed">⚠ العيادة مقفولة في اليوم ده' + (blockedDays[targetIso].reason ? ' — ' + escapeHtml(blockedDays[targetIso].reason) : '') + '</div>' : '') +
+        '<table><thead><tr>' +
+          '<th>الساعة</th><th>اسم المريض</th><th>رقم الموبايل</th><th>الحالة</th><th>ملاحظات</th>' +
+        '</tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+        '<p class="ps-footer">عيادة د. أبانوب سليم لطب الأسنان — طُبع بتاريخ ' + stamp + '</p>' +
+      '</body></html>';
 
-    window.print();
+    var printWin = window.open('', '_blank');
+    if(!printWin){
+      alert('المتصفح منع فتح نافذة الطباعة. اسمح بالنوافذ المنبثقة (Pop-ups) لهذا الموقع وجرّب تاني.');
+      return;
+    }
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+    printWin.onload = function(){
+      setTimeout(function(){ printWin.focus(); printWin.print(); }, 300);
+    };
   }
 </script>
 </body>
