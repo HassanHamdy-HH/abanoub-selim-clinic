@@ -1862,6 +1862,7 @@
         staffModeToggle.textContent = 'فريق العيادة: حجز مباشر لمريض';
         staffModeToggle.classList.remove('active');
         staffModeBadge.style.display = 'none';
+        renderChairs();
         return;
       }
       pendingStaffToggle = true;
@@ -1886,6 +1887,7 @@
         staffModeToggle.textContent = 'إيقاف وضع الفريق';
         staffModeToggle.classList.add('active');
         staffModeBadge.style.display = 'inline-block';
+        renderChairs();
         return;
       }
 
