@@ -240,6 +240,15 @@
   .ds-row.ds-doctor{background:#E7F6EE;}
   .ds-row.ds-doctor strong{color:#1E9E5A;}
   .ds-row.ds-pool{background:#FFF3E0;}
+  .ds-row.ds-team{background:#FDEBEE;}
+  .ds-method-breakdown{
+    display:flex;justify-content:space-between;gap:12px;padding:8px 14px;
+    background:var(--pale-aqua);border-radius:10px;font-size:.82rem;color:var(--ink-soft);
+  }
+  .ds-method-breakdown strong{color:var(--deep-teal);}
+  .ds-row.ds-team strong{color:#C0392B;}
+  .ds-row.ds-after-team{background:#F2F2F2;}
+  .ds-row.ds-after-team strong{color:var(--ink);}
   .ds-row.ds-pool strong{color:var(--gold-deep);}
   .ds-row.ds-remaining{background:var(--deep-teal);margin-top:8px;}
   .ds-row.ds-remaining span{color:#B9D9DB;}
@@ -649,7 +658,7 @@
 
       <div class="chart-card">
         <h3>الملخص المالي اليومي</h3>
-        <span class="chart-hint">المبلغ الكلي بيتحسب من إجمالي الحجوزات المؤكدة في اليوم ده. نسبة الدكتور والمصاريف بتتقسم منه تلقائي.</span>
+        <span class="chart-hint">المبلغ الكلي بيتحسب من الدفعات اللي اتحصّلت فعليًا في اليوم ده (مش من قيمة الحجوزات بس) — يعني لو مريض دفع باقي فلوسه في يوم تاني غير يوم الكشف، المبلغ ده بيتحسب على اليوم اللي دفع فيه فعليًا. نصيب الفريق بيتخصم الأول (50 جنيه لكل 1000 جنيه)، وبعدين نسبة الدكتور والمصاريف بتتقسم من الباقي.</span>
 
         <div class="daily-summary-toolbar">
           <label>اختار اليوم</label>
@@ -661,12 +670,24 @@
             <span>المبلغ الكلي لليوم</span>
             <strong id="dsTotal">0 جنيه</strong>
           </div>
+          <div class="ds-method-breakdown">
+            <span>💵 كاش: <strong id="dsCashTotal">0 جنيه</strong></span>
+            <span>📱 فودافون كاش: <strong id="dsVodafoneTotal">0 جنيه</strong></span>
+          </div>
+          <div class="ds-row ds-team">
+            <span>نصيب الفريق (50 جنيه / 1000 جنيه)</span>
+            <strong id="dsTeamShare">0 جنيه</strong>
+          </div>
+          <div class="ds-row ds-after-team">
+            <span>الباقي بعد نصيب الفريق</span>
+            <strong id="dsAfterTeam">0 جنيه</strong>
+          </div>
           <div class="ds-row ds-doctor">
-            <span>نصيب الدكتور (40%)</span>
+            <span>نصيب الدكتور (40% من الباقي)</span>
             <strong id="dsDoctorShare">0 جنيه</strong>
           </div>
           <div class="ds-row ds-pool">
-            <span>المخصص للمصاريف (60%)</span>
+            <span>المخصص للمصاريف (60% من الباقي)</span>
             <strong id="dsExpensePool">0 جنيه</strong>
           </div>
         </div>
@@ -861,10 +882,40 @@
         <input type="number" id="editPaidInput" placeholder="0" min="0">
       </div>
     </div>
+    <div class="modal-field">
+      <label>وسيلة الدفع (لو في دفعة جديدة دلوقتي)</label>
+      <select id="editPaymentMethodInput">
+        <option value="cash">كاش</option>
+        <option value="vodafone_cash">فودافون كاش</option>
+      </select>
+    </div>
     <p class="edit-remaining-line" id="editRemainingLine"></p>
 
     <button class="cta-btn gold" id="editBookingSaveBtn" style="width:100%;justify-content:center;">حفظ التعديلات</button>
     <p class="modal-error" id="editBookingError"></p>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="paymentOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="paymentClose" aria-label="إغلاق">✕</button>
+    <h3>تسجيل دفعة جديدة</h3>
+    <p class="modal-slot-info" id="paymentInfo"></p>
+
+    <div class="modal-field">
+      <label>قيمة الدفعة (جنيه)</label>
+      <input type="number" id="paymentAmountInput" placeholder="0" min="1">
+    </div>
+    <div class="modal-field">
+      <label>وسيلة الدفع</label>
+      <select id="paymentMethodInput">
+        <option value="cash">كاش</option>
+        <option value="vodafone_cash">فودافون كاش</option>
+      </select>
+    </div>
+
+    <button class="cta-btn gold" id="paymentSaveBtn" style="width:100%;justify-content:center;">تسجيل الدفعة</button>
+    <p class="modal-error" id="paymentError"></p>
   </div>
 </div>
 
@@ -1162,6 +1213,12 @@
     document.getElementById('editTotalInput').addEventListener('input', updateRemainingLine);
     document.getElementById('editPaidInput').addEventListener('input', updateRemainingLine);
 
+    document.getElementById('paymentClose').addEventListener('click', closePaymentModal);
+    document.getElementById('paymentOverlay').addEventListener('click', function(e){
+      if(e.target.id === 'paymentOverlay'){ closePaymentModal(); }
+    });
+    document.getElementById('paymentSaveBtn').addEventListener('click', savePayment);
+
     document.getElementById('tabTable').addEventListener('click', function(){ switchView('table'); });
     document.getElementById('tabCalendar').addEventListener('click', function(){ switchView('calendar'); });
     document.getElementById('tabAnalytics').addEventListener('click', function(){ switchView('analytics'); });
@@ -1176,6 +1233,7 @@
     document.getElementById('dsOther').addEventListener('input', updateDailyRemaining);
     document.getElementById('dsSaveBtn').addEventListener('click', saveDailySummary);
     watchDailyExpenses();
+    watchPayments();
   }
 
   function renderStats(){
@@ -1498,21 +1556,87 @@
     });
   }
 
+  var pendingPaymentBooking = null;
+
   function recordPayment(b){
+    pendingPaymentBooking = b;
     var remaining = b.totalAmount - b.paidAmount;
-    var amountStr = prompt('قيمة الدفعة الجديدة من ' + b.name + ' (الباقي حاليًا: ' + remaining.toLocaleString('ar-EG') + ' جنيه):', '');
-    if(amountStr === null) return;
-    var amount = parseFloat(amountStr);
+    document.getElementById('paymentInfo').textContent =
+      b.name + ' — الباقي حاليًا: ' + remaining.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('paymentAmountInput').value = '';
+    document.getElementById('paymentMethodInput').value = 'cash';
+    document.getElementById('paymentError').textContent = '';
+    document.getElementById('paymentOverlay').classList.add('open');
+  }
+  function closePaymentModal(){
+    document.getElementById('paymentOverlay').classList.remove('open');
+    pendingPaymentBooking = null;
+  }
+  function savePayment(){
+    if(!pendingPaymentBooking) return;
+    var b = pendingPaymentBooking;
+    var amount = parseFloat(document.getElementById('paymentAmountInput').value);
+    var method = document.getElementById('paymentMethodInput').value;
+    var errorEl = document.getElementById('paymentError');
+
     if(isNaN(amount) || amount <= 0){
-      alert('من فضلك اكتب رقم صحيح أكبر من صفر.');
+      errorEl.textContent = 'من فضلك اكتب رقم صحيح أكبر من صفر.';
       return;
     }
     var newPaid = Math.min(b.totalAmount, b.paidAmount + amount);
     firestoreDb.collection('bookings').doc(b.id).update({ paidAmount: newPaid })
       .then(function(){
-        logActivity('payment', 'تسجيل دفعة ' + amount.toLocaleString('ar-EG') + ' جنيه من ' + b.name + ' — الإجمالي المحصّل الآن ' + newPaid.toLocaleString('ar-EG') + ' جنيه');
+        var methodLabel = method === 'vodafone_cash' ? 'فودافون كاش' : 'كاش';
+        logActivity('payment', 'تسجيل دفعة ' + amount.toLocaleString('ar-EG') + ' جنيه (' + methodLabel + ') من ' + b.name + ' — الإجمالي المحصّل الآن ' + newPaid.toLocaleString('ar-EG') + ' جنيه');
+        logPaymentReceived(b, amount, method);
+        closePaymentModal();
       })
-      .catch(function(err){ alert('حصل خطأ: ' + err.message); });
+      .catch(function(err){ errorEl.textContent = 'حصل خطأ: ' + err.message; });
+  }
+
+  // ---- Cash-basis payments ledger: every payment counts toward the day it was actually received ----
+  var paymentsCache = []; // [{ bookingId, name, amount, method, dayIso, ts }]
+
+  function watchPayments(){
+    if(!firestoreDb) return;
+    firestoreDb.collection('payments').onSnapshot(function(snap){
+      paymentsCache = [];
+      snap.forEach(function(doc){ paymentsCache.push(doc.data()); });
+      renderDailySummary();
+    }, function(err){
+      console.warn('Firestore listener error for payments.', err);
+    });
+  }
+
+  function logPaymentReceived(b, amount, method){
+    if(!firestoreDb) return;
+    firestoreDb.collection('payments').add({
+      bookingId: b.id,
+      name: b.name,
+      amount: amount,
+      method: method || 'cash',
+      dayIso: todayIso(), // the day the cash actually came in — not the appointment day
+      ts: Date.now()
+    }).catch(function(err){ console.warn('Could not log payment.', err); });
+  }
+
+  function getDayCollectedTotal(dayIso){
+    var total = 0;
+    paymentsCache.forEach(function(p){
+      if(p.dayIso === dayIso) total += (p.amount || 0);
+    });
+    return total;
+  }
+
+  function getDayCollectedByMethod(dayIso){
+    var totals = { cash: 0, vodafone_cash: 0 };
+    paymentsCache.forEach(function(p){
+      if(p.dayIso === dayIso){
+        var m = p.method === 'vodafone_cash' ? 'vodafone_cash' : 'cash';
+        totals[m] += (p.amount || 0);
+      }
+    });
+    return totals;
   }
 
   // ---- Daily financial summary (doctor's share / expenses split) ----
@@ -1545,11 +1669,18 @@
     if(!dateInput.value){ dateInput.value = todayIso(); }
     var dayIso = dateInput.value;
 
-    var total = getDayConfirmedTotal(dayIso);
-    var doctorShare = total * 0.4;
-    var expensePool = total * 0.6;
+    var total = getDayCollectedTotal(dayIso);
+    var methodTotals = getDayCollectedByMethod(dayIso);
+    var teamShare = total * 0.05; // 50 جنيه لكل 1000 جنيه = 5%
+    var afterTeam = total - teamShare;
+    var doctorShare = afterTeam * 0.4;
+    var expensePool = afterTeam * 0.6;
 
     document.getElementById('dsTotal').textContent = total.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('dsCashTotal').textContent = methodTotals.cash.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('dsVodafoneTotal').textContent = methodTotals.vodafone_cash.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('dsTeamShare').textContent = teamShare.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('dsAfterTeam').textContent = afterTeam.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsDoctorShare').textContent = doctorShare.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsExpensePool').textContent = expensePool.toLocaleString('ar-EG') + ' جنيه';
 
@@ -1564,8 +1695,10 @@
 
   function updateDailyRemaining(){
     var dayIso = document.getElementById('dailySummaryDate').value;
-    var total = getDayConfirmedTotal(dayIso);
-    var expensePool = total * 0.6;
+    var total = getDayCollectedTotal(dayIso);
+    var teamShare = total * 0.05;
+    var afterTeam = total - teamShare;
+    var expensePool = afterTeam * 0.6;
     var material = parseFloat(document.getElementById('dsMaterial').value) || 0;
     var lab = parseFloat(document.getElementById('dsLab').value) || 0;
     var other = parseFloat(document.getElementById('dsOther').value) || 0;
@@ -2114,6 +2247,11 @@
       discountPercent: discountPercent, totalAmount: totalAmount, paidAmount: paidAmount
     })
       .then(function(){
+        var paidDelta = paidAmount - (b.paidAmount || 0);
+        if(paidDelta > 0){
+          var method = document.getElementById('editPaymentMethodInput').value;
+          logPaymentReceived({ id: b.id, name: name }, paidDelta, method);
+        }
         if(changes.length){
           var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
           logActivity('edit', 'تعديل ' + changes.join(' و') + ' — حجز ' + name + ' — ' + formatDateLabel(b.dayIso) + ' ' + slotLabel);
