@@ -253,6 +253,7 @@
   .ds-row.ds-remaining{background:var(--deep-teal);margin-top:8px;}
   .ds-row.ds-remaining span{color:#B9D9DB;}
   .ds-row.ds-remaining strong{color:#fff;}
+  .ds-btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
   .ds-expenses-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
   .bar-chart{display:flex;flex-direction:column;gap:10px;}
   .bar-row{display:flex;align-items:center;gap:12px;}
@@ -452,6 +453,7 @@
     .view-tabs{justify-content:center;}
     .day-chip{min-width:64px;padding:8px 10px;}
     .ds-expenses-grid{grid-template-columns:1fr;}
+    .ds-btn-row{grid-template-columns:1fr;}
     .modal-field-row{grid-template-columns:1fr;}
   }
 </style>
@@ -675,19 +677,15 @@
             <span>📱 فودافون كاش: <strong id="dsVodafoneTotal">0 جنيه</strong></span>
           </div>
           <div class="ds-row ds-team">
-            <span>نصيب الفريق (50 جنيه / 1000 جنيه)</span>
+            <span>نصيب الفريق (50 جنيه / 1000 جنيه من الإجمالي)</span>
             <strong id="dsTeamShare">0 جنيه</strong>
           </div>
-          <div class="ds-row ds-after-team">
-            <span>الباقي بعد نصيب الفريق</span>
-            <strong id="dsAfterTeam">0 جنيه</strong>
-          </div>
           <div class="ds-row ds-doctor">
-            <span>نصيب الدكتور (40% من الباقي)</span>
+            <span>نصيب الدكتور (40% من الإجمالي قبل الخصومات)</span>
             <strong id="dsDoctorShare">0 جنيه</strong>
           </div>
           <div class="ds-row ds-pool">
-            <span>المخصص للمصاريف (60% من الباقي)</span>
+            <span>المخصص للمصاريف (الباقي بعد نصيب الفريق والدكتور)</span>
             <strong id="dsExpensePool">0 جنيه</strong>
           </div>
         </div>
@@ -712,8 +710,21 @@
           <strong id="dsRemaining">0 جنيه</strong>
         </div>
 
-        <button class="cta-btn gold" id="dsSaveBtn" style="width:100%;justify-content:center;margin-top:6px;">حفظ مصاريف اليوم</button>
+        <div class="ds-btn-row">
+          <button class="cta-btn gold" id="dsSaveBtn" style="width:100%;justify-content:center;">حفظ مصاريف اليوم</button>
+          <button class="btn btn-outline" id="dsPrintBtn" style="width:100%;justify-content:center;">🖨️ طباعة حسابات اليوم</button>
+        </div>
         <p class="modal-error" id="dsSaveMsg"></p>
+      </div>
+
+      <div class="chart-card">
+        <h3>التقرير الشهري</h3>
+        <span class="chart-hint">تقرير كامل بحسابات شهر معيّن — إجمالي الشهر، نصيب الفريق والدكتور والمصاريف، وتفصيل يوم بيوم.</span>
+        <div class="daily-summary-toolbar">
+          <label>اختار الشهر</label>
+          <input type="month" id="monthlyPrintMonth">
+        </div>
+        <button class="btn btn-outline" id="dsMonthlyPrintBtn" style="width:100%;justify-content:center;margin-top:10px;">🖨️ طباعة حسابات الشهر كامل</button>
       </div>
     </div>
 
@@ -940,10 +951,15 @@
   }
 </script>
 <script>
-  // ====== Staff PIN — change this to update the admin password ======
-  var STAFF_PIN = "2026";
+  // ====== Staff PINs — 2018/2005 log in with a fixed name; 2026 asks for the name each time ======
+  var STAFF_PINS = {
+    '2018': 'دكتور أبانوب',
+    '2026': null, // null = ask for the name every time (original behavior)
+    '2005': 'حسن حمدي'
+  };
 
   var WEEKDAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   var SLOT_ORDER = ['14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'];
   var SLOT_LABELS = {
     '14:00':'2:00 ظ', '14:30':'2:30 ظ', '15:00':'3:00 ظ', '15:30':'3:30 ظ',
@@ -1013,11 +1029,19 @@
     var lockBtn = document.getElementById('lockBtn');
 
     function tryUnlock(){
-      if(input.value.trim() === STAFF_PIN){
+      var enteredPin = input.value.trim();
+      if(STAFF_PINS.hasOwnProperty(enteredPin)){
+        var matchedName = STAFF_PINS[enteredPin];
         gate.style.display = 'none';
         app.classList.add('show');
         sessionStorage.setItem('clinicAdminUnlocked', '1');
-        ensureStaffName();
+        if(matchedName){
+          sessionStorage.setItem('staffName', matchedName);
+        } else {
+          // this code always asks for the name, even if one was saved earlier in this session
+          var name = prompt('اسمك (عشان يتسجل في سجل النشاط):', '');
+          sessionStorage.setItem('staffName', (name && name.trim()) ? name.trim() : 'الفريق');
+        }
         initDashboard();
       } else {
         error.textContent = 'الكود غير صحيح، حاول تاني.';
@@ -1232,6 +1256,8 @@
     document.getElementById('dsLab').addEventListener('input', updateDailyRemaining);
     document.getElementById('dsOther').addEventListener('input', updateDailyRemaining);
     document.getElementById('dsSaveBtn').addEventListener('click', saveDailySummary);
+    document.getElementById('dsPrintBtn').addEventListener('click', printDailyAccounts);
+    document.getElementById('dsMonthlyPrintBtn').addEventListener('click', printMonthlyAccounts);
     watchDailyExpenses();
     watchPayments();
   }
@@ -1671,16 +1697,14 @@
 
     var total = getDayCollectedTotal(dayIso);
     var methodTotals = getDayCollectedByMethod(dayIso);
-    var teamShare = total * 0.05; // 50 جنيه لكل 1000 جنيه = 5%
-    var afterTeam = total - teamShare;
-    var doctorShare = afterTeam * 0.4;
-    var expensePool = afterTeam * 0.6;
+    var teamShare = total * 0.05;   // 50 جنيه لكل 1000 جنيه = 5% من الإجمالي قبل أي خصومات
+    var doctorShare = total * 0.4;  // 40% من الإجمالي قبل أي خصومات (مش من الباقي بعد نصيب الفريق)
+    var expensePool = total - teamShare - doctorShare; // الباقي بعد نصيب الفريق والدكتور
 
     document.getElementById('dsTotal').textContent = total.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsCashTotal').textContent = methodTotals.cash.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsVodafoneTotal').textContent = methodTotals.vodafone_cash.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsTeamShare').textContent = teamShare.toLocaleString('ar-EG') + ' جنيه';
-    document.getElementById('dsAfterTeam').textContent = afterTeam.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsDoctorShare').textContent = doctorShare.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsExpensePool').textContent = expensePool.toLocaleString('ar-EG') + ' جنيه';
 
@@ -1697,8 +1721,8 @@
     var dayIso = document.getElementById('dailySummaryDate').value;
     var total = getDayCollectedTotal(dayIso);
     var teamShare = total * 0.05;
-    var afterTeam = total - teamShare;
-    var expensePool = afterTeam * 0.6;
+    var doctorShare = total * 0.4;
+    var expensePool = total - teamShare - doctorShare;
     var material = parseFloat(document.getElementById('dsMaterial').value) || 0;
     var lab = parseFloat(document.getElementById('dsLab').value) || 0;
     var other = parseFloat(document.getElementById('dsOther').value) || 0;
@@ -2374,6 +2398,256 @@
   }
   function closeReminderModal(){
     document.getElementById('reminderOverlay').classList.remove('open');
+  }
+
+  function printDailyAccounts(){
+    var dayIso = document.getElementById('dailySummaryDate').value || todayIso();
+    var dayLabel = formatDateLabel(dayIso);
+    var logoSrc = document.querySelector('.topbar-brand img').src;
+
+    var total = getDayCollectedTotal(dayIso);
+    var methodTotals = getDayCollectedByMethod(dayIso);
+    var teamShare = total * 0.05;
+    var doctorShare = total * 0.4;
+    var expensePool = total - teamShare - doctorShare;
+
+    var saved = dailyExpensesCache[dayIso] || {};
+    var material = saved.material || 0;
+    var lab = saved.lab || 0;
+    var other = saved.other || 0;
+    var remaining = expensePool - (material + lab + other);
+
+    var dayPayments = paymentsCache
+      .filter(function(p){ return p.dayIso === dayIso; })
+      .sort(function(a, b){ return (a.ts || 0) - (b.ts || 0); });
+
+    var paymentsRowsHtml = '';
+    if(dayPayments.length === 0){
+      paymentsRowsHtml = '<tr><td colspan="3" class="empty-row">مفيش دفعات اتسجلت في اليوم ده.</td></tr>';
+    } else {
+      dayPayments.forEach(function(p, i){
+        var methodLabel = p.method === 'vodafone_cash' ? '📱 فودافون كاش' : '💵 كاش';
+        paymentsRowsHtml +=
+          '<tr class="' + (i % 2 === 0 ? 'row-a' : 'row-b') + '">' +
+            '<td class="cell-name">' + escapeHtml(p.name || '') + '</td>' +
+            '<td>' + (p.amount || 0).toLocaleString('ar-EG') + ' جنيه</td>' +
+            '<td>' + methodLabel + '</td>' +
+          '</tr>';
+      });
+    }
+
+    var now = new Date();
+    var stamp = now.getDate() + '/' + (now.getMonth()+1) + '/' + now.getFullYear() + ' — ' +
+      String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
+      '<title>حسابات يوم ' + dayLabel + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">' +
+      '<style>' +
+        '*{box-sizing:border-box;margin:0;padding:0;}' +
+        'body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#0E2B30;padding:36px 40px;}' +
+        '.ps-head{display:flex;align-items:center;gap:18px;border-bottom:3px solid #0B3B47;padding-bottom:20px;margin-bottom:26px;}' +
+        '.ps-head img{width:64px;height:64px;border-radius:50%;box-shadow:0 4px 14px -4px rgba(11,59,71,.4);}' +
+        '.ps-head-text strong{display:block;font-family:"Tajawal",sans-serif;font-weight:800;font-size:1.3rem;color:#0B3B47;}' +
+        '.ps-head-text span{display:block;font-size:.85rem;color:#4A6067;margin-top:2px;}' +
+        '.ps-title-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;}' +
+        '.ps-title-row h1{font-family:"Tajawal",sans-serif;font-weight:800;font-size:1.15rem;color:#0B3B47;}' +
+        '.ps-title-row .ps-count{font-size:.85rem;color:#4A6067;background:#EAF6F6;padding:5px 14px;border-radius:999px;}' +
+        '.pa-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px;}' +
+        '.pa-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:10px;background:#F6FBFB;font-size:.9rem;}' +
+        '.pa-row strong{font-family:"Tajawal",sans-serif;font-weight:800;font-size:1rem;color:#0B3B47;}' +
+        '.pa-row.pa-team{background:#FDEBEE;} .pa-row.pa-team strong{color:#C0392B;}' +
+        '.pa-row.pa-doctor{background:#E7F6EE;} .pa-row.pa-doctor strong{color:#1E9E5A;}' +
+        '.pa-row.pa-pool{background:#FFF3E0;} .pa-row.pa-pool strong{color:#B9822A;}' +
+        '.pa-row.pa-remaining{background:#0B3B47;color:#fff;grid-column:1/-1;} .pa-row.pa-remaining span{color:#B9D9DB;} .pa-row.pa-remaining strong{color:#fff;}' +
+        '.pa-row.pa-total{background:#EAF6F6;grid-column:1/-1;} .pa-row.pa-total strong{font-size:1.2rem;}' +
+        'h2{font-family:"Tajawal",sans-serif;font-weight:800;font-size:1rem;color:#0B3B47;margin:22px 0 12px;}' +
+        'table{width:100%;border-collapse:collapse;margin-bottom:10px;}' +
+        'thead th{text-align:right;font-family:"Tajawal",sans-serif;font-weight:700;font-size:.82rem;color:#fff;background:#0B3B47;padding:12px 14px;}' +
+        'thead th:first-child{border-radius:10px 0 0 0;} thead th:last-child{border-radius:0 10px 0 0;}' +
+        'tbody td{padding:11px 14px;font-size:.88rem;border-bottom:1px solid #DCE8E8;}' +
+        'tr.row-b{background:#F6FBFB;}' +
+        '.cell-name{font-weight:700;}' +
+        '.empty-row{text-align:center;padding:30px;color:#4A6067;}' +
+        '.ps-footer{margin-top:30px;text-align:center;font-size:.76rem;color:#4A6067;border-top:1px solid #DCE8E8;padding-top:14px;}' +
+        '@media print{ body{padding:14px 18px;} }' +
+      '</style></head><body>' +
+        '<div class="ps-head">' +
+          '<img src="' + logoSrc + '" alt="شعار العيادة">' +
+          '<div class="ps-head-text">' +
+            '<strong>عيادة د. أبانوب سليم لطب الأسنان</strong>' +
+            '<span>DENTAL & ORAL SURGERY</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ps-title-row">' +
+          '<h1>حسابات يوم ' + dayLabel + '</h1>' +
+          '<span class="ps-count">' + dayPayments.length + ' دفعة</span>' +
+        '</div>' +
+        '<div class="pa-grid">' +
+          '<div class="pa-row pa-total"><span>المبلغ الكلي المحصّل</span><strong>' + total.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>💵 كاش</span><strong>' + methodTotals.cash.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>📱 فودافون كاش</span><strong>' + methodTotals.vodafone_cash.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row pa-team"><span>نصيب الفريق</span><strong>' + teamShare.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row pa-doctor"><span>نصيب الدكتور (40%)</span><strong>' + doctorShare.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row pa-pool"><span>المخصص للمصاريف</span><strong>' + expensePool.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>ماتريال</span><strong>' + material.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>معمل</span><strong>' + lab.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>أخرى (كهرباء، صيانة، مستلزمات)</span><strong>' + other.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row pa-remaining"><span>الباقي بعد كل الخصومات</span><strong>' + remaining.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+        '</div>' +
+        '<h2>تفاصيل الدفعات المحصّلة</h2>' +
+        '<table><thead><tr><th>اسم المريض</th><th>المبلغ</th><th>وسيلة الدفع</th></tr></thead><tbody>' + paymentsRowsHtml + '</tbody></table>' +
+        '<p class="ps-footer">عيادة د. أبانوب سليم لطب الأسنان — طُبع بتاريخ ' + stamp + '</p>' +
+      '</body></html>';
+
+    var printWin = window.open('', '_blank');
+    if(!printWin){
+      alert('المتصفح منع فتح نافذة الطباعة. اسمح بالنوافذ المنبثقة (Pop-ups) لهذا الموقع وجرّب تاني.');
+      return;
+    }
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+    printWin.onload = function(){
+      setTimeout(function(){ printWin.focus(); printWin.print(); }, 300);
+    };
+  }
+
+  function printMonthlyAccounts(){
+    var monthInput = document.getElementById('monthlyPrintMonth');
+    if(!monthInput.value){
+      var now = new Date();
+      monthInput.value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    }
+    var monthValue = monthInput.value; // "YYYY-MM"
+    var monthLabel = ARABIC_MONTHS[parseInt(monthValue.split('-')[1], 10) - 1] + ' ' + monthValue.split('-')[0];
+    var logoSrc = document.querySelector('.topbar-brand img').src;
+
+    // ---- gather all days within the month that had any collected payments or saved expenses ----
+    var dayTotals = {}; // dayIso -> { total, cash, vodafone }
+    paymentsCache.forEach(function(p){
+      if(!p.dayIso || p.dayIso.indexOf(monthValue) !== 0) return;
+      if(!dayTotals[p.dayIso]) dayTotals[p.dayIso] = { total: 0, cash: 0, vodafone: 0 };
+      dayTotals[p.dayIso].total += (p.amount || 0);
+      if(p.method === 'vodafone_cash'){ dayTotals[p.dayIso].vodafone += (p.amount || 0); }
+      else { dayTotals[p.dayIso].cash += (p.amount || 0); }
+    });
+
+    var monthDays = Object.keys(dayTotals).sort();
+
+    var grandTotal = 0, grandCash = 0, grandVodafone = 0, grandTeam = 0, grandDoctor = 0, grandPool = 0;
+    var grandMaterial = 0, grandLab = 0, grandOther = 0;
+
+    var rowsHtml = '';
+    if(monthDays.length === 0){
+      rowsHtml = '<tr><td colspan="6" class="empty-row">مفيش دفعات اتسجلت في الشهر ده.</td></tr>';
+    } else {
+      monthDays.forEach(function(dayIso, i){
+        var dt = dayTotals[dayIso];
+        var teamShare = dt.total * 0.05;
+        var doctorShare = dt.total * 0.4;
+        var expensePool = dt.total - teamShare - doctorShare;
+        var exp = dailyExpensesCache[dayIso] || {};
+        var material = exp.material || 0, lab = exp.lab || 0, other = exp.other || 0;
+
+        grandTotal += dt.total; grandCash += dt.cash; grandVodafone += dt.vodafone;
+        grandTeam += teamShare; grandDoctor += doctorShare; grandPool += expensePool;
+        grandMaterial += material; grandLab += lab; grandOther += other;
+
+        rowsHtml +=
+          '<tr class="' + (i % 2 === 0 ? 'row-a' : 'row-b') + '">' +
+            '<td class="cell-name">' + formatDateLabel(dayIso) + '</td>' +
+            '<td>' + dt.total.toLocaleString('ar-EG') + '</td>' +
+            '<td>' + teamShare.toLocaleString('ar-EG') + '</td>' +
+            '<td>' + doctorShare.toLocaleString('ar-EG') + '</td>' +
+            '<td>' + expensePool.toLocaleString('ar-EG') + '</td>' +
+            '<td>' + (material + lab + other).toLocaleString('ar-EG') + '</td>' +
+          '</tr>';
+      });
+    }
+
+    var grandRemaining = grandPool - (grandMaterial + grandLab + grandOther);
+
+    var now = new Date();
+    var stamp = now.getDate() + '/' + (now.getMonth()+1) + '/' + now.getFullYear() + ' — ' +
+      String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
+      '<title>حسابات شهر ' + monthLabel + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">' +
+      '<style>' +
+        '*{box-sizing:border-box;margin:0;padding:0;}' +
+        'body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#0E2B30;padding:36px 40px;}' +
+        '.ps-head{display:flex;align-items:center;gap:18px;border-bottom:3px solid #0B3B47;padding-bottom:20px;margin-bottom:26px;}' +
+        '.ps-head img{width:64px;height:64px;border-radius:50%;box-shadow:0 4px 14px -4px rgba(11,59,71,.4);}' +
+        '.ps-head-text strong{display:block;font-family:"Tajawal",sans-serif;font-weight:800;font-size:1.3rem;color:#0B3B47;}' +
+        '.ps-head-text span{display:block;font-size:.85rem;color:#4A6067;margin-top:2px;}' +
+        '.ps-title-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;}' +
+        '.ps-title-row h1{font-family:"Tajawal",sans-serif;font-weight:800;font-size:1.15rem;color:#0B3B47;}' +
+        '.ps-title-row .ps-count{font-size:.85rem;color:#4A6067;background:#EAF6F6;padding:5px 14px;border-radius:999px;}' +
+        '.pa-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px;}' +
+        '.pa-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:10px;background:#F6FBFB;font-size:.9rem;}' +
+        '.pa-row strong{font-family:"Tajawal",sans-serif;font-weight:800;font-size:1rem;color:#0B3B47;}' +
+        '.pa-row.pa-team{background:#FDEBEE;} .pa-row.pa-team strong{color:#C0392B;}' +
+        '.pa-row.pa-doctor{background:#E7F6EE;} .pa-row.pa-doctor strong{color:#1E9E5A;}' +
+        '.pa-row.pa-pool{background:#FFF3E0;} .pa-row.pa-pool strong{color:#B9822A;}' +
+        '.pa-row.pa-remaining{background:#0B3B47;color:#fff;grid-column:1/-1;} .pa-row.pa-remaining span{color:#B9D9DB;} .pa-row.pa-remaining strong{color:#fff;}' +
+        '.pa-row.pa-total{background:#EAF6F6;grid-column:1/-1;} .pa-row.pa-total strong{font-size:1.2rem;}' +
+        'h2{font-family:"Tajawal",sans-serif;font-weight:800;font-size:1rem;color:#0B3B47;margin:22px 0 12px;}' +
+        'table{width:100%;border-collapse:collapse;margin-bottom:10px;}' +
+        'thead th{text-align:right;font-family:"Tajawal",sans-serif;font-weight:700;font-size:.8rem;color:#fff;background:#0B3B47;padding:11px 12px;}' +
+        'thead th:first-child{border-radius:10px 0 0 0;} thead th:last-child{border-radius:0 10px 0 0;}' +
+        'tbody td{padding:9px 12px;font-size:.84rem;border-bottom:1px solid #DCE8E8;}' +
+        'tr.row-b{background:#F6FBFB;}' +
+        'tfoot td{padding:12px;font-weight:800;font-family:"Tajawal",sans-serif;background:#EAF6F6;color:#0B3B47;border-top:2px solid #0B3B47;}' +
+        '.cell-name{font-weight:700;white-space:nowrap;}' +
+        '.empty-row{text-align:center;padding:30px;color:#4A6067;}' +
+        '.ps-footer{margin-top:30px;text-align:center;font-size:.76rem;color:#4A6067;border-top:1px solid #DCE8E8;padding-top:14px;}' +
+        '@media print{ body{padding:14px 18px;} thead{display:table-header-group;} }' +
+      '</style></head><body>' +
+        '<div class="ps-head">' +
+          '<img src="' + logoSrc + '" alt="شعار العيادة">' +
+          '<div class="ps-head-text">' +
+            '<strong>عيادة د. أبانوب سليم لطب الأسنان</strong>' +
+            '<span>DENTAL & ORAL SURGERY</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ps-title-row">' +
+          '<h1>حسابات شهر ' + monthLabel + '</h1>' +
+          '<span class="ps-count">' + monthDays.length + ' يوم شغل</span>' +
+        '</div>' +
+        '<div class="pa-grid">' +
+          '<div class="pa-row pa-total"><span>إجمالي الشهر المحصّل</span><strong>' + grandTotal.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>💵 كاش</span><strong>' + grandCash.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>📱 فودافون كاش</span><strong>' + grandVodafone.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row pa-team"><span>إجمالي نصيب الفريق</span><strong>' + grandTeam.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row pa-doctor"><span>إجمالي نصيب الدكتور (40%)</span><strong>' + grandDoctor.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row pa-pool"><span>إجمالي المخصص للمصاريف</span><strong>' + grandPool.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>إجمالي الماتريال</span><strong>' + grandMaterial.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>إجمالي المعمل</span><strong>' + grandLab.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row"><span>إجمالي أخرى</span><strong>' + grandOther.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+          '<div class="pa-row pa-remaining"><span>إجمالي الباقي بعد كل الخصومات</span><strong>' + grandRemaining.toLocaleString('ar-EG') + ' جنيه</strong></div>' +
+        '</div>' +
+        '<h2>تفصيل يوم بيوم</h2>' +
+        '<table><thead><tr>' +
+          '<th>اليوم</th><th>الإجمالي</th><th>نصيب الفريق</th><th>نصيب الدكتور</th><th>المصاريف</th><th>مصروف فعلي</th>' +
+        '</tr></thead><tbody>' + rowsHtml + '</tbody>' +
+        '<tfoot><tr><td>الإجمالي</td><td>' + grandTotal.toLocaleString('ar-EG') + '</td><td>' + grandTeam.toLocaleString('ar-EG') + '</td><td>' + grandDoctor.toLocaleString('ar-EG') + '</td><td>' + grandPool.toLocaleString('ar-EG') + '</td><td>' + (grandMaterial+grandLab+grandOther).toLocaleString('ar-EG') + '</td></tr></tfoot>' +
+        '</table>' +
+        '<p class="ps-footer">عيادة د. أبانوب سليم لطب الأسنان — طُبع بتاريخ ' + stamp + '</p>' +
+      '</body></html>';
+
+    var printWin = window.open('', '_blank');
+    if(!printWin){
+      alert('المتصفح منع فتح نافذة الطباعة. اسمح بالنوافذ المنبثقة (Pop-ups) لهذا الموقع وجرّب تاني.');
+      return;
+    }
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+    printWin.onload = function(){
+      setTimeout(function(){ printWin.focus(); printWin.print(); }, 300);
+    };
   }
 
   function printTodaySchedule(){
