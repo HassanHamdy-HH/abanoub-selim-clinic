@@ -207,7 +207,7 @@
   .cal-cell.blocked{background:repeating-linear-gradient(45deg,#F3C9C9,#F3C9C9 4px,#FBEAEA 4px,#FBEAEA 8px);}
   .cal-cell.pending:hover,.cal-cell.confirmed:hover{transform:scale(1.08);}
 
-  .notes-cell{max-width:160px;white-space:normal;font-size:.82rem;color:var(--ink-soft);}
+  .notes-cell{max-width:200px;font-size:.82rem;color:var(--ink-soft);white-space:normal;word-break:break-word;vertical-align:top;}
   .notes-btn{
     background:var(--pale-aqua);border:none;width:30px;height:30px;border-radius:8px;
     display:inline-flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--teal);
@@ -222,6 +222,29 @@
   }
   .chart-card h3{font-size:1rem;margin-bottom:4px;}
   .chart-hint{font-size:.8rem;color:var(--ink-soft);display:block;margin-bottom:14px;}
+
+  .daily-summary-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .daily-summary-toolbar label{font-size:.85rem;font-weight:700;color:var(--ink-soft);}
+  .daily-summary-toolbar input[type="date"]{
+    padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--pale-aqua);
+    font-family:inherit;font-size:.88rem;color:var(--ink);
+  }
+  .daily-summary-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+  .ds-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;border-radius:10px;font-size:.9rem;
+  }
+  .ds-row span{color:var(--ink-soft);}
+  .ds-row strong{font-family:'Tajawal',sans-serif;font-weight:800;color:var(--deep-teal);font-size:1.05rem;}
+  .ds-row.ds-total{background:var(--pale-aqua);}
+  .ds-row.ds-doctor{background:#E7F6EE;}
+  .ds-row.ds-doctor strong{color:#1E9E5A;}
+  .ds-row.ds-pool{background:#FFF3E0;}
+  .ds-row.ds-pool strong{color:var(--gold-deep);}
+  .ds-row.ds-remaining{background:var(--deep-teal);margin-top:8px;}
+  .ds-row.ds-remaining span{color:#B9D9DB;}
+  .ds-row.ds-remaining strong{color:#fff;}
+  .ds-expenses-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
   .bar-chart{display:flex;flex-direction:column;gap:10px;}
   .bar-row{display:flex;align-items:center;gap:12px;}
   .bar-row .bar-label{font-size:.82rem;color:var(--ink-soft);min-width:88px;flex:0 0 auto;}
@@ -419,6 +442,8 @@
     .toolbar{flex-direction:column;align-items:stretch;}
     .view-tabs{justify-content:center;}
     .day-chip{min-width:64px;padding:8px 10px;}
+    .ds-expenses-grid{grid-template-columns:1fr;}
+    .modal-field-row{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -621,6 +646,54 @@
         </div>
         <div class="empty-mini" id="accountsEmpty" style="display:none;">مفيش حالات ليها حساب مسجّل لسه — استخدم زرار "تعديل" على أي حجز وحدد الإجراء والمبلغ.</div>
       </div>
+
+      <div class="chart-card">
+        <h3>الملخص المالي اليومي</h3>
+        <span class="chart-hint">المبلغ الكلي بيتحسب من إجمالي الحجوزات المؤكدة في اليوم ده. نسبة الدكتور والمصاريف بتتقسم منه تلقائي.</span>
+
+        <div class="daily-summary-toolbar">
+          <label>اختار اليوم</label>
+          <input type="date" id="dailySummaryDate">
+        </div>
+
+        <div class="daily-summary-grid">
+          <div class="ds-row ds-total">
+            <span>المبلغ الكلي لليوم</span>
+            <strong id="dsTotal">0 جنيه</strong>
+          </div>
+          <div class="ds-row ds-doctor">
+            <span>نصيب الدكتور (40%)</span>
+            <strong id="dsDoctorShare">0 جنيه</strong>
+          </div>
+          <div class="ds-row ds-pool">
+            <span>المخصص للمصاريف (60%)</span>
+            <strong id="dsExpensePool">0 جنيه</strong>
+          </div>
+        </div>
+
+        <div class="ds-expenses-grid">
+          <div class="modal-field">
+            <label>ماتريال</label>
+            <input type="number" id="dsMaterial" placeholder="0" min="0">
+          </div>
+          <div class="modal-field">
+            <label>معمل</label>
+            <input type="number" id="dsLab" placeholder="0" min="0">
+          </div>
+          <div class="modal-field">
+            <label>أخرى (كهرباء، صيانة، مستلزمات)</label>
+            <input type="number" id="dsOther" placeholder="0" min="0">
+          </div>
+        </div>
+
+        <div class="ds-row ds-remaining">
+          <span>الباقي بعد كل الخصومات</span>
+          <strong id="dsRemaining">0 جنيه</strong>
+        </div>
+
+        <button class="cta-btn gold" id="dsSaveBtn" style="width:100%;justify-content:center;margin-top:6px;">حفظ مصاريف اليوم</button>
+        <p class="modal-error" id="dsSaveMsg"></p>
+      </div>
     </div>
 
     <div class="analytics-view" id="analyticsView" style="display:none;">
@@ -682,7 +755,7 @@
 
       <div class="chart-card">
         <h3>الإيرادات حسب نوع الخدمة (الحجوزات المؤكدة فقط)</h3>
-        <span class="chart-hint">مبني على الخدمة المحددة لكل حجز من زرار "تعديل" — الخدمات اللي سعرها "حسب المعمل" مش بتتحسب هنا</span>
+        <span class="chart-hint">مبني على الإجمالي الفعلي المسجل لكل حجز (بعد أي خصم) من زرار "تعديل" — مش سعر قائمة الأسعار الأساسي</span>
         <div class="bar-chart" id="chartRevenue"></div>
       </div>
 
@@ -774,9 +847,13 @@
         <option value="">بدون تحديد</option>
       </select>
     </div>
+    <div class="modal-field">
+      <label>نسبة الخصم % (على سعر الإجراء المسجل في الموقع)</label>
+      <input type="number" id="editDiscountInput" placeholder="0" min="0" max="100">
+    </div>
     <div class="modal-field-row">
       <div class="modal-field">
-        <label>الإجمالي المطلوب (جنيه)</label>
+        <label>الإجمالي بعد الخصم (جنيه)</label>
         <input type="number" id="editTotalInput" placeholder="0" min="0">
       </div>
       <div class="modal-field">
@@ -969,6 +1046,7 @@
           bookedBy: data.bookedBy || 'patient',
           notes: data.notes || '',
           service: data.service || '',
+          discountPercent: typeof data.discountPercent === 'number' ? data.discountPercent : 0,
           totalAmount: typeof data.totalAmount === 'number' ? data.totalAmount : 0,
           paidAmount: typeof data.paidAmount === 'number' ? data.paidAmount : 0,
           ts: data.ts || 0
@@ -983,6 +1061,8 @@
       renderTable();
       renderCalendar();
       renderPatients();
+      renderAccounts();
+      renderDailySummary();
     }, function(err){
       console.warn('Firestore listener error on admin dashboard.', err);
       document.getElementById('loadingState').textContent = 'حصل خطأ في تحميل الحجوزات.';
@@ -1077,14 +1157,8 @@
       if(e.target.id === 'editBookingOverlay'){ closeEditBookingModal(); }
     });
     document.getElementById('editBookingSaveBtn').addEventListener('click', saveEditBooking);
-    document.getElementById('editServiceInput').addEventListener('change', function(){
-      var svc = SERVICE_BY_ID[this.value];
-      var totalInput = document.getElementById('editTotalInput');
-      if(svc && svc.price != null && !totalInput.value){
-        totalInput.value = svc.price;
-      }
-      updateRemainingLine();
-    });
+    document.getElementById('editServiceInput').addEventListener('change', recalcTotalFromDiscount);
+    document.getElementById('editDiscountInput').addEventListener('input', recalcTotalFromDiscount);
     document.getElementById('editTotalInput').addEventListener('input', updateRemainingLine);
     document.getElementById('editPaidInput').addEventListener('input', updateRemainingLine);
 
@@ -1096,6 +1170,12 @@
     document.getElementById('patientSearchInput').addEventListener('input', renderPatients);
     document.getElementById('accountsSearchInput').addEventListener('input', renderAccounts);
     document.getElementById('accountsFilter').addEventListener('change', renderAccounts);
+    document.getElementById('dailySummaryDate').addEventListener('change', renderDailySummary);
+    document.getElementById('dsMaterial').addEventListener('input', updateDailyRemaining);
+    document.getElementById('dsLab').addEventListener('input', updateDailyRemaining);
+    document.getElementById('dsOther').addEventListener('input', updateDailyRemaining);
+    document.getElementById('dsSaveBtn').addEventListener('click', saveDailySummary);
+    watchDailyExpenses();
   }
 
   function renderStats(){
@@ -1435,6 +1515,84 @@
       .catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
+  // ---- Daily financial summary (doctor's share / expenses split) ----
+  var dailyExpensesCache = {}; // { dayIso: { material, lab, other } }
+
+  function watchDailyExpenses(){
+    if(!firestoreDb) return;
+    firestoreDb.collection('dailyExpenses').onSnapshot(function(snap){
+      dailyExpensesCache = {};
+      snap.forEach(function(doc){ dailyExpensesCache[doc.id] = doc.data(); });
+      renderDailySummary();
+    }, function(err){
+      console.warn('Firestore listener error for dailyExpenses.', err);
+    });
+  }
+
+  function getDayConfirmedTotal(dayIso){
+    var total = 0;
+    allBookings.forEach(function(b){
+      if(b.status === 'confirmed' && b.dayIso === dayIso && b.totalAmount){
+        total += b.totalAmount;
+      }
+    });
+    return total;
+  }
+
+  function renderDailySummary(){
+    var dateInput = document.getElementById('dailySummaryDate');
+    if(!dateInput) return;
+    if(!dateInput.value){ dateInput.value = todayIso(); }
+    var dayIso = dateInput.value;
+
+    var total = getDayConfirmedTotal(dayIso);
+    var doctorShare = total * 0.4;
+    var expensePool = total * 0.6;
+
+    document.getElementById('dsTotal').textContent = total.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('dsDoctorShare').textContent = doctorShare.toLocaleString('ar-EG') + ' جنيه';
+    document.getElementById('dsExpensePool').textContent = expensePool.toLocaleString('ar-EG') + ' جنيه';
+
+    var saved = dailyExpensesCache[dayIso] || {};
+    document.getElementById('dsMaterial').value = saved.material || '';
+    document.getElementById('dsLab').value = saved.lab || '';
+    document.getElementById('dsOther').value = saved.other || '';
+
+    updateDailyRemaining();
+    document.getElementById('dsSaveMsg').textContent = '';
+  }
+
+  function updateDailyRemaining(){
+    var dayIso = document.getElementById('dailySummaryDate').value;
+    var total = getDayConfirmedTotal(dayIso);
+    var expensePool = total * 0.6;
+    var material = parseFloat(document.getElementById('dsMaterial').value) || 0;
+    var lab = parseFloat(document.getElementById('dsLab').value) || 0;
+    var other = parseFloat(document.getElementById('dsOther').value) || 0;
+    var remaining = expensePool - (material + lab + other);
+    document.getElementById('dsRemaining').textContent = remaining.toLocaleString('ar-EG') + ' جنيه';
+  }
+
+  function saveDailySummary(){
+    var dayIso = document.getElementById('dailySummaryDate').value;
+    if(!dayIso) return;
+    var material = parseFloat(document.getElementById('dsMaterial').value) || 0;
+    var lab = parseFloat(document.getElementById('dsLab').value) || 0;
+    var other = parseFloat(document.getElementById('dsOther').value) || 0;
+    var msgEl = document.getElementById('dsSaveMsg');
+
+    firestoreDb.collection('dailyExpenses').doc(dayIso).set({ material: material, lab: lab, other: other, ts: Date.now() })
+      .then(function(){
+        msgEl.style.color = '#1E9E5A';
+        msgEl.textContent = 'تم الحفظ ✓';
+        logActivity('daily_expenses', 'حفظ مصاريف يوم ' + formatDateLabel(dayIso) + ' — ماتريال ' + material.toLocaleString('ar-EG') + '، معمل ' + lab.toLocaleString('ar-EG') + '، أخرى ' + other.toLocaleString('ar-EG'));
+      })
+      .catch(function(err){
+        msgEl.style.color = '#D64545';
+        msgEl.textContent = 'حصل خطأ: ' + err.message;
+      });
+  }
+
   function renderPatients(){
     var listEl = document.getElementById('patientsList');
     var emptyEl = document.getElementById('patientsEmpty');
@@ -1573,14 +1731,14 @@
 
     document.getElementById('statMonthTotal').textContent = monthTotal;
 
-    // ---- Revenue (confirmed bookings with a fixed-price service assigned) ----
+    // ---- Revenue (confirmed bookings with a service + actual total amount recorded) ----
     var todayIsoStr = todayIso();
     var daysSinceSaturday = (now.getDay() - 6 + 7) % 7;
     var weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceSaturday);
     var weekStartIso = weekStart.getFullYear() + '-' + String(weekStart.getMonth()+1).padStart(2,'0') + '-' + String(weekStart.getDate()).padStart(2,'0');
 
     var revenueToday = 0, revenueWeek = 0, revenueMonth = 0;
-    var serviceRevenue = {}; // id -> sum
+    var serviceRevenue = {}; // id -> sum (actual amount after any discount)
     var serviceCounts = {};  // id -> count
 
     allBookings.forEach(function(b){
@@ -1590,13 +1748,13 @@
 
       serviceCounts[b.service] = (serviceCounts[b.service] || 0) + 1;
 
-      if(svc.price == null) return; // "حسب المعمل" — not counted in totals
-      serviceRevenue[b.service] = (serviceRevenue[b.service] || 0) + svc.price;
+      if(!b.totalAmount) return; // no actual amount recorded yet — not counted in revenue totals
+      serviceRevenue[b.service] = (serviceRevenue[b.service] || 0) + b.totalAmount;
 
       var parts = b.dayIso.split('-').map(Number);
-      if(b.dayIso === todayIsoStr) revenueToday += svc.price;
-      if(b.dayIso >= weekStartIso) revenueWeek += svc.price;
-      if(parts[0] === now.getFullYear() && parts[1]-1 === now.getMonth()) revenueMonth += svc.price;
+      if(b.dayIso === todayIsoStr) revenueToday += b.totalAmount;
+      if(b.dayIso >= weekStartIso) revenueWeek += b.totalAmount;
+      if(parts[0] === now.getFullYear() && parts[1]-1 === now.getMonth()) revenueMonth += b.totalAmount;
     });
 
     document.getElementById('statRevenueToday').textContent = revenueToday ? revenueToday.toLocaleString('ar-EG') + ' جنيه' : '–';
@@ -1874,6 +2032,7 @@
     });
     serviceSel.value = b.service || '';
 
+    document.getElementById('editDiscountInput').value = b.discountPercent || '';
     var totalInput = document.getElementById('editTotalInput');
     var paidInput = document.getElementById('editPaidInput');
     totalInput.value = b.totalAmount || '';
@@ -1886,6 +2045,15 @@
   function closeEditBookingModal(){
     document.getElementById('editBookingOverlay').classList.remove('open');
     pendingEditBooking = null;
+  }
+  function recalcTotalFromDiscount(){
+    var serviceId = document.getElementById('editServiceInput').value;
+    var svc = SERVICE_BY_ID[serviceId];
+    if(!svc || svc.price == null) return; // no fixed base price to discount from — leave total as-is
+    var discount = parseFloat(document.getElementById('editDiscountInput').value) || 0;
+    var total = Math.round(svc.price * (1 - discount / 100));
+    document.getElementById('editTotalInput').value = total;
+    updateRemainingLine();
   }
   function updateRemainingLine(){
     var total = parseFloat(document.getElementById('editTotalInput').value) || 0;
@@ -1910,6 +2078,7 @@
     var phone = document.getElementById('editPhoneInput').value.trim();
     var status = document.getElementById('editStatusInput').value;
     var service = document.getElementById('editServiceInput').value;
+    var discountPercent = parseFloat(document.getElementById('editDiscountInput').value) || 0;
     var totalAmount = parseFloat(document.getElementById('editTotalInput').value) || 0;
     var paidAmount = parseFloat(document.getElementById('editPaidInput').value) || 0;
     var errorEl = document.getElementById('editBookingError');
@@ -1922,6 +2091,10 @@
       errorEl.textContent = 'من فضلك اكتب رقم موبايل مصري صحيح (01xxxxxxxxx).';
       return;
     }
+    if(discountPercent < 0 || discountPercent > 100){
+      errorEl.textContent = 'نسبة الخصم لازم تكون بين 0 و100.';
+      return;
+    }
     if(paidAmount > totalAmount && totalAmount > 0){
       errorEl.textContent = 'المبلغ المدفوع أكبر من الإجمالي — راجع الرقمين.';
       return;
@@ -1932,12 +2105,13 @@
     if(phone !== b.phone) changes.push('رقم الموبايل');
     if(status !== b.status) changes.push('الحالة');
     if(service !== (b.service || '')) changes.push('الخدمة');
+    if(discountPercent !== (b.discountPercent || 0)) changes.push('نسبة الخصم');
     if(totalAmount !== (b.totalAmount || 0)) changes.push('الإجمالي');
     if(paidAmount !== (b.paidAmount || 0)) changes.push('المدفوع');
 
     firestoreDb.collection('bookings').doc(b.id).update({
       name: name, phone: phone, status: status, service: service,
-      totalAmount: totalAmount, paidAmount: paidAmount
+      discountPercent: discountPercent, totalAmount: totalAmount, paidAmount: paidAmount
     })
       .then(function(){
         if(changes.length){
