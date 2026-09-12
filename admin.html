@@ -317,6 +317,21 @@
   .reminder-row.sent{opacity:.55;}
   .reminder-row.sent .rr-send{background:var(--pale-aqua);color:var(--ink-soft);}
 
+  .legacy-list{display:flex;flex-direction:column;gap:10px;}
+  .legacy-item{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#FFF8EE;
+  }
+  .legacy-item .li-info strong{display:block;color:var(--deep-teal);font-size:.9rem;}
+  .legacy-item .li-info span{display:block;color:var(--ink-soft);font-size:.78rem;margin-top:2px;}
+  .legacy-item .li-dates{display:flex;gap:10px;flex-wrap:wrap;font-size:.78rem;}
+  .legacy-item .li-dates b{color:#C0392B;}
+  .legacy-item .li-fix-btn{
+    background:var(--gold);color:var(--deep-teal);padding:8px 14px;border-radius:8px;
+    font-size:.8rem;font-weight:700;border:none;white-space:nowrap;
+  }
+  .legacy-item .li-fix-btn:hover{background:var(--gold-deep);color:#fff;}
+
   .modal-field{margin-bottom:14px;}
   .modal-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .service-check-list{
@@ -755,6 +770,13 @@
         </div>
         <button class="btn btn-outline" id="dsMonthlyPrintBtn" style="width:100%;justify-content:center;margin-top:10px;">🖨️ طباعة حسابات الشهر كامل</button>
       </div>
+
+      <div class="chart-card">
+        <h3>🔧 مراجعة دفعات قديمة</h3>
+        <span class="chart-hint">دفعات اتسجلت بتاريخ مختلف عن تاريخ الحجز الأصلي (زي الدفعات اللي كانت بتتسجل غلط بتاريخ اليوم اللي دخّلت بياناتها فيه بدل يوم الكشف الحقيقي). راجعها وانقل أي واحدة تحب لتاريخ الحجز الصحيح.</span>
+        <div class="legacy-list" id="legacyPaymentsList"></div>
+        <div class="empty-mini" id="legacyPaymentsEmpty" style="display:none;">مفيش دفعات محتاجة مراجعة — كل حاجة متسجلة بتاريخها الصح.</div>
+      </div>
     </div>
 
     <div class="analytics-view" id="analyticsView" style="display:none;">
@@ -1166,6 +1188,7 @@
       renderPatients();
       renderAccounts();
       renderDailySummary();
+      renderLegacyPayments();
     }, function(err){
       console.warn('Firestore listener error on admin dashboard.', err);
       document.getElementById('loadingState').textContent = 'حصل خطأ في تحميل الحجوزات.';
@@ -1664,21 +1687,26 @@
     if(!firestoreDb) return;
     firestoreDb.collection('payments').onSnapshot(function(snap){
       paymentsCache = [];
-      snap.forEach(function(doc){ paymentsCache.push(doc.data()); });
+      snap.forEach(function(doc){
+        var data = doc.data();
+        data.id = doc.id;
+        paymentsCache.push(data);
+      });
       renderDailySummary();
+      renderLegacyPayments();
     }, function(err){
       console.warn('Firestore listener error for payments.', err);
     });
   }
 
-  function logPaymentReceived(b, amount, method){
+  function logPaymentReceived(b, amount, method, dayIso){
     if(!firestoreDb) return;
     firestoreDb.collection('payments').add({
       bookingId: b.id,
       name: b.name,
       amount: amount,
       method: method || 'cash',
-      dayIso: todayIso(), // the day the cash actually came in — not the appointment day
+      dayIso: dayIso || todayIso(), // defaults to today (a live "تسجيل دفعة"); editing a booking passes its own appointment day instead
       ts: Date.now()
     }).catch(function(err){ console.warn('Could not log payment.', err); });
   }
@@ -1765,6 +1793,58 @@
     var other = parseFloat(document.getElementById('dsOther').value) || 0;
     var remaining = expensePool - (material + lab + other);
     document.getElementById('dsRemaining').textContent = remaining.toLocaleString('ar-EG') + ' جنيه';
+  }
+
+  function renderLegacyPayments(){
+    var listEl = document.getElementById('legacyPaymentsList');
+    var emptyEl = document.getElementById('legacyPaymentsEmpty');
+    if(!listEl) return;
+
+    var bookingById = {};
+    allBookings.forEach(function(b){ bookingById[b.id] = b; });
+
+    var mismatches = paymentsCache.filter(function(p){
+      var b = bookingById[p.bookingId];
+      return b && p.dayIso !== b.dayIso;
+    });
+
+    listEl.innerHTML = '';
+    if(mismatches.length === 0){
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    mismatches.sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+
+    mismatches.forEach(function(p){
+      var b = bookingById[p.bookingId];
+      var item = document.createElement('div');
+      item.className = 'legacy-item';
+      item.innerHTML =
+        '<div class="li-info">' +
+          '<strong>' + escapeHtml(p.name || b.name) + ' — ' + (p.amount || 0).toLocaleString('ar-EG') + ' جنيه</strong>' +
+          '<div class="li-dates">' +
+            '<span>متسجلة حاليًا بتاريخ: <b>' + formatDateLabel(p.dayIso) + '</b></span>' +
+            '<span>تاريخ الحجز الفعلي: <b>' + formatDateLabel(b.dayIso) + '</b></span>' +
+          '</div>' +
+        '</div>';
+      var fixBtn = document.createElement('button');
+      fixBtn.className = 'li-fix-btn';
+      fixBtn.textContent = 'نقل لتاريخ الحجز';
+      fixBtn.addEventListener('click', function(){ fixLegacyPayment(p, b); });
+      item.appendChild(fixBtn);
+      listEl.appendChild(item);
+    });
+  }
+
+  function fixLegacyPayment(payment, booking){
+    if(!payment.id) return;
+    firestoreDb.collection('payments').doc(payment.id).update({ dayIso: booking.dayIso })
+      .then(function(){
+        logActivity('edit', 'تصحيح تاريخ دفعة ' + (payment.name || booking.name) + ' من ' + formatDateLabel(payment.dayIso) + ' لـ ' + formatDateLabel(booking.dayIso));
+      })
+      .catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
   function saveDailySummary(){
@@ -2384,7 +2464,7 @@
         var paidDelta = paidAmount - (b.paidAmount || 0);
         if(paidDelta > 0){
           var method = document.getElementById('editPaymentMethodInput').value;
-          logPaymentReceived({ id: b.id, name: name }, paidDelta, method);
+          logPaymentReceived({ id: b.id, name: name }, paidDelta, method, b.dayIso);
         }
         if(changes.length){
           var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
