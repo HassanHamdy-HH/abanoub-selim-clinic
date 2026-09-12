@@ -1708,7 +1708,10 @@
       method: method || 'cash',
       dayIso: dayIso || todayIso(), // defaults to today (a live "تسجيل دفعة"); editing a booking passes its own appointment day instead
       ts: Date.now()
-    }).catch(function(err){ console.warn('Could not log payment.', err); });
+    }).catch(function(err){
+      console.warn('Could not log payment.', err);
+      alert('اتسجل الدفع في حجز ' + b.name + ' بس حصل خطأ في تسجيله بالملخص المالي اليومي: ' + err.message + '\n\nمن المحتمل قواعد أمان Firestore محتاجة تحديث عشان تسمح بالكتابة في collection اسمها payments.');
+    });
   }
 
   function getDayCollectedTotal(dayIso){
