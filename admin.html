@@ -319,6 +319,35 @@
 
   .modal-field{margin-bottom:14px;}
   .modal-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .service-check-list{
+    max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--pale-aqua);padding:6px;
+  }
+  .service-check-item{
+    display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;
+    font-size:.86rem;color:var(--ink);
+  }
+  .service-check-item:hover{background:#fff;}
+  .service-check-item input{width:16px;height:16px;flex:0 0 auto;cursor:pointer;}
+  .service-check-item .sci-name{flex:1;}
+  .service-check-item .sci-price{color:var(--ink-soft);font-size:.78rem;white-space:nowrap;}
+  .service-check-item.checked{background:#fff;box-shadow:0 0 0 1px var(--teal) inset;}
+  .service-check-item.checked .sci-name{color:var(--deep-teal);font-weight:700;}
+  .service-check-item .sci-discount{
+    width:56px;padding:5px 6px;border-radius:6px;border:1px solid var(--line);
+    font-size:.78rem;text-align:center;background:#fff;color:var(--ink);flex:0 0 auto;
+  }
+  .service-check-item .sci-discount:disabled{opacity:.4;background:var(--pale-aqua);}
+  .service-check-item .sci-discount-label{font-size:.72rem;color:var(--ink-soft);flex:0 0 auto;}
+  .quick-discount-row{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;
+    background:var(--pale-aqua);padding:10px 12px;border-radius:10px;
+  }
+  .quick-discount-row label{font-size:.8rem;color:var(--ink-soft);flex:1 1 160px;}
+  .quick-discount-row input{
+    width:70px;padding:7px 8px;border-radius:8px;border:1px solid var(--line);text-align:center;
+  }
+  .quick-discount-row .btn{padding:7px 14px;font-size:.78rem;}
   .edit-remaining-line{
     text-align:center;font-size:.85rem;font-weight:700;color:var(--ink-soft);
     background:var(--pale-aqua);border-radius:10px;padding:8px 12px;margin-bottom:16px;
@@ -874,18 +903,17 @@
       </select>
     </div>
     <div class="modal-field">
-      <label>الخدمة / الإجراء</label>
-      <select id="editServiceInput">
-        <option value="">بدون تحديد</option>
-      </select>
+      <label>الخدمة / الإجراءات (ممكن تختار أكتر من واحدة، ولكل واحدة خصمها الخاص)</label>
+      <div class="service-check-list" id="serviceCheckList"></div>
     </div>
-    <div class="modal-field">
-      <label>نسبة الخصم % (على سعر الإجراء المسجل في الموقع)</label>
-      <input type="number" id="editDiscountInput" placeholder="0" min="0" max="100">
+    <div class="quick-discount-row">
+      <label>تطبيق نسبة خصم واحدة على كل الإجراءات المحددة:</label>
+      <input type="number" id="quickDiscountInput" placeholder="0" min="0" max="100">
+      <button type="button" class="btn btn-outline" id="quickDiscountApplyBtn">تطبيق على الكل</button>
     </div>
     <div class="modal-field-row">
       <div class="modal-field">
-        <label>الإجمالي بعد الخصم (جنيه)</label>
+        <label>الإجمالي بعد الخصومات (جنيه)</label>
         <input type="number" id="editTotalInput" placeholder="0" min="0">
       </div>
       <div class="modal-field">
@@ -1120,8 +1148,8 @@
           status: data.status || 'pending',
           bookedBy: data.bookedBy || 'patient',
           notes: data.notes || '',
-          service: data.service || '',
-          discountPercent: typeof data.discountPercent === 'number' ? data.discountPercent : 0,
+          services: data.services || (data.service ? [data.service] : []),
+          serviceDiscounts: data.serviceDiscounts || {},
           totalAmount: typeof data.totalAmount === 'number' ? data.totalAmount : 0,
           paidAmount: typeof data.paidAmount === 'number' ? data.paidAmount : 0,
           ts: data.ts || 0
@@ -1232,8 +1260,15 @@
       if(e.target.id === 'editBookingOverlay'){ closeEditBookingModal(); }
     });
     document.getElementById('editBookingSaveBtn').addEventListener('click', saveEditBooking);
-    document.getElementById('editServiceInput').addEventListener('change', recalcTotalFromDiscount);
-    document.getElementById('editDiscountInput').addEventListener('input', recalcTotalFromDiscount);
+    document.getElementById('quickDiscountApplyBtn').addEventListener('click', function(){
+      var val = parseFloat(document.getElementById('quickDiscountInput').value) || 0;
+      document.querySelectorAll('#serviceCheckList .service-check-item').forEach(function(item){
+        var cb = item.querySelector('input[type="checkbox"]');
+        var discInput = item.querySelector('.sci-discount');
+        if(cb.checked && !discInput.disabled){ discInput.value = val; }
+      });
+      recalcTotalFromDiscount();
+    });
     document.getElementById('editTotalInput').addEventListener('input', updateRemainingLine);
     document.getElementById('editPaidInput').addEventListener('input', updateRemainingLine);
 
@@ -1548,8 +1583,10 @@
 
     rows.forEach(function(b){
       var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
-      var svc = SERVICE_BY_ID[b.service];
-      var serviceName = svc ? svc.name : '—';
+      var serviceName = (b.services || []).map(function(id){
+        var svc = SERVICE_BY_ID[id];
+        return svc ? svc.name : id;
+      }).join('، ') || '—';
       var remaining = b.totalAmount - b.paidAmount;
 
       var tr = document.createElement('tr');
@@ -1895,18 +1932,23 @@
     var weekStartIso = weekStart.getFullYear() + '-' + String(weekStart.getMonth()+1).padStart(2,'0') + '-' + String(weekStart.getDate()).padStart(2,'0');
 
     var revenueToday = 0, revenueWeek = 0, revenueMonth = 0;
-    var serviceRevenue = {}; // id -> sum (actual amount after any discount)
-    var serviceCounts = {};  // id -> count
+    var serviceCounts = {};   // individual service id -> how many times it was picked (frequency)
+    var comboRevenue = {};    // "combo label" -> sum of totalAmount for bookings with that exact combo
 
     allBookings.forEach(function(b){
-      if(b.status !== 'confirmed' || !b.service) return;
-      var svc = SERVICE_BY_ID[b.service];
-      if(!svc) return;
+      if(b.status !== 'confirmed' || !b.services || b.services.length === 0) return;
 
-      serviceCounts[b.service] = (serviceCounts[b.service] || 0) + 1;
+      b.services.forEach(function(id){
+        if(SERVICE_BY_ID[id]){ serviceCounts[id] = (serviceCounts[id] || 0) + 1; }
+      });
 
       if(!b.totalAmount) return; // no actual amount recorded yet — not counted in revenue totals
-      serviceRevenue[b.service] = (serviceRevenue[b.service] || 0) + b.totalAmount;
+
+      var comboLabel = b.services.map(function(id){
+        var svc = SERVICE_BY_ID[id];
+        return svc ? svc.name : id;
+      }).sort().join(' + ');
+      comboRevenue[comboLabel] = (comboRevenue[comboLabel] || 0) + b.totalAmount;
 
       var parts = b.dayIso.split('-').map(Number);
       if(b.dayIso === todayIsoStr) revenueToday += b.totalAmount;
@@ -1927,12 +1969,12 @@
     var chartRevenue = document.getElementById('chartRevenue');
     if(chartRevenue){
       chartRevenue.innerHTML = '';
-      var revEntries = Object.keys(serviceRevenue).map(function(sid){
-        return { name: SERVICE_BY_ID[sid].name, amount: serviceRevenue[sid] };
+      var revEntries = Object.keys(comboRevenue).map(function(label){
+        return { name: label, amount: comboRevenue[label] };
       }).sort(function(a,b){ return b.amount - a.amount; }).slice(0, 8);
 
       if(revEntries.length === 0){
-        chartRevenue.innerHTML = '<div class="empty-mini">لسه مفيش خدمات محددة على حجوزات مؤكدة</div>';
+        chartRevenue.innerHTML = '<div class="empty-mini">لسه مفيش إجراءات محددة على حجوزات مؤكدة</div>';
       } else {
         var maxRev = Math.max.apply(null, revEntries.map(function(e){ return e.amount; }));
         revEntries.forEach(function(e){
@@ -2179,17 +2221,58 @@
     document.getElementById('editPhoneInput').value = b.phone;
     document.getElementById('editStatusInput').value = b.status;
 
-    var serviceSel = document.getElementById('editServiceInput');
-    serviceSel.innerHTML = '<option value="">بدون تحديد</option>';
+    var selectedServices = b.services || [];
+    var savedDiscounts = b.serviceDiscounts || {}; // { serviceId: percent }
+    var listEl = document.getElementById('serviceCheckList');
+    listEl.innerHTML = '';
     SERVICES.forEach(function(s){
-      var opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.name + (s.price != null ? ' — ' + s.price + ' جنيه' : ' — حسب المعمل');
-      serviceSel.appendChild(opt);
-    });
-    serviceSel.value = b.service || '';
+      var isChecked = selectedServices.indexOf(s.id) !== -1;
+      var item = document.createElement('label');
+      item.className = 'service-check-item' + (isChecked ? ' checked' : '');
 
-    document.getElementById('editDiscountInput').value = b.discountPercent || '';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = s.id;
+      cb.checked = isChecked;
+
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'sci-name';
+      nameSpan.textContent = s.name;
+
+      var priceSpan = document.createElement('span');
+      priceSpan.className = 'sci-price';
+      priceSpan.textContent = s.price != null ? s.price.toLocaleString('ar-EG') + ' جنيه' : 'حسب المعمل';
+
+      var discLabel = document.createElement('span');
+      discLabel.className = 'sci-discount-label';
+      discLabel.textContent = 'خصم %';
+
+      var discInput = document.createElement('input');
+      discInput.type = 'number';
+      discInput.className = 'sci-discount';
+      discInput.min = '0';
+      discInput.max = '100';
+      discInput.placeholder = '0';
+      discInput.value = savedDiscounts[s.id] || '';
+      discInput.disabled = s.price == null || !isChecked;
+      discInput.addEventListener('click', function(e){ e.preventDefault(); });
+      discInput.addEventListener('input', recalcTotalFromDiscount);
+
+      cb.addEventListener('change', function(){
+        item.classList.toggle('checked', cb.checked);
+        discInput.disabled = s.price == null || !cb.checked;
+        recalcTotalFromDiscount();
+      });
+
+      item.appendChild(cb);
+      item.appendChild(nameSpan);
+      item.appendChild(priceSpan);
+      item.appendChild(discLabel);
+      item.appendChild(discInput);
+      listEl.appendChild(item);
+    });
+
+    document.getElementById('quickDiscountInput').value = '';
     var totalInput = document.getElementById('editTotalInput');
     var paidInput = document.getElementById('editPaidInput');
     totalInput.value = b.totalAmount || '';
@@ -2203,13 +2286,38 @@
     document.getElementById('editBookingOverlay').classList.remove('open');
     pendingEditBooking = null;
   }
+  function getCheckedServiceIds(){
+    var boxes = document.querySelectorAll('#serviceCheckList input[type="checkbox"]:checked');
+    var ids = [];
+    boxes.forEach(function(cb){ ids.push(cb.value); });
+    return ids;
+  }
+  function getServiceDiscounts(){
+    var discounts = {};
+    document.querySelectorAll('#serviceCheckList .service-check-item').forEach(function(item){
+      var cb = item.querySelector('input[type="checkbox"]');
+      var discInput = item.querySelector('.sci-discount');
+      if(cb.checked){
+        var val = parseFloat(discInput.value) || 0;
+        if(val > 0){ discounts[cb.value] = val; }
+      }
+    });
+    return discounts;
+  }
   function recalcTotalFromDiscount(){
-    var serviceId = document.getElementById('editServiceInput').value;
-    var svc = SERVICE_BY_ID[serviceId];
-    if(!svc || svc.price == null) return; // no fixed base price to discount from — leave total as-is
-    var discount = parseFloat(document.getElementById('editDiscountInput').value) || 0;
-    var total = Math.round(svc.price * (1 - discount / 100));
-    document.getElementById('editTotalInput').value = total;
+    var discounts = getServiceDiscounts();
+    var ids = getCheckedServiceIds();
+    var total = 0;
+    var hasFixedPrice = false;
+    ids.forEach(function(id){
+      var svc = SERVICE_BY_ID[id];
+      if(!svc || svc.price == null) return;
+      hasFixedPrice = true;
+      var discount = discounts[id] || 0;
+      total += svc.price * (1 - discount / 100);
+    });
+    if(!hasFixedPrice) return; // nothing fixed-price to calculate from — leave total as-is
+    document.getElementById('editTotalInput').value = Math.round(total);
     updateRemainingLine();
   }
   function updateRemainingLine(){
@@ -2234,8 +2342,8 @@
     var name = document.getElementById('editNameInput').value.trim();
     var phone = document.getElementById('editPhoneInput').value.trim();
     var status = document.getElementById('editStatusInput').value;
-    var service = document.getElementById('editServiceInput').value;
-    var discountPercent = parseFloat(document.getElementById('editDiscountInput').value) || 0;
+    var services = getCheckedServiceIds();
+    var serviceDiscounts = getServiceDiscounts();
     var totalAmount = parseFloat(document.getElementById('editTotalInput').value) || 0;
     var paidAmount = parseFloat(document.getElementById('editPaidInput').value) || 0;
     var errorEl = document.getElementById('editBookingError');
@@ -2248,27 +2356,29 @@
       errorEl.textContent = 'من فضلك اكتب رقم موبايل مصري صحيح (01xxxxxxxxx).';
       return;
     }
-    if(discountPercent < 0 || discountPercent > 100){
-      errorEl.textContent = 'نسبة الخصم لازم تكون بين 0 و100.';
-      return;
-    }
     if(paidAmount > totalAmount && totalAmount > 0){
       errorEl.textContent = 'المبلغ المدفوع أكبر من الإجمالي — راجع الرقمين.';
       return;
     }
 
+    var oldServices = b.services || [];
+    var servicesChanged = services.length !== oldServices.length ||
+      services.some(function(id){ return oldServices.indexOf(id) === -1; });
+    var oldDiscounts = b.serviceDiscounts || {};
+    var discountsChanged = JSON.stringify(serviceDiscounts) !== JSON.stringify(oldDiscounts);
+
     var changes = [];
     if(name !== b.name) changes.push('الاسم');
     if(phone !== b.phone) changes.push('رقم الموبايل');
     if(status !== b.status) changes.push('الحالة');
-    if(service !== (b.service || '')) changes.push('الخدمة');
-    if(discountPercent !== (b.discountPercent || 0)) changes.push('نسبة الخصم');
+    if(servicesChanged) changes.push('الإجراءات');
+    if(discountsChanged) changes.push('نسب الخصم');
     if(totalAmount !== (b.totalAmount || 0)) changes.push('الإجمالي');
     if(paidAmount !== (b.paidAmount || 0)) changes.push('المدفوع');
 
     firestoreDb.collection('bookings').doc(b.id).update({
-      name: name, phone: phone, status: status, service: service,
-      discountPercent: discountPercent, totalAmount: totalAmount, paidAmount: paidAmount
+      name: name, phone: phone, status: status, services: services,
+      serviceDiscounts: serviceDiscounts, totalAmount: totalAmount, paidAmount: paidAmount
     })
       .then(function(){
         var paidDelta = paidAmount - (b.paidAmount || 0);
