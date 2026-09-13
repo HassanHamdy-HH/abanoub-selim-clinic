@@ -265,6 +265,20 @@
   .ds-row.ds-remaining strong{color:#fff;}
   .ds-btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
   .ds-expenses-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+  .collection-details-wrap{margin-bottom:16px;}
+  .collection-details-wrap h4{font-size:.85rem;color:var(--ink-soft);margin-bottom:10px;font-weight:700;}
+  .collection-details-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;}
+  .cd-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:.83rem;background:var(--pale-aqua);
+  }
+  .cd-row .cd-name{font-weight:700;color:var(--deep-teal);}
+  .cd-row .cd-other-day{
+    display:block;font-size:.72rem;color:var(--gold-deep);font-weight:700;margin-top:2px;
+  }
+  .cd-row .cd-amount{font-weight:800;color:var(--ink);white-space:nowrap;}
+  .cd-row .cd-method-ic{width:22px;height:22px;flex:0 0 auto;}
+  .cd-row .cd-method-ic img{width:100%;height:100%;object-fit:contain;}
   .bar-chart{display:flex;flex-direction:column;gap:10px;}
   .bar-row{display:flex;align-items:center;gap:12px;}
   .bar-row .bar-label{font-size:.82rem;color:var(--ink-soft);min-width:88px;flex:0 0 auto;}
@@ -794,6 +808,12 @@
             <span>المخصص للمصاريف (الباقي بعد نصيب الفريق والدكتور)</span>
             <strong id="dsExpensePool">0 جنيه</strong>
           </div>
+        </div>
+
+        <div class="collection-details-wrap">
+          <h4>تفاصيل التحصيل (كل دفعة دخلت في اليوم ده)</h4>
+          <div class="collection-details-list" id="collectionDetailsList"></div>
+          <div class="empty-mini" id="collectionDetailsEmpty" style="display:none;">مفيش دفعات اتحصّلت في اليوم ده.</div>
         </div>
 
         <div class="ds-expenses-grid">
@@ -2234,8 +2254,44 @@
     document.getElementById('dsLab').value = saved.lab || '';
     document.getElementById('dsOther').value = saved.other || '';
 
+    renderCollectionDetails(dayIso);
     updateDailyRemaining();
     document.getElementById('dsSaveMsg').textContent = '';
+  }
+
+  function renderCollectionDetails(dayIso){
+    var listEl = document.getElementById('collectionDetailsList');
+    var emptyEl = document.getElementById('collectionDetailsEmpty');
+    if(!listEl) return;
+
+    var bookingById = {};
+    allBookings.forEach(function(b){ bookingById[b.id] = b; });
+
+    var dayPayments = paymentsCache.filter(function(p){ return p.dayIso === dayIso; })
+      .sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+
+    listEl.innerHTML = '';
+    if(dayPayments.length === 0){
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    dayPayments.forEach(function(p){
+      var booking = bookingById[p.bookingId];
+      var isOtherDay = booking && booking.dayIso !== dayIso;
+      var row = document.createElement('div');
+      row.className = 'cd-row';
+      var methodSrc = p.method === 'vodafone_cash' ? PAYMENT_ICONS.vodafone_cash : PAYMENT_ICONS.cash;
+      row.innerHTML =
+        '<span class="cd-method-ic"><img src="' + methodSrc + '" alt=""></span>' +
+        '<span style="flex:1;">' +
+          '<span class="cd-name">' + escapeHtml(p.name || (booking ? booking.name : 'مريض محذوف')) + '</span>' +
+          (isOtherDay ? '<span class="cd-other-day">⚠ من حجز يوم ' + formatDateLabel(booking.dayIso) + '</span>' : '') +
+        '</span>' +
+        '<span class="cd-amount">' + (p.amount || 0).toLocaleString('ar-EG') + ' جنيه</span>';
+      listEl.appendChild(row);
+    });
   }
 
   function updateDailyRemaining(){
@@ -2826,14 +2882,30 @@
 
   function updateStatus(id, status){
     var b = allBookings.filter(function(x){ return x.id === id; })[0];
-    firestoreDb.collection('bookings').doc(id).update({ status: status })
+
+    var updates = { status: status };
+    if(status === 'no_show'){
+      // A no-show never actually happened — any billed/paid amount for it
+      // shouldn't stay in the accounts or the daily financial summary.
+      updates.totalAmount = 0;
+      updates.paidAmount = 0;
+      updates.serviceDiscounts = {};
+    }
+
+    firestoreDb.collection('bookings').doc(id).update(updates)
       .then(function(){
         if(b){
           if(status === 'confirmed'){
             logActivity('confirm', 'تأكيد حجز ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue));
           } else if(status === 'no_show'){
-            logActivity('no_show', 'تسجيل عدم حضور ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue));
+            logActivity('no_show', 'تسجيل عدم حضور ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue) + (b.totalAmount > 0 ? ' — وإلغاء حسابه المسجّل' : ''));
           }
+        }
+        if(status === 'no_show'){
+          var relatedPayments = paymentsCache.filter(function(p){ return p.bookingId === id; });
+          relatedPayments.forEach(function(p){
+            if(p.id){ firestoreDb.collection('payments').doc(p.id).delete().catch(function(){}); }
+          });
         }
       })
       .catch(function(err){ alert('حصل خطأ أثناء التحديث: ' + err.message); });
