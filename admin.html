@@ -176,6 +176,11 @@
     background:#fff;border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
     border:1px solid var(--line);
   }
+  .cal-nav{
+    display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;
+  }
+  .cal-nav .btn{padding:8px 14px;font-size:.8rem;}
+  .cal-range-label{font-weight:700;color:var(--deep-teal);font-size:.86rem;min-width:180px;text-align:center;}
   .cal-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px;font-size:.8rem;color:var(--ink-soft);}
   .cal-legend span{display:inline-flex;align-items:center;gap:6px;}
   .cal-dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
@@ -616,6 +621,9 @@
         <optgroup label="يوم معيّن" id="dateFilterDays"></optgroup>
       </select>
       <input type="date" id="specificDateInput" class="date-input" title="اختار أي تاريخ، حتى لو فات">
+      <button class="btn btn-outline" id="tableDayPrevBtn" title="اليوم السابق">◀</button>
+      <button class="btn btn-outline" id="tableDayTodayBtn">اليوم</button>
+      <button class="btn btn-outline" id="tableDayNextBtn" title="اليوم التالي">▶</button>
       <div class="spacer"></div>
       <div class="view-tabs">
         <button class="view-tab active" id="tabTable">جدول</button>
@@ -676,6 +684,12 @@
     </div>
 
     <div class="calendar-card" id="calendarView" style="display:none;">
+      <div class="cal-nav">
+        <button class="btn btn-outline" id="calPrevBtn">◀ الأسبوعين اللي فاتوا</button>
+        <span class="cal-range-label" id="calRangeLabel"></span>
+        <button class="btn btn-outline" id="calTodayBtn">اليوم</button>
+        <button class="btn btn-outline" id="calNextBtn">الأسبوعين الجايين ▶</button>
+      </div>
       <div class="cal-legend">
         <span><i class="cal-dot available"></i> متاح</span>
         <span><i class="cal-dot pending"></i> في الانتظار</span>
@@ -1081,8 +1095,8 @@
 
     <div class="modal-field-row">
       <div class="modal-field">
-        <label>اليوم</label>
-        <select id="nbDaySelect"></select>
+        <label>اليوم <span id="nbDayWeekday" style="color:var(--teal);font-weight:700;"></span></label>
+        <input type="date" id="nbDaySelect">
       </div>
       <div class="modal-field">
         <label>الميعاد</label>
@@ -1204,6 +1218,25 @@
     return days;
   }
 
+  // Same day-list builder, but can start from any date (including the past) —
+  // used by the calendar tab so staff can scroll back through old weeks too.
+  function buildDaysFrom(startDate, n){
+    var days = [];
+    var d = new Date(startDate.getTime());
+    while(days.length < n){
+      if(d.getDay() !== 5){ // skip Friday (closed)
+        var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        days.push({
+          iso: iso,
+          weekday: WEEKDAY_NAMES[d.getDay()],
+          dateLabel: d.getDate() + '/' + (d.getMonth()+1)
+        });
+      }
+      d = new Date(d.getTime() + 24*60*60*1000);
+    }
+    return days;
+  }
+
   function todayIso(){
     var d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -1290,6 +1323,7 @@
   var blockedDays = {}; // { dayIso: { reason, ts } }
   var activityLog = []; // [{action, text, staffName, ts}]
   var upcomingDays = buildUpcomingDays(14);
+  var calendarStartOffset = 0; // in days from today; can go negative to look at past weeks
 
   function initDashboard(){
     if(dashboardStarted) return;
@@ -1375,6 +1409,23 @@
       if(manualDateOverride){ document.getElementById('dateFilter').value = 'all'; }
       renderTable();
     });
+    function setTableDate(iso){
+      document.getElementById('specificDateInput').value = iso;
+      document.getElementById('dateFilter').value = 'all';
+      manualDateOverride = iso;
+      renderTable();
+    }
+    function shiftTableDate(deltaDays){
+      var base = document.getElementById('specificDateInput').value || todayIso();
+      var parts = base.split('-').map(Number);
+      var d = new Date(parts[0], parts[1]-1, parts[2]);
+      d.setDate(d.getDate() + deltaDays);
+      var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      setTableDate(iso);
+    }
+    document.getElementById('tableDayPrevBtn').addEventListener('click', function(){ shiftTableDate(-1); });
+    document.getElementById('tableDayNextBtn').addEventListener('click', function(){ shiftTableDate(1); });
+    document.getElementById('tableDayTodayBtn').addEventListener('click', function(){ setTableDate(todayIso()); });
     document.getElementById('exportBtn').addEventListener('click', exportCsv);
     document.getElementById('backupBtn').addEventListener('click', exportFullBackup);
     document.getElementById('printBtn').addEventListener('click', printTodaySchedule);
@@ -1469,6 +1520,7 @@
       if(e.target.id === 'newBookingOverlay'){ closeNewBookingModal(); }
     });
     document.getElementById('nbDaySelect').addEventListener('change', function(){
+      updateNbWeekdayLabel(this.value);
       populateSlotSelect(this.value);
     });
     document.getElementById('nbConfirmBtn').addEventListener('click', saveNewBooking);
@@ -1517,6 +1569,18 @@
 
     document.getElementById('tabTable').addEventListener('click', function(){ switchView('table'); });
     document.getElementById('tabCalendar').addEventListener('click', function(){ switchView('calendar'); });
+    document.getElementById('calPrevBtn').addEventListener('click', function(){
+      calendarStartOffset -= 14;
+      renderCalendar();
+    });
+    document.getElementById('calNextBtn').addEventListener('click', function(){
+      calendarStartOffset += 14;
+      renderCalendar();
+    });
+    document.getElementById('calTodayBtn').addEventListener('click', function(){
+      calendarStartOffset = 0;
+      renderCalendar();
+    });
     document.getElementById('tabAnalytics').addEventListener('click', function(){ switchView('analytics'); });
     document.getElementById('tabPatients').addEventListener('click', function(){ switchView('patients'); });
     document.getElementById('tabAccounts').addEventListener('click', function(){ switchView('accounts'); });
@@ -1711,14 +1775,24 @@
     var grid = document.getElementById('calGrid');
     if(!grid) return;
     grid.innerHTML = '';
-    grid.style.gridTemplateColumns = '70px repeat(' + upcomingDays.length + ', 1fr)';
+
+    var startDate = new Date();
+    startDate.setDate(startDate.getDate() + calendarStartOffset);
+    var calDays = buildDaysFrom(startDate, 14);
+
+    var rangeLabel = document.getElementById('calRangeLabel');
+    if(rangeLabel){
+      rangeLabel.textContent = calDays[0].weekday + ' ' + calDays[0].dateLabel + ' — ' + calDays[calDays.length-1].weekday + ' ' + calDays[calDays.length-1].dateLabel;
+    }
+
+    grid.style.gridTemplateColumns = '70px repeat(' + calDays.length + ', 1fr)';
 
     var t = todayIso();
 
     // header row
     var corner = document.createElement('div');
     grid.appendChild(corner);
-    upcomingDays.forEach(function(day){
+    calDays.forEach(function(day){
       var info = blockedDays[day.iso];
       var isFullyBlocked = !!info && info.fullDay !== false;
       var isPartlyBlocked = !!info && info.fullDay === false;
@@ -1740,7 +1814,7 @@
       timeCell.textContent = SLOT_LABELS[slotValue];
       grid.appendChild(timeCell);
 
-      upcomingDays.forEach(function(day){
+      calDays.forEach(function(day){
         var cell = document.createElement('div');
         var blockInfo = isSlotBlockedInfo(day.iso, slotValue);
         if(blockInfo){
@@ -1920,13 +1994,8 @@
   // ---- New booking (staff, from inside the dashboard) ----
   function openNewBookingModal(){
     var daySel = document.getElementById('nbDaySelect');
-    daySel.innerHTML = '';
-    upcomingDays.forEach(function(day){
-      var opt = document.createElement('option');
-      opt.value = day.iso;
-      opt.textContent = day.weekday + ' ' + day.dateLabel;
-      daySel.appendChild(opt);
-    });
+    daySel.value = todayIso();
+    updateNbWeekdayLabel(daySel.value);
     populateSlotSelect(daySel.value);
 
     document.getElementById('nbPatientSearch').value = '';
@@ -1941,6 +2010,13 @@
   }
   function closeNewBookingModal(){
     document.getElementById('newBookingOverlay').classList.remove('open');
+  }
+  function updateNbWeekdayLabel(dayIso){
+    var label = document.getElementById('nbDayWeekday');
+    if(!dayIso){ label.textContent = ''; return; }
+    var parts = dayIso.split('-').map(Number);
+    var d = new Date(parts[0], parts[1]-1, parts[2]);
+    label.textContent = '— ' + WEEKDAY_NAMES[d.getDay()];
   }
 
   function populateSlotSelect(dayIso){
@@ -1993,6 +2069,10 @@
     var phone = document.getElementById('nbPhoneInput').value.trim();
     var errorEl = document.getElementById('nbError');
 
+    if(!dayIso){
+      errorEl.textContent = 'اختار اليوم الأول.';
+      return;
+    }
     if(name.length < 3){
       errorEl.textContent = 'من فضلك اكتب اسم صحيح.';
       return;
@@ -2011,8 +2091,7 @@
       name: name, phone: phone, status: 'confirmed', bookedBy: 'staff', ts: Date.now()
     })
       .then(function(){
-        var dayInfo = upcomingDays.filter(function(d){ return d.iso === dayIso; })[0];
-        logActivity('confirm', 'حجز جديد من الفريق لـ ' + name + ' — ' + (dayInfo ? dayInfo.weekday + ' ' + dayInfo.dateLabel : dayIso) + ' ' + SLOT_LABELS[slotValue]);
+        logActivity('confirm', 'حجز جديد من الفريق لـ ' + name + ' — ' + formatDateLabel(dayIso) + ' ' + SLOT_LABELS[slotValue]);
         closeNewBookingModal();
       })
       .catch(function(err){ errorEl.textContent = 'حصل خطأ: ' + err.message; });
