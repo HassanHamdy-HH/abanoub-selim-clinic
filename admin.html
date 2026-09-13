@@ -780,7 +780,7 @@
 
       <div class="chart-card">
         <h3>الملخص المالي اليومي</h3>
-        <span class="chart-hint">المبلغ الكلي بيتحسب من الدفعات اللي اتحصّلت فعليًا في اليوم ده (مش من قيمة الحجوزات بس) — يعني لو مريض دفع باقي فلوسه في يوم تاني غير يوم الكشف، المبلغ ده بيتحسب على اليوم اللي دفع فيه فعليًا. نصيب الفريق بيتخصم الأول (50 جنيه لكل 1000 جنيه)، وبعدين نسبة الدكتور والمصاريف بتتقسم من الباقي.</span>
+        <span class="chart-hint">المبلغ الكلي بيتحسب من الدفعات اللي اتحصّلت فعليًا في اليوم ده (مش من قيمة الحجوزات بس) — يعني لو مريض دفع باقي فلوسه في يوم تاني غير يوم الكشف، المبلغ ده بيتحسب على اليوم اللي دفع فيه فعليًا. نصيب الفريق بيتخصم الأول على شرائح (50 جنيه عن كل 1000 جنيه كاملة — أقل من 1000 يبقى صفر)، وبعدين نسبة الدكتور والمصاريف بتتقسم من الباقي.</span>
 
         <div class="daily-summary-toolbar">
           <label>اختار اليوم</label>
@@ -797,7 +797,7 @@
             <span>📱 فودافون كاش: <strong id="dsVodafoneTotal">0 جنيه</strong></span>
           </div>
           <div class="ds-row ds-team">
-            <span>نصيب الفريق (50 جنيه / 1000 جنيه من الإجمالي)</span>
+            <span>نصيب الفريق (50 جنيه عن كل شريحة 1000 كاملة من الإجمالي)</span>
             <strong id="dsTeamShare">0 جنيه</strong>
           </div>
           <div class="ds-row ds-doctor">
@@ -2187,6 +2187,12 @@
   // Cash-basis: each day closes with only the money actually collected that day —
   // a partial payment made later (even for an old booking) counts toward the day
   // it was paid, not the booking's original day.
+  // نصيب الفريق على شرائح: صفر لو أقل من 1000، وبعدها 50 جنيه إضافية عن كل شريحة 1000
+  // جنيه كاملة من الإجمالي (1000-1999 → 50، 2000-2999 → 100، 3000-3999 → 150، وهكذا)
+  function computeTeamShare(total){
+    return Math.floor(total / 1000) * 50;
+  }
+
   function getDayCollectedTotal(dayIso){
     var total = 0;
     paymentsCache.forEach(function(p){
@@ -2238,7 +2244,7 @@
 
     var total = getDayCollectedTotal(dayIso);
     var methodTotals = getDayCollectedByMethod(dayIso);
-    var teamShare = total * 0.05;   // 50 جنيه لكل 1000 جنيه = 5% من الإجمالي قبل أي خصومات
+    var teamShare = computeTeamShare(total);
     var doctorShare = total * 0.4;  // 40% من الإجمالي قبل أي خصومات (مش من الباقي بعد نصيب الفريق)
     var expensePool = total - teamShare - doctorShare; // الباقي بعد نصيب الفريق والدكتور
 
@@ -2297,7 +2303,7 @@
   function updateDailyRemaining(){
     var dayIso = document.getElementById('dailySummaryDate').value;
     var total = getDayCollectedTotal(dayIso);
-    var teamShare = total * 0.05;
+    var teamShare = computeTeamShare(total);
     var doctorShare = total * 0.4;
     var expensePool = total - teamShare - doctorShare;
     var material = parseFloat(document.getElementById('dsMaterial').value) || 0;
@@ -3306,7 +3312,7 @@
 
     var total = getDayCollectedTotal(dayIso);
     var methodTotals = getDayCollectedByMethod(dayIso);
-    var teamShare = total * 0.05;
+    var teamShare = computeTeamShare(total);
     var doctorShare = total * 0.4;
     var expensePool = total - teamShare - doctorShare;
 
@@ -3443,7 +3449,7 @@
     } else {
       monthDays.forEach(function(dayIso, i){
         var dt = dayTotals[dayIso];
-        var teamShare = dt.total * 0.05;
+        var teamShare = computeTeamShare(dt.total);
         var doctorShare = dt.total * 0.4;
         var expensePool = dt.total - teamShare - doctorShare;
         var exp = dailyExpensesCache[dayIso] || {};
