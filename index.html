@@ -515,27 +515,8 @@
   .seat-btn.awaiting-status:hover{transform:translateY(-2px);box-shadow:0 0 0 3px rgba(79,133,199,.2);}
   .seat-btn.past{color:var(--ink-soft);opacity:.4;cursor:not-allowed;}
   .seat-btn.past .seat-time{color:var(--ink-soft);}
-  .seat-btn.past-staff{opacity:.7;cursor:pointer;border-style:dashed;border-color:var(--gold);}
-  .seat-btn.past-staff .seat-time{color:var(--gold-deep);}
-  .seat-btn.past-staff:hover{opacity:1;transform:translateY(-3px);box-shadow:0 0 0 3px rgba(217,164,65,.2);}
   .seat-btn.selected{color:var(--gold-deep);border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,164,65,.25);}
   .seat-btn.selected .seat-time{color:var(--gold-deep);}
-
-  .staff-mode-bar{
-    display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;
-    margin-top:6px;margin-bottom:22px;
-  }
-  .staff-mode-toggle{
-    background:#fff;border:1px solid var(--line);color:var(--ink-soft);
-    padding:9px 18px;border-radius:999px;font-size:.82rem;font-weight:700;
-    transition:background .2s ease, color .2s ease, border-color .2s ease;
-  }
-  .staff-mode-toggle:hover{background:var(--pale-aqua);color:var(--deep-teal);border-color:var(--teal);}
-  .staff-mode-toggle.active{background:var(--gold);color:var(--deep-teal);border-color:var(--gold);}
-  .staff-mode-badge{
-    font-size:.8rem;font-weight:700;color:var(--gold-deep);
-    background:rgba(217,164,65,.14);padding:8px 16px;border-radius:999px;
-  }
 
   /* booking modal */
   .booking-modal-overlay{
@@ -1182,11 +1163,6 @@
       <span><i class="chair-dot" style="background:var(--ink-soft);opacity:.5;"></i> فات معاده</span>
     </div>
 
-    <div class="staff-mode-bar" id="staffModeBar">
-      <button class="staff-mode-toggle" id="staffModeToggle">فريق العيادة: حجز مباشر لمريض</button>
-      <span class="staff-mode-badge" id="staffModeBadge" style="display:none;">وضع الفريق مفعّل — أي حجز جديد هيتسجل كمؤكد فورًا</span>
-    </div>
-
     <div class="chairs-grid" id="chairsGrid"></div>
   </div>
 </section>
@@ -1546,8 +1522,6 @@
     var staffPinInput = document.getElementById('staffPinInput');
     var staffPinSubmit = document.getElementById('staffPinSubmit');
     var staffPinError = document.getElementById('staffPinError');
-    var staffModeToggle = document.getElementById('staffModeToggle');
-    var staffModeBadge = document.getElementById('staffModeBadge');
     var bookingModalTitle = document.getElementById('bookingModalTitle');
     var bookingStatusTitle = document.getElementById('bookingStatusTitle');
     var bookingStatusText = document.getElementById('bookingStatusText');
@@ -1559,8 +1533,6 @@
     // (a proper staff login) would be needed.
     var STAFF_PIN = '2026';
     var pendingUnlock = null; // {day, slot, entry} — set while the PIN modal is open
-    var pendingStaffToggle = false; // true while the PIN modal is open for enabling staff mode
-    var staffModeActive = false;
 
     if(!dayTabsEl || !chairsGridEl) return;
 
@@ -1601,7 +1573,6 @@
     var selectedDayIndex = 0;
     var selection = null;        // {dayIndex, slotIndex} — for the "book" modal
     var confirmSelection = null; // {dayIndex, slotIndex, key} — for the "confirm/cancel" modal
-    var currentBookingMode = 'patient'; // 'patient' | 'staff' — for the "book" modal
     var bookingsCache = {};      // always-current snapshot of bookings, keyed by "dayIso_slotValue"
     var blockedDaysCache = {};   // { dayIso: { reason, ts } } — days the clinic marked closed
 
@@ -1759,10 +1730,8 @@
 
         var btn = document.createElement('button');
         btn.type = 'button';
-        var pastStaffBookable = past && staffModeActive;
         btn.className = 'seat-btn ' + (
           slotClosed ? 'past' :
-          pastStaffBookable ? 'past past-staff' :
           past ? 'past' :
           status === 'confirmed' ? 'booked' :
           status === 'awaiting' ? 'awaiting-status' :
@@ -1773,12 +1742,6 @@
         if(slotClosed){
           btn.disabled = true;
           btn.setAttribute('aria-label', slot.l + ' — العيادة مغلقة في الميعاد ده');
-        } else if(pastStaffBookable){
-          btn.setAttribute('aria-label', slot.l + ' — فات معاده، دوس لتسجيل حجز فريق');
-          btn.addEventListener('click', function(){
-            selection = { dayIndex: selectedDayIndex, slotIndex: si };
-            openModal(day, slot, 'staff');
-          });
         } else if(past){
           btn.disabled = true;
           btn.setAttribute('aria-label', slot.l + ' — الميعاد ده فات معاده');
@@ -1801,7 +1764,7 @@
           btn.setAttribute('aria-label', slot.l + ' — متاح');
           btn.addEventListener('click', function(){
             selection = { dayIndex: selectedDayIndex, slotIndex: si };
-            openModal(day, slot, staffModeActive ? 'staff' : 'patient');
+            openModal(day, slot);
           });
         }
         chairsGridEl.appendChild(btn);
@@ -1809,24 +1772,16 @@
     }
 
     // ---- Book modal (available -> pending for patients, or -> confirmed for staff) ----
-    function openModal(day, slot, mode){
-      currentBookingMode = mode || 'patient';
+    function openModal(day, slot){
       modalSlotInfo.textContent = day.weekday + ' ' + day.dateLabel + ' — الساعة ' + slot.l;
       nameInput.value = '';
       phoneInput.value = '';
       modalError.textContent = '';
 
-      if(currentBookingMode === 'staff'){
-        bookingModalTitle.textContent = 'حجز مباشر (فريق العيادة)';
-        bookingStatusTitle.textContent = 'هيتسجل كمؤكد فورًا';
-        bookingStatusText.textContent = 'الحجز ده بيتسجل مباشرة كمؤكد (أحمر)، من غير ما يعدي بمرحلة الانتظار.';
-        confirmBtn.textContent = 'تسجيل الحجز كمؤكد';
-      } else {
-        bookingModalTitle.textContent = 'حجز ميعاد';
-        bookingStatusTitle.textContent = 'الحجز مبدئي';
-        bookingStatusText.textContent = 'هيبان الكرسي بلون أصفر لحد ما تأكد ميعادك مع فريق العيادة على واتساب أو لما توصل العيادة يوم الكشف.';
-        confirmBtn.textContent = 'تسجيل الحجز عبر واتساب';
-      }
+      bookingModalTitle.textContent = 'حجز ميعاد';
+      bookingStatusTitle.textContent = 'الحجز مبدئي';
+      bookingStatusText.textContent = 'هيبان الكرسي بلون أصفر لحد ما تأكد ميعادك مع فريق العيادة على واتساب أو لما توصل العيادة يوم الكشف.';
+      confirmBtn.textContent = 'تسجيل الحجز عبر واتساب';
 
       overlay.classList.add('open');
       setTimeout(function(){ nameInput.focus(); }, 50);
@@ -1858,22 +1813,14 @@
       var day = days[selection.dayIndex];
       var slot = SLOTS[selection.slotIndex];
       var key = bookingKey(day.iso, slot.v);
-      var mode = currentBookingMode;
 
       confirmBtn.disabled = true;
-      var bookingData = mode === 'staff'
-        ? { name: name, phone: phone, status: 'confirmed', bookedBy: 'staff', ts: Date.now() }
-        : { name: name, phone: phone, status: 'pending', bookedBy: 'patient', ts: Date.now() };
+      var bookingData = { name: name, phone: phone, status: 'pending', bookedBy: 'patient', ts: Date.now() };
 
       setBooking(key, bookingData)
         .then(function(){
           confirmBtn.disabled = false;
           if(!firebaseReady){ renderChairs(); } // Firestore path re-renders via the live listener
-
-          if(mode === 'staff'){
-            closeModal();
-            return;
-          }
 
           var msg = 'مرحبًا، عايز أسجل حجز ميعاد كشف في عيادة د. أبانوب سليم:' +
             '\nالاسم: ' + name +
@@ -1893,7 +1840,7 @@
         });
     });
 
-    // ---- Staff PIN gate (confirm/cancel bookings, or enable staff booking mode) ----
+    // ---- Staff PIN gate (manage pending/confirmed/awaiting bookings) ----
     function openPinGate(day, slot, entry, si, key){
       pendingUnlock = { day: day, slot: slot, entry: entry, si: si, key: key };
       staffPinInput.value = '';
@@ -1904,7 +1851,6 @@
     function closePinGate(){
       staffPinOverlay.classList.remove('open');
       pendingUnlock = null;
-      pendingStaffToggle = false;
     }
     staffPinClose.addEventListener('click', closePinGate);
     staffPinOverlay.addEventListener('click', function(e){
@@ -1914,38 +1860,11 @@
       if(e.key === 'Enter'){ staffPinSubmit.click(); }
     });
 
-    staffModeToggle.addEventListener('click', function(){
-      if(staffModeActive){
-        staffModeActive = false;
-        staffModeToggle.textContent = 'فريق العيادة: حجز مباشر لمريض';
-        staffModeToggle.classList.remove('active');
-        staffModeBadge.style.display = 'none';
-        renderChairs();
-        return;
-      }
-      pendingStaffToggle = true;
-      staffPinInput.value = '';
-      staffPinError.textContent = '';
-      staffPinOverlay.classList.add('open');
-      setTimeout(function(){ staffPinInput.focus(); }, 50);
-    });
-
     staffPinSubmit.addEventListener('click', function(){
       if(staffPinInput.value.trim() !== STAFF_PIN){
         staffPinError.textContent = 'الكود غير صحيح.';
         staffPinInput.value = '';
         staffPinInput.focus();
-        return;
-      }
-
-      if(pendingStaffToggle){
-        pendingStaffToggle = false;
-        staffPinOverlay.classList.remove('open');
-        staffModeActive = true;
-        staffModeToggle.textContent = 'إيقاف وضع الفريق';
-        staffModeToggle.classList.add('active');
-        staffModeBadge.style.display = 'inline-block';
-        renderChairs();
         return;
       }
 
