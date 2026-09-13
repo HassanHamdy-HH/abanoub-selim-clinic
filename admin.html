@@ -348,11 +348,24 @@
   .service-check-item .sci-price{color:var(--ink-soft);font-size:.78rem;white-space:nowrap;}
   .service-check-item.checked{background:#fff;box-shadow:0 0 0 1px var(--teal) inset;}
   .service-check-item.checked .sci-name{color:var(--deep-teal);font-weight:700;}
+  .other-check-item{
+    margin-top:8px;border:1px dashed var(--teal);border-radius:8px;background:#fff;
+  }
+  .other-check-item.checked{box-shadow:0 0 0 1px var(--teal) inset;background:var(--pale-aqua);}
+  .other-service-fields{
+    display:grid;grid-template-columns:1.5fr 1fr;gap:10px;margin-top:10px;padding:10px;
+    background:var(--pale-aqua);border-radius:10px;
+  }
   .service-check-item .sci-discount{
     width:56px;padding:5px 6px;border-radius:6px;border:1px solid var(--line);
     font-size:.78rem;text-align:center;background:#fff;color:var(--ink);flex:0 0 auto;
   }
   .service-check-item .sci-discount:disabled{opacity:.4;background:var(--pale-aqua);}
+  .service-check-item .sci-qty{
+    width:44px;padding:5px 6px;border-radius:6px;border:1px solid var(--line);
+    font-size:.78rem;text-align:center;background:#fff;color:var(--ink);flex:0 0 auto;
+  }
+  .service-check-item .sci-qty:disabled{opacity:.4;background:var(--pale-aqua);}
   .service-check-item .sci-discount-label{font-size:.72rem;color:var(--ink-soft);flex:0 0 auto;}
   .quick-discount-row{
     display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;
@@ -376,6 +389,23 @@
   }
   .modal-field input:focus, .modal-field select:focus{outline:2px solid var(--gold);outline-offset:1px;}
   .modal-error{color:#D64545;font-size:.82rem;text-align:center;margin-top:10px;min-height:1em;font-weight:600;}
+  .status-box{
+    background:var(--pale-aqua);border-radius:12px;padding:14px 16px;margin:16px 0;
+    font-size:.86rem;color:var(--ink-soft);
+  }
+  .status-box strong{display:block;color:var(--deep-teal);margin-bottom:4px;font-size:.9rem;}
+  .patient-suggest-list{
+    margin-top:6px;max-height:170px;overflow-y:auto;border-radius:10px;
+    border:1px solid var(--line);background:#fff;display:none;
+  }
+  .patient-suggest-list.show{display:block;}
+  .patient-suggest-item{
+    padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--line);font-size:.86rem;
+  }
+  .patient-suggest-item:last-child{border-bottom:none;}
+  .patient-suggest-item:hover{background:var(--pale-aqua);}
+  .patient-suggest-item .ps-name{font-weight:700;color:var(--deep-teal);display:block;}
+  .patient-suggest-item .ps-phone{color:var(--ink-soft);font-size:.78rem;direction:ltr;text-align:right;display:block;}
   .block-scope-choice{display:flex;gap:16px;margin-bottom:16px;}
   .scope-option{display:flex;align-items:center;gap:7px;font-size:.86rem;color:var(--ink);cursor:pointer;}
   .block-range-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -418,6 +448,12 @@
   .patient-card.open .patient-chevron{transform:rotate(180deg);}
   .patient-history{display:none;border-top:1px solid var(--line);}
   .patient-card.open .patient-history{display:block;}
+  .patient-file-bar{padding:0 20px 14px;}
+  .patient-file-btn{
+    background:var(--pale-aqua);color:var(--teal);border:1px solid var(--line);
+    padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;
+  }
+  .patient-file-btn:hover{background:var(--teal);color:#fff;}
   .ph-row{
     display:flex;align-items:center;justify-content:space-between;gap:12px;
     padding:10px 20px;border-bottom:1px solid var(--line);font-size:.85rem;
@@ -580,6 +616,9 @@
         <button class="view-tab" id="tabAccounts">الحسابات</button>
         <button class="view-tab" id="tabAnalytics">التحليلات</button>
       </div>
+      <button class="btn btn-gold" id="newBookingBtn">
+        ➕ حجز جديد
+      </button>
       <button class="btn btn-gold" id="remindBtn">
         📨 تذكير حجوزات بكرة
       </button>
@@ -927,6 +966,20 @@
     <div class="modal-field">
       <label>الخدمة / الإجراءات (ممكن تختار أكتر من واحدة، ولكل واحدة خصمها الخاص)</label>
       <div class="service-check-list" id="serviceCheckList"></div>
+      <label class="service-check-item other-check-item" id="otherCheckItem">
+        <input type="checkbox" id="otherServiceCheckbox">
+        <span class="sci-name">أخرى (إجراء غير مسجّل في القائمة)</span>
+      </label>
+      <div class="other-service-fields" id="otherServiceFields" style="display:none;">
+        <div class="modal-field">
+          <label>وصف الإجراء</label>
+          <input type="text" id="otherServiceDesc" placeholder="زي: لزق طربوش، إزالة قطعة معدنية...">
+        </div>
+        <div class="modal-field">
+          <label>السعر (جنيه)</label>
+          <input type="number" id="otherServicePrice" placeholder="0" min="0">
+        </div>
+      </div>
     </div>
     <div class="quick-discount-row">
       <label>تطبيق نسبة خصم واحدة على كل الإجراءات المحددة:</label>
@@ -977,6 +1030,69 @@
 
     <button class="cta-btn gold" id="paymentSaveBtn" style="width:100%;justify-content:center;">تسجيل الدفعة</button>
     <p class="modal-error" id="paymentError"></p>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="patientFileOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="patientFileClose" aria-label="إغلاق">✕</button>
+    <h3>ملف المريض</h3>
+    <p class="modal-slot-info" id="patientFileNameLabel"></p>
+
+    <div id="patientFilePinStep">
+      <div class="modal-field">
+        <label>الكود السري</label>
+        <input type="password" id="patientFilePinInput" placeholder="اكتب الكود" inputmode="numeric" maxlength="6">
+      </div>
+      <button class="cta-btn gold" id="patientFilePinSubmit" style="width:100%;justify-content:center;">دخول</button>
+      <p class="modal-error" id="patientFilePinError"></p>
+    </div>
+
+    <div id="patientFileContent" style="display:none;">
+      <div class="empty-mini">لسه مفيش ملف مرفوع للمريض ده. هيتم رفعه قريبًا.</div>
+    </div>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="newBookingOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="newBookingClose" aria-label="إغلاق">✕</button>
+    <h3>حجز جديد (فريق العيادة)</h3>
+
+    <div class="modal-field-row">
+      <div class="modal-field">
+        <label>اليوم</label>
+        <select id="nbDaySelect"></select>
+      </div>
+      <div class="modal-field">
+        <label>الميعاد</label>
+        <select id="nbSlotSelect"></select>
+      </div>
+    </div>
+    <p class="modal-error" id="nbDayBlockedMsg" style="display:none;"></p>
+
+    <div class="modal-field">
+      <label>ابحث عن مريض حجز قبل كده (بالاسم أو الرقم)</label>
+      <input type="text" id="nbPatientSearch" placeholder="اكتب اسم أو رقم المريض...">
+      <div class="patient-suggest-list" id="nbSuggestList"></div>
+    </div>
+
+    <div class="modal-field">
+      <label>اسم المريض</label>
+      <input type="text" id="nbNameInput" placeholder="اكتب الاسم">
+    </div>
+    <div class="modal-field">
+      <label>رقم الموبايل</label>
+      <input type="tel" id="nbPhoneInput" placeholder="01xxxxxxxxx">
+    </div>
+
+    <div class="status-box">
+      <strong>هيتسجل كمؤكد فورًا</strong>
+      <span>الحجز ده بيتسجل مباشرة كمؤكد (أحمر)، من غير ما يعدي بمرحلة الانتظار.</span>
+    </div>
+
+    <button class="cta-btn gold" id="nbConfirmBtn" style="width:100%;justify-content:center;">تسجيل الحجز</button>
+    <p class="modal-error" id="nbError"></p>
   </div>
 </div>
 
@@ -1172,6 +1288,8 @@
           notes: data.notes || '',
           services: data.services || (data.service ? [data.service] : []),
           serviceDiscounts: data.serviceDiscounts || {},
+          serviceQuantities: data.serviceQuantities || {},
+          customService: data.customService || null,
           totalAmount: typeof data.totalAmount === 'number' ? data.totalAmount : 0,
           paidAmount: typeof data.paidAmount === 'number' ? data.paidAmount : 0,
           ts: data.ts || 0
@@ -1294,6 +1412,72 @@
     });
     document.getElementById('editTotalInput').addEventListener('input', updateRemainingLine);
     document.getElementById('editPaidInput').addEventListener('input', updateRemainingLine);
+    document.getElementById('otherServiceCheckbox').addEventListener('change', function(){
+      var checked = this.checked;
+      document.getElementById('otherCheckItem').classList.toggle('checked', checked);
+      document.getElementById('otherServiceFields').style.display = checked ? 'grid' : 'none';
+      if(!checked){
+        document.getElementById('otherServiceDesc').value = '';
+        document.getElementById('otherServicePrice').value = '';
+      }
+      recalcTotalFromDiscount();
+    });
+    document.getElementById('otherServicePrice').addEventListener('input', recalcTotalFromDiscount);
+
+    document.getElementById('patientFileClose').addEventListener('click', closePatientFile);
+    document.getElementById('patientFileOverlay').addEventListener('click', function(e){
+      if(e.target.id === 'patientFileOverlay'){ closePatientFile(); }
+    });
+    document.getElementById('patientFilePinSubmit').addEventListener('click', checkPatientFilePin);
+    document.getElementById('patientFilePinInput').addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ checkPatientFilePin(); }
+    });
+
+    document.getElementById('newBookingBtn').addEventListener('click', openNewBookingModal);
+    document.getElementById('newBookingClose').addEventListener('click', closeNewBookingModal);
+    document.getElementById('newBookingOverlay').addEventListener('click', function(e){
+      if(e.target.id === 'newBookingOverlay'){ closeNewBookingModal(); }
+    });
+    document.getElementById('nbDaySelect').addEventListener('change', function(){
+      populateSlotSelect(this.value);
+    });
+    document.getElementById('nbConfirmBtn').addEventListener('click', saveNewBooking);
+    document.getElementById('nbPatientSearch').addEventListener('input', function(){
+      var q = this.value.trim().toLowerCase();
+      var listEl = document.getElementById('nbSuggestList');
+      listEl.innerHTML = '';
+      if(q.length < 2){ listEl.classList.remove('show'); return; }
+
+      var seen = {};
+      var matches = [];
+      allBookings.forEach(function(b){
+        if(!b.name || !b.phone) return;
+        var hay = (b.name + ' ' + b.phone).toLowerCase();
+        if(hay.indexOf(q) === -1) return;
+        if(seen[b.phone]) return;
+        seen[b.phone] = true;
+        matches.push({ name: b.name, phone: b.phone });
+      });
+      matches = matches.slice(0, 8);
+
+      if(matches.length === 0){ listEl.classList.remove('show'); return; }
+      matches.forEach(function(m){
+        var item = document.createElement('div');
+        item.className = 'patient-suggest-item';
+        item.innerHTML = '<span class="ps-name"></span><span class="ps-phone"></span>';
+        item.querySelector('.ps-name').textContent = m.name;
+        item.querySelector('.ps-phone').textContent = m.phone;
+        item.addEventListener('click', function(){
+          document.getElementById('nbNameInput').value = m.name;
+          document.getElementById('nbPhoneInput').value = m.phone;
+          document.getElementById('nbPatientSearch').value = '';
+          listEl.innerHTML = '';
+          listEl.classList.remove('show');
+        });
+        listEl.appendChild(item);
+      });
+      listEl.classList.add('show');
+    });
 
     document.getElementById('paymentClose').addEventListener('click', closePaymentModal);
     document.getElementById('paymentOverlay').addEventListener('click', function(e){
@@ -1606,10 +1790,15 @@
 
     rows.forEach(function(b){
       var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
-      var serviceName = (b.services || []).map(function(id){
+      var quantities = b.serviceQuantities || {};
+      var serviceLabels = (b.services || []).map(function(id){
         var svc = SERVICE_BY_ID[id];
-        return svc ? svc.name : id;
-      }).join('، ') || '—';
+        var label = svc ? svc.name : id;
+        var qty = quantities[id] || 1;
+        return qty > 1 ? label + ' × ' + qty : label;
+      });
+      if(b.customService && b.customService.description){ serviceLabels.push(b.customService.description); }
+      var serviceName = serviceLabels.join('، ') || '—';
       var remaining = b.totalAmount - b.paidAmount;
 
       var tr = document.createElement('tr');
@@ -1643,6 +1832,137 @@
   }
 
   var pendingPaymentBooking = null;
+
+  // ---- Patient file (PIN-gated, content to be added later) ----
+  var PATIENT_FILE_PIN = '2018';
+  var pendingPatientFile = null;
+
+  function openPatientFile(p){
+    pendingPatientFile = p;
+    document.getElementById('patientFileNameLabel').textContent = p.name + ' — ' + p.phone;
+    document.getElementById('patientFilePinInput').value = '';
+    document.getElementById('patientFilePinError').textContent = '';
+    document.getElementById('patientFilePinStep').style.display = 'block';
+    document.getElementById('patientFileContent').style.display = 'none';
+    document.getElementById('patientFileOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('patientFilePinInput').focus(); }, 50);
+  }
+  function closePatientFile(){
+    document.getElementById('patientFileOverlay').classList.remove('open');
+    pendingPatientFile = null;
+  }
+  function checkPatientFilePin(){
+    var val = document.getElementById('patientFilePinInput').value.trim();
+    if(val !== PATIENT_FILE_PIN){
+      document.getElementById('patientFilePinError').textContent = 'الكود غير صحيح.';
+      document.getElementById('patientFilePinInput').value = '';
+      document.getElementById('patientFilePinInput').focus();
+      return;
+    }
+    document.getElementById('patientFilePinStep').style.display = 'none';
+    document.getElementById('patientFileContent').style.display = 'block';
+  }
+
+  // ---- New booking (staff, from inside the dashboard) ----
+  function openNewBookingModal(){
+    var daySel = document.getElementById('nbDaySelect');
+    daySel.innerHTML = '';
+    upcomingDays.forEach(function(day){
+      var opt = document.createElement('option');
+      opt.value = day.iso;
+      opt.textContent = day.weekday + ' ' + day.dateLabel;
+      daySel.appendChild(opt);
+    });
+    populateSlotSelect(daySel.value);
+
+    document.getElementById('nbPatientSearch').value = '';
+    document.getElementById('nbSuggestList').innerHTML = '';
+    document.getElementById('nbSuggestList').classList.remove('show');
+    document.getElementById('nbNameInput').value = '';
+    document.getElementById('nbPhoneInput').value = '';
+    document.getElementById('nbError').textContent = '';
+
+    document.getElementById('newBookingOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('nbPatientSearch').focus(); }, 50);
+  }
+  function closeNewBookingModal(){
+    document.getElementById('newBookingOverlay').classList.remove('open');
+  }
+
+  function populateSlotSelect(dayIso){
+    var slotSel = document.getElementById('nbSlotSelect');
+    var blockedMsg = document.getElementById('nbDayBlockedMsg');
+    slotSel.innerHTML = '';
+
+    var dayInfo = blockedDays[dayIso];
+    if(dayInfo && dayInfo.fullDay !== false){
+      blockedMsg.style.display = 'block';
+      blockedMsg.textContent = 'العيادة مقفولة في اليوم ده بالكامل — اختار يوم تاني.';
+      slotSel.disabled = true;
+      return;
+    }
+    blockedMsg.style.display = 'none';
+    slotSel.disabled = false;
+
+    var takenKeys = {};
+    allBookings.forEach(function(b){
+      if(b.dayIso === dayIso){ takenKeys[b.slotValue] = b; }
+    });
+
+    SLOT_ORDER.forEach(function(sv){
+      var blockInfo = isSlotBlockedInfo(dayIso, sv);
+      var taken = takenKeys[sv];
+      var opt = document.createElement('option');
+      opt.value = sv;
+      if(blockInfo){
+        opt.textContent = SLOT_LABELS[sv] + ' — مقفول';
+        opt.disabled = true;
+      } else if(taken){
+        var statusLabel = taken.status === 'confirmed' ? 'مؤكد' : taken.status === 'no_show' ? 'لم يحضر' : taken.status === 'awaiting' ? 'لسه ما أكدش' : 'في الانتظار';
+        opt.textContent = SLOT_LABELS[sv] + ' — محجوز (' + statusLabel + ')';
+        opt.disabled = true;
+      } else {
+        opt.textContent = SLOT_LABELS[sv] + ' — متاح';
+      }
+      slotSel.appendChild(opt);
+    });
+
+    // select the first genuinely available option, if any
+    var firstAvailable = Array.prototype.find.call(slotSel.options, function(o){ return !o.disabled; });
+    if(firstAvailable){ slotSel.value = firstAvailable.value; }
+  }
+
+  function saveNewBooking(){
+    var dayIso = document.getElementById('nbDaySelect').value;
+    var slotValue = document.getElementById('nbSlotSelect').value;
+    var name = document.getElementById('nbNameInput').value.trim();
+    var phone = document.getElementById('nbPhoneInput').value.trim();
+    var errorEl = document.getElementById('nbError');
+
+    if(name.length < 3){
+      errorEl.textContent = 'من فضلك اكتب اسم صحيح.';
+      return;
+    }
+    if(!/^01\d{9}$/.test(phone)){
+      errorEl.textContent = 'من فضلك اكتب رقم موبايل مصري صحيح (01xxxxxxxxx).';
+      return;
+    }
+    if(document.getElementById('nbSlotSelect').selectedOptions[0].disabled){
+      errorEl.textContent = 'الميعاد ده مش متاح — اختار ميعاد تاني.';
+      return;
+    }
+
+    var key = dayIso + '_' + slotValue;
+    firestoreDb.collection('bookings').doc(key).set({
+      name: name, phone: phone, status: 'confirmed', bookedBy: 'staff', ts: Date.now()
+    })
+      .then(function(){
+        var dayInfo = upcomingDays.filter(function(d){ return d.iso === dayIso; })[0];
+        logActivity('confirm', 'حجز جديد من الفريق لـ ' + name + ' — ' + (dayInfo ? dayInfo.weekday + ' ' + dayInfo.dateLabel : dayIso) + ' ' + SLOT_LABELS[slotValue]);
+        closeNewBookingModal();
+      })
+      .catch(function(err){ errorEl.textContent = 'حصل خطأ: ' + err.message; });
+  }
 
   function recordPayment(b){
     pendingPaymentBooking = b;
@@ -1949,6 +2269,18 @@
       head.addEventListener('click', function(){ card.classList.toggle('open'); });
       card.appendChild(head);
 
+      var fileBar = document.createElement('div');
+      fileBar.className = 'patient-file-bar';
+      var fileBtn = document.createElement('button');
+      fileBtn.className = 'patient-file-btn';
+      fileBtn.textContent = '📁 ملف المريض';
+      fileBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        openPatientFile(p);
+      });
+      fileBar.appendChild(fileBtn);
+      card.appendChild(fileBar);
+
       var history = document.createElement('div');
       history.className = 'patient-history';
       p.visits.forEach(function(v){
@@ -2020,16 +2352,19 @@
 
     allBookings.forEach(function(b){
       if(b.status !== 'confirmed' || !b.services || b.services.length === 0) return;
+      var quantities = b.serviceQuantities || {};
 
       b.services.forEach(function(id){
-        if(SERVICE_BY_ID[id]){ serviceCounts[id] = (serviceCounts[id] || 0) + 1; }
+        if(SERVICE_BY_ID[id]){ serviceCounts[id] = (serviceCounts[id] || 0) + (quantities[id] || 1); }
       });
 
       if(!b.totalAmount) return; // no actual amount recorded yet — not counted in revenue totals
 
       var comboLabel = b.services.map(function(id){
         var svc = SERVICE_BY_ID[id];
-        return svc ? svc.name : id;
+        var label = svc ? svc.name : id;
+        var qty = quantities[id] || 1;
+        return qty > 1 ? label + ' × ' + qty : label;
       }).sort().join(' + ');
       comboRevenue[comboLabel] = (comboRevenue[comboLabel] || 0) + b.totalAmount;
 
@@ -2306,6 +2641,7 @@
 
     var selectedServices = b.services || [];
     var savedDiscounts = b.serviceDiscounts || {}; // { serviceId: percent }
+    var savedQuantities = b.serviceQuantities || {}; // { serviceId: qty }
     var listEl = document.getElementById('serviceCheckList');
     listEl.innerHTML = '';
     SERVICES.forEach(function(s){
@@ -2326,6 +2662,23 @@
       priceSpan.className = 'sci-price';
       priceSpan.textContent = s.price != null ? s.price.toLocaleString('ar-EG') + ' جنيه' : 'حسب المعمل';
 
+      var qtyLabel = document.createElement('span');
+      qtyLabel.className = 'sci-discount-label';
+      qtyLabel.textContent = 'العدد';
+
+      var qtyInput = document.createElement('input');
+      qtyInput.type = 'number';
+      qtyInput.className = 'sci-qty';
+      qtyInput.min = '1';
+      qtyInput.step = '1';
+      qtyInput.value = savedQuantities[s.id] || 1;
+      qtyInput.disabled = !isChecked;
+      qtyInput.addEventListener('click', function(e){ e.preventDefault(); });
+      qtyInput.addEventListener('input', function(){
+        if(!qtyInput.value || parseInt(qtyInput.value, 10) < 1){ qtyInput.value = 1; }
+        recalcTotalFromDiscount();
+      });
+
       var discLabel = document.createElement('span');
       discLabel.className = 'sci-discount-label';
       discLabel.textContent = 'خصم %';
@@ -2343,19 +2696,34 @@
 
       cb.addEventListener('change', function(){
         item.classList.toggle('checked', cb.checked);
+        qtyInput.disabled = !cb.checked;
         discInput.disabled = s.price == null || !cb.checked;
+        if(cb.checked && !qtyInput.value){ qtyInput.value = 1; }
         recalcTotalFromDiscount();
       });
 
       item.appendChild(cb);
       item.appendChild(nameSpan);
       item.appendChild(priceSpan);
+      item.appendChild(qtyLabel);
+      item.appendChild(qtyInput);
       item.appendChild(discLabel);
       item.appendChild(discInput);
       listEl.appendChild(item);
     });
 
     document.getElementById('quickDiscountInput').value = '';
+
+    var customService = b.customService || null;
+    var otherCb = document.getElementById('otherServiceCheckbox');
+    var otherFields = document.getElementById('otherServiceFields');
+    var otherItem = document.getElementById('otherCheckItem');
+    otherCb.checked = !!customService;
+    otherItem.classList.toggle('checked', !!customService);
+    otherFields.style.display = customService ? 'grid' : 'none';
+    document.getElementById('otherServiceDesc').value = customService ? customService.description : '';
+    document.getElementById('otherServicePrice').value = customService ? customService.price : '';
+
     var totalInput = document.getElementById('editTotalInput');
     var paidInput = document.getElementById('editPaidInput');
     totalInput.value = b.totalAmount || '';
@@ -2387,8 +2755,21 @@
     });
     return discounts;
   }
+  function getServiceQuantities(){
+    var quantities = {};
+    document.querySelectorAll('#serviceCheckList .service-check-item').forEach(function(item){
+      var cb = item.querySelector('input[type="checkbox"]');
+      var qtyInput = item.querySelector('.sci-qty');
+      if(cb.checked){
+        var val = parseInt(qtyInput.value, 10) || 1;
+        if(val > 1){ quantities[cb.value] = val; }
+      }
+    });
+    return quantities;
+  }
   function recalcTotalFromDiscount(){
     var discounts = getServiceDiscounts();
+    var quantities = getServiceQuantities();
     var ids = getCheckedServiceIds();
     var total = 0;
     var hasFixedPrice = false;
@@ -2397,8 +2778,13 @@
       if(!svc || svc.price == null) return;
       hasFixedPrice = true;
       var discount = discounts[id] || 0;
-      total += svc.price * (1 - discount / 100);
+      var qty = quantities[id] || 1;
+      total += svc.price * qty * (1 - discount / 100);
     });
+    if(document.getElementById('otherServiceCheckbox').checked){
+      var otherPrice = parseFloat(document.getElementById('otherServicePrice').value) || 0;
+      if(otherPrice > 0){ total += otherPrice; hasFixedPrice = true; }
+    }
     if(!hasFixedPrice) return; // nothing fixed-price to calculate from — leave total as-is
     document.getElementById('editTotalInput').value = Math.round(total);
     updateRemainingLine();
@@ -2427,9 +2813,21 @@
     var status = document.getElementById('editStatusInput').value;
     var services = getCheckedServiceIds();
     var serviceDiscounts = getServiceDiscounts();
+    var serviceQuantities = getServiceQuantities();
     var totalAmount = parseFloat(document.getElementById('editTotalInput').value) || 0;
     var paidAmount = parseFloat(document.getElementById('editPaidInput').value) || 0;
     var errorEl = document.getElementById('editBookingError');
+
+    var customService = null;
+    if(document.getElementById('otherServiceCheckbox').checked){
+      var otherDesc = document.getElementById('otherServiceDesc').value.trim();
+      var otherPrice = parseFloat(document.getElementById('otherServicePrice').value) || 0;
+      if(!otherDesc){
+        errorEl.textContent = 'اكتب وصف الإجراء الآخر أو ألغِ تحديد "أخرى".';
+        return;
+      }
+      customService = { description: otherDesc, price: otherPrice };
+    }
 
     if(name.length < 3){
       errorEl.textContent = 'من فضلك اكتب اسم صحيح.';
@@ -2449,6 +2847,9 @@
       services.some(function(id){ return oldServices.indexOf(id) === -1; });
     var oldDiscounts = b.serviceDiscounts || {};
     var discountsChanged = JSON.stringify(serviceDiscounts) !== JSON.stringify(oldDiscounts);
+    var oldQuantities = b.serviceQuantities || {};
+    var quantitiesChanged = JSON.stringify(serviceQuantities) !== JSON.stringify(oldQuantities);
+    var customChanged = JSON.stringify(customService) !== JSON.stringify(b.customService || null);
 
     var changes = [];
     if(name !== b.name) changes.push('الاسم');
@@ -2456,12 +2857,16 @@
     if(status !== b.status) changes.push('الحالة');
     if(servicesChanged) changes.push('الإجراءات');
     if(discountsChanged) changes.push('نسب الخصم');
+    if(quantitiesChanged) changes.push('عدد الإجراءات');
+    if(customChanged) changes.push('إجراء آخر');
     if(totalAmount !== (b.totalAmount || 0)) changes.push('الإجمالي');
     if(paidAmount !== (b.paidAmount || 0)) changes.push('المدفوع');
 
     firestoreDb.collection('bookings').doc(b.id).update({
       name: name, phone: phone, status: status, services: services,
-      serviceDiscounts: serviceDiscounts, totalAmount: totalAmount, paidAmount: paidAmount
+      serviceDiscounts: serviceDiscounts, serviceQuantities: serviceQuantities,
+      customService: customService,
+      totalAmount: totalAmount, paidAmount: paidAmount
     })
       .then(function(){
         var paidDelta = paidAmount - (b.paidAmount || 0);
