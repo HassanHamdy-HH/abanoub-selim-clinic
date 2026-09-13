@@ -1889,15 +1889,12 @@
       if(remaining > 0){ totalRemaining += remaining; openCount++; }
     });
 
-    // "collected" is cash-basis — it comes from the payments ledger (same source
-    // as the Daily Summary), not from bookings' paidAmount, so the two always agree.
-    // A booking paid across several days would otherwise get double-counted or
-    // attributed to the wrong day if we summed paidAmount by booking date instead.
-    var totalCollected = 0;
-    paymentsCache.forEach(function(p){
-      if(dateFilter && p.dayIso !== dateFilter) return;
-      totalCollected += (p.amount || 0);
-    });
+    // "collected" is cash-basis (same source as the Daily Summary): money counts
+    // toward the day it was actually paid, not the day of the original booking —
+    // so a payment made later for an old session closes into its own day.
+    var totalCollected = dateFilter
+      ? getDayCollectedTotal(dateFilter)
+      : paymentsCache.reduce(function(sum, p){ return sum + (p.amount || 0); }, 0);
 
     document.getElementById('statTotalCollected').textContent = totalCollected.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('statTotalRemaining').textContent = totalRemaining.toLocaleString('ar-EG') + ' جنيه';
@@ -2167,6 +2164,9 @@
     });
   }
 
+  // Cash-basis: each day closes with only the money actually collected that day —
+  // a partial payment made later (even for an old booking) counts toward the day
+  // it was paid, not the booking's original day.
   function getDayCollectedTotal(dayIso){
     var total = 0;
     paymentsCache.forEach(function(p){
