@@ -711,6 +711,7 @@
           <div class="stat-label">حالات عليها باقي</div>
         </div>
       </div>
+      <button class="btn btn-outline" id="accountsRecalcBtn" style="margin-bottom:16px;">🔄 إعادة حساب الأرقام</button>
 
       <div class="toolbar">
         <input type="text" id="accountsSearchInput" placeholder="دور باسم المريض...">
@@ -719,6 +720,8 @@
           <option value="open">عليها باقي بس</option>
           <option value="settled">متحصّلة بالكامل</option>
         </select>
+        <input type="date" id="accountsDateFilter" title="فلتر بتاريخ معيّن">
+        <button class="btn btn-outline" id="accountsDateClearBtn" title="امسح فلتر التاريخ">✕ مسح التاريخ</button>
       </div>
 
       <div class="table-card">
@@ -797,6 +800,7 @@
           <button class="cta-btn gold" id="dsSaveBtn" style="width:100%;justify-content:center;">حفظ مصاريف اليوم</button>
           <button class="btn btn-outline" id="dsPrintBtn" style="width:100%;justify-content:center;">🖨️ طباعة حسابات اليوم</button>
         </div>
+        <button class="btn btn-outline" id="dsResetBtn" style="width:100%;justify-content:center;margin-top:10px;color:#D64545;border-color:#F3C9C9;">🗑️ مسح بيانات اليوم (محتاج كود)</button>
         <p class="modal-error" id="dsSaveMsg"></p>
       </div>
 
@@ -1493,6 +1497,17 @@
     document.getElementById('patientSearchInput').addEventListener('input', renderPatients);
     document.getElementById('accountsSearchInput').addEventListener('input', renderAccounts);
     document.getElementById('accountsFilter').addEventListener('change', renderAccounts);
+    document.getElementById('accountsDateFilter').addEventListener('change', renderAccounts);
+    document.getElementById('accountsDateClearBtn').addEventListener('click', function(){
+      document.getElementById('accountsDateFilter').value = '';
+      renderAccounts();
+    });
+    document.getElementById('accountsRecalcBtn').addEventListener('click', function(){
+      renderAccounts();
+      renderDailySummary();
+      renderStats();
+    });
+    document.getElementById('dsResetBtn').addEventListener('click', resetDailySummary);
     document.getElementById('dailySummaryDate').addEventListener('change', renderDailySummary);
     document.getElementById('dsMaterial').addEventListener('input', updateDailyRemaining);
     document.getElementById('dsLab').addEventListener('input', updateDailyRemaining);
@@ -1749,9 +1764,13 @@
 
     var q = document.getElementById('accountsSearchInput').value.trim().toLowerCase();
     var filter = document.getElementById('accountsFilter').value;
+    var dateFilter = document.getElementById('accountsDateFilter').value;
 
     var rows = allBookings.filter(function(b){ return b.totalAmount > 0; });
 
+    if(dateFilter){
+      rows = rows.filter(function(b){ return b.dayIso === dateFilter; });
+    }
     if(q){
       rows = rows.filter(function(b){ return b.name.toLowerCase().indexOf(q) !== -1; });
     }
@@ -1767,8 +1786,11 @@
       return kb < ka ? -1 : kb > ka ? 1 : 0;
     });
 
-    // ---- summary stats across ALL billed bookings (not just filtered rows) ----
+    // ---- summary stats: respects the date filter, ignores search/status filters ----
     var billed = allBookings.filter(function(b){ return b.totalAmount > 0; });
+    if(dateFilter){
+      billed = billed.filter(function(b){ return b.dayIso === dateFilter; });
+    }
     var totalCollected = 0, totalRemaining = 0, totalGrand = 0, openCount = 0;
     billed.forEach(function(b){
       var remaining = b.totalAmount - b.paidAmount;
@@ -2183,6 +2205,36 @@
         msgEl.style.color = '#1E9E5A';
         msgEl.textContent = 'تم الحفظ ✓';
         logActivity('daily_expenses', 'حفظ مصاريف يوم ' + formatDateLabel(dayIso) + ' — ماتريال ' + material.toLocaleString('ar-EG') + '، معمل ' + lab.toLocaleString('ar-EG') + '، أخرى ' + other.toLocaleString('ar-EG'));
+      })
+      .catch(function(err){
+        msgEl.style.color = '#D64545';
+        msgEl.textContent = 'حصل خطأ: ' + err.message;
+      });
+  }
+
+  function resetDailySummary(){
+    var dayIso = document.getElementById('dailySummaryDate').value;
+    if(!dayIso) return;
+    var msgEl = document.getElementById('dsSaveMsg');
+
+    var pin = prompt('اكتب الكود السري عشان تأكد مسح بيانات يوم ' + formatDateLabel(dayIso) + ':', '');
+    if(pin === null) return;
+    if(!STAFF_PINS.hasOwnProperty(pin.trim())){
+      msgEl.style.color = '#D64545';
+      msgEl.textContent = 'الكود غير صحيح — اتلغت عملية المسح.';
+      return;
+    }
+    if(!confirm('متأكد إنك عايز تمسح كل مصاريف يوم ' + formatDateLabel(dayIso) + ' (ماتريال/معمل/أخرى)؟ الخطوة دي مينفعش ترجع فيها.')) return;
+
+    firestoreDb.collection('dailyExpenses').doc(dayIso).delete()
+      .then(function(){
+        document.getElementById('dsMaterial').value = '';
+        document.getElementById('dsLab').value = '';
+        document.getElementById('dsOther').value = '';
+        updateDailyRemaining();
+        msgEl.style.color = '#1E9E5A';
+        msgEl.textContent = 'اتمسحت بيانات اليوم ده ✓';
+        logActivity('daily_expenses', 'مسح مصاريف يوم ' + formatDateLabel(dayIso) + ' وإعادة تصفيرها');
       })
       .catch(function(err){
         msgEl.style.color = '#D64545';
