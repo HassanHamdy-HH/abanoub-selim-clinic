@@ -2231,10 +2231,16 @@
         document.getElementById('dsMaterial').value = '';
         document.getElementById('dsLab').value = '';
         document.getElementById('dsOther').value = '';
-        updateDailyRemaining();
+        document.getElementById('dsTotal').textContent = '0 جنيه';
+        document.getElementById('dsCashTotal').textContent = '0 جنيه';
+        document.getElementById('dsVodafoneTotal').textContent = '0 جنيه';
+        document.getElementById('dsTeamShare').textContent = '0 جنيه';
+        document.getElementById('dsDoctorShare').textContent = '0 جنيه';
+        document.getElementById('dsExpensePool').textContent = '0 جنيه';
+        document.getElementById('dsRemaining').textContent = '0 جنيه';
         msgEl.style.color = '#1E9E5A';
-        msgEl.textContent = 'اتمسحت بيانات اليوم ده ✓';
-        logActivity('daily_expenses', 'مسح مصاريف يوم ' + formatDateLabel(dayIso) + ' وإعادة تصفيرها');
+        msgEl.textContent = 'اتمسحت بيانات اليوم ده كلها ✓ — دوس "إعادة حساب الأرقام" لو عايز ترجّعها تاني.';
+        logActivity('daily_expenses', 'مسح كل بيانات يوم ' + formatDateLabel(dayIso) + ' (الإجمالي والنسب والمصاريف) وإعادة تصفيرها');
       })
       .catch(function(err){
         msgEl.style.color = '#D64545';
