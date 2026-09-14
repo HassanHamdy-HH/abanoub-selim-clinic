@@ -352,6 +352,17 @@
   .ds-row.ds-after-team{background:#F2F2F2;}
   .ds-row.ds-after-team strong{color:var(--ink);}
   .ds-row.ds-pool strong{color:var(--gold-deep);}
+  .ds-value-group{display:flex;align-items:center;gap:8px;}
+  .ds-transfer-btn{
+    width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);font-weight:800;font-size:.85rem;flex:0 0 auto;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ds-transfer-btn:hover{background:var(--gold);color:var(--deep-teal);border-color:var(--gold);}
+  .ds-adjustment-note{
+    font-size:.78rem;color:var(--gold-deep);background:rgba(217,164,65,.12);
+    border-radius:8px;padding:8px 12px;margin:-4px 0 12px;text-align:center;font-weight:600;
+  }
   .ds-row.ds-remaining{background:linear-gradient(135deg, var(--deep-teal), var(--deep-teal-2));margin-top:8px;}
   .ds-row.ds-remaining span{color:#B9D9DB;}
   .ds-row.ds-remaining strong{color:#fff;}
@@ -938,13 +949,20 @@
           </div>
           <div class="ds-row ds-doctor">
             <span>نصيب الدكتور (40% من الإجمالي قبل الخصومات)</span>
-            <strong id="dsDoctorShare">0 جنيه</strong>
+            <span class="ds-value-group">
+              <strong id="dsDoctorShare">0 جنيه</strong>
+              <button type="button" class="ds-transfer-btn" id="dsDoctorToPoolBtn" title="نقل جزء من نصيب الدكتور لصالح المصاريف">↓</button>
+            </span>
           </div>
           <div class="ds-row ds-pool">
             <span>المخصص للمصاريف (الباقي بعد نصيب الفريق والدكتور)</span>
-            <strong id="dsExpensePool">0 جنيه</strong>
+            <span class="ds-value-group">
+              <strong id="dsExpensePool">0 جنيه</strong>
+              <button type="button" class="ds-transfer-btn" id="dsPoolToDoctorBtn" title="نقل جزء من الباقي لصالح الدكتور">↑</button>
+            </span>
           </div>
         </div>
+        <p class="ds-adjustment-note" id="dsAdjustmentNote" style="display:none;"></p>
 
         <div class="collection-details-wrap">
           <h4>تفاصيل التحصيل (كل دفعة دخلت في اليوم ده)</h4>
@@ -1842,6 +1860,37 @@
       reconcileDailyPayments();
     });
     document.getElementById('dsResetBtn').addEventListener('click', resetDailySummary);
+    document.getElementById('dsDoctorToPoolBtn').addEventListener('click', function(){
+      var dayIso = document.getElementById('dailySummaryDate').value;
+      if(!dayIso) return;
+      var total = getDayCollectedTotal(dayIso);
+      var teamShare = computeTeamShare(total);
+      var baseDoctorShare = total * 0.4;
+      var currentAdjustment = (dailyExpensesCache[dayIso] || {}).doctorAdjustment || 0;
+      var currentDoctorShare = baseDoctorShare - currentAdjustment;
+      var amountStr = prompt('قد إيه عايز تنقل من نصيب الدكتور (' + currentDoctorShare.toLocaleString('ar-EG') + ' جنيه) لصالح المصاريف؟', '');
+      if(amountStr === null) return;
+      var amount = parseFloat(amountStr);
+      if(isNaN(amount) || amount <= 0){ alert('اكتب مبلغ صحيح أكبر من صفر.'); return; }
+      if(amount > currentDoctorShare){ alert('المبلغ أكبر من نصيب الدكتور الحالي.'); return; }
+      transferDoctorAdjustment(dayIso, amount);
+    });
+    document.getElementById('dsPoolToDoctorBtn').addEventListener('click', function(){
+      var dayIso = document.getElementById('dailySummaryDate').value;
+      if(!dayIso) return;
+      var total = getDayCollectedTotal(dayIso);
+      var teamShare = computeTeamShare(total);
+      var baseDoctorShare = total * 0.4;
+      var baseExpensePool = total - teamShare - baseDoctorShare;
+      var currentAdjustment = (dailyExpensesCache[dayIso] || {}).doctorAdjustment || 0;
+      var currentExpensePool = baseExpensePool + currentAdjustment;
+      var amountStr = prompt('قد إيه عايز تنقل من الباقي المخصص للمصاريف (' + currentExpensePool.toLocaleString('ar-EG') + ' جنيه) لصالح الدكتور؟', '');
+      if(amountStr === null) return;
+      var amount = parseFloat(amountStr);
+      if(isNaN(amount) || amount <= 0){ alert('اكتب مبلغ صحيح أكبر من صفر.'); return; }
+      if(amount > currentExpensePool){ alert('المبلغ أكبر من الباقي المتاح في المصاريف.'); return; }
+      transferDoctorAdjustment(dayIso, -amount);
+    });
     document.getElementById('wipeFinancialBtn').addEventListener('click', wipeFinancialData);
     document.getElementById('dailySummaryDate').addEventListener('change', renderDailySummary);
     document.getElementById('dsMaterial').addEventListener('input', updateDailyRemaining);
@@ -2557,8 +2606,13 @@
     var total = getDayCollectedTotal(dayIso);
     var methodTotals = getDayCollectedByMethod(dayIso);
     var teamShare = computeTeamShare(total);
-    var doctorShare = total * 0.4;  // 40% من الإجمالي قبل أي خصومات (مش من الباقي بعد نصيب الفريق)
-    var expensePool = total - teamShare - doctorShare; // الباقي بعد نصيب الفريق والدكتور
+    var baseDoctorShare = total * 0.4;  // 40% من الإجمالي قبل أي خصومات (مش من الباقي بعد نصيب الفريق)
+    var baseExpensePool = total - teamShare - baseDoctorShare; // الباقي بعد نصيب الفريق والدكتور
+
+    var saved = dailyExpensesCache[dayIso] || {};
+    var adjustment = saved.doctorAdjustment || 0; // موجب = منقول من الدكتور للمصاريف، سالب = العكس
+    var doctorShare = baseDoctorShare - adjustment;
+    var expensePool = baseExpensePool + adjustment;
 
     document.getElementById('dsTotal').textContent = total.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsCashTotal').textContent = methodTotals.cash.toLocaleString('ar-EG') + ' جنيه';
@@ -2567,7 +2621,17 @@
     document.getElementById('dsDoctorShare').textContent = doctorShare.toLocaleString('ar-EG') + ' جنيه';
     document.getElementById('dsExpensePool').textContent = expensePool.toLocaleString('ar-EG') + ' جنيه';
 
-    var saved = dailyExpensesCache[dayIso] || {};
+    var noteEl = document.getElementById('dsAdjustmentNote');
+    if(adjustment > 0){
+      noteEl.style.display = 'block';
+      noteEl.textContent = 'ℹ منقول ' + adjustment.toLocaleString('ar-EG') + ' جنيه من نصيب الدكتور لصالح المصاريف';
+    } else if(adjustment < 0){
+      noteEl.style.display = 'block';
+      noteEl.textContent = 'ℹ منقول ' + Math.abs(adjustment).toLocaleString('ar-EG') + ' جنيه من المصاريف لصالح الدكتور';
+    } else {
+      noteEl.style.display = 'none';
+    }
+
     document.getElementById('dsMaterial').value = saved.material || '';
     document.getElementById('dsLab').value = saved.lab || '';
     document.getElementById('dsOther').value = saved.other || '';
@@ -2575,6 +2639,24 @@
     renderCollectionDetails(dayIso);
     updateDailyRemaining();
     document.getElementById('dsSaveMsg').textContent = '';
+  }
+
+  function transferDoctorAdjustment(dayIso, delta){
+    // delta > 0 => من الدكتور للمصاريف، delta < 0 => من المصاريف للدكتور
+    var saved = dailyExpensesCache[dayIso] || {};
+    var newAdjustment = (saved.doctorAdjustment || 0) + delta;
+    var payload = {
+      material: saved.material || 0,
+      lab: saved.lab || 0,
+      other: saved.other || 0,
+      doctorAdjustment: newAdjustment,
+      ts: Date.now()
+    };
+    firestoreDb.collection('dailyExpenses').doc(dayIso).set(payload)
+      .then(function(){
+        logActivity('daily_expenses', (delta > 0 ? 'نقل ' + delta.toLocaleString('ar-EG') + ' جنيه من نصيب الدكتور لصالح المصاريف' : 'نقل ' + Math.abs(delta).toLocaleString('ar-EG') + ' جنيه من المصاريف لصالح الدكتور') + ' — يوم ' + formatDateLabel(dayIso));
+      })
+      .catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
   function renderCollectionDetails(dayIso){
@@ -2691,6 +2773,8 @@
     var teamShare = computeTeamShare(total);
     var doctorShare = total * 0.4;
     var expensePool = total - teamShare - doctorShare;
+    var adjustment = (dailyExpensesCache[dayIso] || {}).doctorAdjustment || 0;
+    expensePool += adjustment;
     var material = parseFloat(document.getElementById('dsMaterial').value) || 0;
     var lab = parseFloat(document.getElementById('dsLab').value) || 0;
     var other = parseFloat(document.getElementById('dsOther').value) || 0;
@@ -2704,9 +2788,10 @@
     var material = parseFloat(document.getElementById('dsMaterial').value) || 0;
     var lab = parseFloat(document.getElementById('dsLab').value) || 0;
     var other = parseFloat(document.getElementById('dsOther').value) || 0;
+    var existingAdjustment = (dailyExpensesCache[dayIso] || {}).doctorAdjustment || 0;
     var msgEl = document.getElementById('dsSaveMsg');
 
-    firestoreDb.collection('dailyExpenses').doc(dayIso).set({ material: material, lab: lab, other: other, ts: Date.now() })
+    firestoreDb.collection('dailyExpenses').doc(dayIso).set({ material: material, lab: lab, other: other, doctorAdjustment: existingAdjustment, ts: Date.now() })
       .then(function(){
         msgEl.style.color = '#1E9E5A';
         msgEl.textContent = 'تم الحفظ ✓';
@@ -2796,6 +2881,7 @@
         document.getElementById('dsDoctorShare').textContent = '0 جنيه';
         document.getElementById('dsExpensePool').textContent = '0 جنيه';
         document.getElementById('dsRemaining').textContent = '0 جنيه';
+        document.getElementById('dsAdjustmentNote').style.display = 'none';
         msgEl.style.color = '#1E9E5A';
         msgEl.textContent = 'اتمسحت بيانات اليوم ده كلها ✓ — دوس "إعادة حساب الأرقام" لو عايز ترجّعها تاني.';
         logActivity('daily_expenses', 'مسح كل بيانات يوم ' + formatDateLabel(dayIso) + ' (الإجمالي والنسب والمصاريف) وإعادة تصفيرها');
