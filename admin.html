@@ -9,22 +9,40 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --deep-teal:#0B3B47;
-    --teal:#12707F;
-    --aqua:#4FC7D6;
-    --pale-aqua:#EAF6F6;
+    --deep-teal:#092E38;
+    --deep-teal-2:#061F26;
+    --teal:#0E7F91;
+    --aqua:#35BFD1;
+    --pale-aqua:#E6F4F4;
     --ivory:#FBFAF6;
     --gold:#D9A441;
-    --gold-deep:#B9822A;
+    --gold-deep:#A87527;
     --ink:#0E2B30;
     --ink-soft:#4A6067;
     --line:#DCE8E8;
     --radius:16px;
-    --shadow:0 14px 34px -18px rgba(11,59,71,.28);
+    --shadow:0 16px 36px -16px rgba(6,26,32,.38);
     --pending:#E0A945;
     --pending-bg:#FBF3E3;
-    --confirmed:#2E9E6B;
+    --confirmed:#249163;
     --confirmed-bg:#E7F6EE;
+  }
+  html[data-theme="midnight"]{
+    --deep-teal:#16213E; --deep-teal-2:#0B1224; --teal:#2C4A9C; --aqua:#6690E8; --pale-aqua:#ECF1FC;
+    --gold-deep:#9E6E1F;
+  }
+  html[data-theme="violet"]{
+    --deep-teal:#33195A; --deep-teal-2:#1F0F3C; --teal:#7538C0; --aqua:#B48DE8; --pale-aqua:#F1EAFB;
+    --gold-deep:#9E6E1F;
+  }
+  html[data-theme="emerald"]{
+    --deep-teal:#0A3626; --deep-teal-2:#052018; --teal:#0F9A62; --aqua:#5FE0A0; --pale-aqua:#E6FAF1;
+    --gold-deep:#9E6E1F;
+  }
+  html, body, .chart-card, .stat-card, .table-card, .booking-modal, .booking-modal-overlay,
+  header.topbar, .toolbar, .dashboard-topbar, .view-tab, .day-chip, .patient-card, .badge,
+  .cal-cell, .cal-head-cell, .ds-row, .pm-badge, .btn, .cta-btn, .stat-card .stat-ic{
+    transition:background-color .4s ease, background-image .4s ease, color .4s ease, border-color .4s ease, box-shadow .4s ease;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
@@ -58,10 +76,11 @@
   }
   .pin-card input:focus{outline:2px solid var(--gold);outline-offset:1px;}
   .pin-card button{
-    width:100%;padding:13px;border-radius:12px;border:none;background:var(--deep-teal);color:#fff;
-    font-weight:700;font-size:.98rem;transition:background .2s ease;
+    width:100%;padding:13px;border-radius:12px;border:none;
+    background:linear-gradient(135deg, var(--deep-teal), var(--deep-teal-2));color:#fff;
+    font-weight:700;font-size:.98rem;transition:background .3s ease, transform .2s ease;
   }
-  .pin-card button:hover{background:var(--teal);}
+  .pin-card button:hover{background:linear-gradient(135deg, var(--teal), var(--deep-teal));transform:translateY(-1px);}
   .pin-error{color:#D64545;font-size:.84rem;margin-top:12px;min-height:1.2em;font-weight:600;}
 
   /* ---------- APP SHELL ---------- */
@@ -96,17 +115,21 @@
     background:#fff;border-radius:var(--radius);padding:22px 22px;box-shadow:var(--shadow);
     border:1px solid var(--line);position:relative;overflow:hidden;
   }
+  .stat-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:4px;
+    background:linear-gradient(90deg, var(--teal), var(--aqua));
+  }
   .stat-card .stat-num{font-family:'Tajawal',sans-serif;font-weight:900;font-size:2.1rem;color:var(--deep-teal);}
   .stat-card .stat-label{font-size:.85rem;color:var(--ink-soft);margin-top:4px;}
   .stat-card .stat-ic{
     position:absolute;top:18px;left:18px;width:38px;height:38px;border-radius:10px;
     display:flex;align-items:center;justify-content:center;font-size:1.1rem;
   }
-  .stat-card.today .stat-ic{background:var(--pale-aqua);color:var(--teal);}
-  .stat-card.pending .stat-ic{background:var(--pending-bg);color:var(--pending);}
-  .stat-card.confirmed .stat-ic{background:var(--confirmed-bg);color:var(--confirmed);}
-  .stat-card.week .stat-ic{background:#FFF3E0;color:var(--gold-deep);}
-  .stat-card.revenue .stat-ic{background:#E7F6EE;color:#1E9E5A;}
+  .stat-card.today .stat-ic{background:linear-gradient(145deg, var(--pale-aqua), #DCEFEF);color:var(--teal);box-shadow:inset 0 1px 2px rgba(255,255,255,.6), 0 3px 8px -4px rgba(18,112,127,.35);}
+  .stat-card.pending .stat-ic{background:linear-gradient(145deg, var(--pending-bg), #F7E6C4);color:var(--pending);box-shadow:inset 0 1px 2px rgba(255,255,255,.6), 0 3px 8px -4px rgba(224,169,69,.4);}
+  .stat-card.confirmed .stat-ic{background:linear-gradient(145deg, var(--confirmed-bg), #D5F0E1);color:var(--confirmed);box-shadow:inset 0 1px 2px rgba(255,255,255,.6), 0 3px 8px -4px rgba(36,145,99,.4);}
+  .stat-card.week .stat-ic{background:linear-gradient(145deg, #FFF3E0, #FCE3BC);color:var(--gold-deep);box-shadow:inset 0 1px 2px rgba(255,255,255,.6), 0 3px 8px -4px rgba(168,117,39,.4);}
+  .stat-card.revenue .stat-ic{background:linear-gradient(145deg, #E7F6EE, #C9EBD9);color:#1E9E5A;box-shadow:inset 0 1px 2px rgba(255,255,255,.6), 0 3px 8px -4px rgba(30,158,90,.4);}
 
   /* ---------- TOOLBAR ---------- */
   .toolbar{
@@ -131,10 +154,21 @@
     display:inline-flex;align-items:center;gap:6px;transition:transform .15s ease, background .2s ease;
   }
   .btn:hover{transform:translateY(-1px);}
-  .btn-gold{background:var(--gold);color:var(--deep-teal);}
-  .btn-gold:hover{background:var(--gold-deep);color:#fff;}
+  .btn-gold{background:linear-gradient(135deg, var(--gold), var(--gold-deep));color:var(--deep-teal);box-shadow:0 6px 16px -8px rgba(185,130,42,.6);}
+  .btn-gold:hover{background:linear-gradient(135deg, var(--gold-deep), var(--gold-deep));color:#fff;}
   .btn-outline{background:#fff;color:var(--deep-teal);border:1px solid var(--line);}
   .btn-outline:hover{background:var(--pale-aqua);}
+  .cta-btn{
+    padding:12px 20px;border-radius:12px;border:none;font-weight:700;font-size:.9rem;
+    display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    transition:transform .15s ease, background .3s ease, box-shadow .3s ease;
+  }
+  .cta-btn:hover{transform:translateY(-1px);}
+  .cta-btn.gold{
+    background:linear-gradient(135deg, var(--gold), var(--gold-deep));color:var(--deep-teal);
+    box-shadow:0 8px 20px -8px rgba(185,130,42,.55);
+  }
+  .cta-btn.gold:hover{background:linear-gradient(135deg, var(--gold-deep), var(--gold-deep));color:#fff;}
 
   .view-tabs{display:flex;gap:6px;background:var(--pale-aqua);padding:4px;border-radius:10px;}
   .view-tab{
@@ -142,6 +176,50 @@
     font-weight:700;font-size:.84rem;transition:background .2s ease, color .2s ease;
   }
   .view-tab.active{background:#fff;color:var(--deep-teal);box-shadow:0 2px 8px -2px rgba(11,59,71,.25);}
+
+  /* ---------- TOP ACTION BAR (tabs + primary actions) ---------- */
+  .dashboard-topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .topbar-actions-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .more-menu-wrap{position:relative;}
+  .more-menu{
+    display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:40;
+    background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+    padding:6px;min-width:200px;flex-direction:column;gap:2px;
+  }
+  .more-menu.show{display:flex;}
+  .more-menu button{
+    background:none;border:none;text-align:right;padding:10px 12px;border-radius:8px;
+    font-size:.84rem;font-weight:600;color:var(--ink);white-space:nowrap;
+  }
+  .more-menu button:hover{background:var(--pale-aqua);color:var(--deep-teal);}
+
+  /* ---------- THEME SWITCHER (fixed floating button) ---------- */
+  .theme-fab{
+    position:fixed;left:20px;bottom:20px;z-index:60;
+    width:52px;height:52px;border-radius:50%;border:none;
+    background:linear-gradient(135deg, var(--teal), var(--gold));
+    color:#fff;font-size:1.3rem;box-shadow:0 10px 24px -8px rgba(11,59,71,.45);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, background .4s ease;
+  }
+  .theme-fab:hover{transform:scale(1.08) rotate(12deg);box-shadow:0 14px 30px -8px rgba(11,59,71,.55);}
+  .theme-fab.spin{animation:themeFabSpin .5s ease;}
+  @keyframes themeFabSpin{
+    0%{transform:rotate(0deg) scale(1);}
+    50%{transform:rotate(190deg) scale(1.15);}
+    100%{transform:rotate(360deg) scale(1);}
+  }
+  .theme-fab-label{
+    position:fixed;left:80px;bottom:32px;z-index:60;
+    background:var(--deep-teal);color:#fff;font-size:.76rem;font-weight:700;
+    padding:6px 12px;border-radius:999px;white-space:nowrap;
+    opacity:0;pointer-events:none;transform:translateX(-6px);
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  .theme-fab-label.show{opacity:1;transform:translateX(0);}
 
   /* ---------- BLOCKED DAYS ---------- */
   .blocked-days-card{
@@ -223,10 +301,24 @@
   .analytics-stats{margin-bottom:20px;}
   .chart-card{
     background:#fff;border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);
-    border:1px solid var(--line);margin-bottom:18px;
+    border:1px solid var(--line);margin-bottom:18px;position:relative;overflow:hidden;
   }
+  .chart-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:4px;
+    background:linear-gradient(90deg, var(--teal), var(--aqua));
+  }
+  .chart-card.danger-zone::before{background:linear-gradient(90deg, #D64545, #F3C9C9);}
   .chart-card h3{font-size:1rem;margin-bottom:4px;}
   .chart-hint{font-size:.8rem;color:var(--ink-soft);display:block;margin-bottom:14px;}
+
+  .accordion-head{
+    display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+    margin-bottom:4px;user-select:none;
+  }
+  .accordion-chevron{color:var(--ink-soft);font-size:.9rem;transition:transform .2s ease;flex:0 0 auto;}
+  .chart-card.collapsed .accordion-chevron{transform:rotate(-90deg);}
+  .chart-card.collapsed .accordion-body{display:none;}
+  .accordion-body{margin-top:14px;}
 
   .danger-zone{border-color:#F3C9C9;background:#FFFBFB;}
   .danger-zone h3{color:#C0392B;}
@@ -260,7 +352,7 @@
   .ds-row.ds-after-team{background:#F2F2F2;}
   .ds-row.ds-after-team strong{color:var(--ink);}
   .ds-row.ds-pool strong{color:var(--gold-deep);}
-  .ds-row.ds-remaining{background:var(--deep-teal);margin-top:8px;}
+  .ds-row.ds-remaining{background:linear-gradient(135deg, var(--deep-teal), var(--deep-teal-2));margin-top:8px;}
   .ds-row.ds-remaining span{color:#B9D9DB;}
   .ds-row.ds-remaining strong{color:#fff;}
   .ds-btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
@@ -318,6 +410,7 @@
     backdrop-filter:blur(4px);
   }
   .booking-modal-overlay.open{display:flex;}
+  #paymentOverlay.open{z-index:95;} /* stacks above other modals when opened from within one, e.g. the new-booking flow */
   .booking-modal{
     background:#fff;border-radius:var(--radius);padding:28px 26px;max-width:480px;width:100%;
     box-shadow:0 30px 70px -20px rgba(0,0,0,.5);position:relative;max-height:85vh;overflow-y:auto;
@@ -408,6 +501,33 @@
     font-size:.86rem;color:var(--ink-soft);
   }
   .status-box strong{display:block;color:var(--deep-teal);margin-bottom:4px;font-size:.9rem;}
+  .outstanding-box{
+    background:#FFF3E0;border:1px solid #F0DCB0;border-radius:12px;padding:14px 16px;margin:14px 0;
+  }
+  .outstanding-box .ob-title{display:block;color:var(--gold-deep);font-weight:800;margin-bottom:10px;font-size:.86rem;}
+  .outstanding-box .ob-item-full{
+    padding:10px 0;border-top:1px solid #F0DCB0;
+  }
+  .outstanding-box .ob-item-full:first-of-type{border-top:none;padding-top:0;}
+  .outstanding-box .ob-item-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    font-size:.84rem;color:var(--ink);margin-bottom:8px;
+  }
+  .outstanding-box .ob-amount{font-weight:800;color:#C0392B;white-space:nowrap;}
+  .outstanding-box .ob-inline-form{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .outstanding-box .ob-amount-input{
+    width:110px;padding:8px 10px;border-radius:8px;border:1px solid #F0DCB0;font-size:.82rem;
+  }
+  .outstanding-box .ob-method-select{
+    padding:8px 10px;border-radius:8px;border:1px solid #F0DCB0;font-size:.82rem;background:#fff;
+  }
+  .outstanding-box .ob-pay-btn{
+    background:var(--gold);color:var(--deep-teal);border:none;padding:8px 14px;border-radius:8px;
+    font-size:.78rem;font-weight:700;white-space:nowrap;
+  }
+  .outstanding-box .ob-pay-btn:hover{background:var(--gold-deep);color:#fff;}
+  .outstanding-box .ob-pay-btn:disabled{opacity:.6;}
+  .outstanding-box .ob-msg{font-size:.76rem;margin-top:6px;min-height:1em;font-weight:600;}
   .patient-suggest-list{
     margin-top:6px;max-height:170px;overflow-y:auto;border-radius:10px;
     border:1px solid var(--line);background:#fff;display:none;
@@ -445,9 +565,9 @@
   .patient-head:hover{background:var(--pale-aqua);}
   .patient-main{display:flex;align-items:center;gap:14px;}
   .patient-avatar{
-    width:40px;height:40px;border-radius:50%;background:var(--deep-teal);color:#fff;
+    width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, var(--teal), var(--deep-teal));color:#fff;
     display:flex;align-items:center;justify-content:center;font-family:'Tajawal',sans-serif;font-weight:800;
-    flex:0 0 auto;
+    flex:0 0 auto;box-shadow:0 4px 10px -3px rgba(6,26,32,.4);
   }
   .patient-name{font-weight:700;color:var(--deep-teal);font-size:.95rem;}
   .patient-phone{font-size:.8rem;color:var(--ink-soft);direction:ltr;text-align:right;}
@@ -553,12 +673,23 @@
     .stat-card .stat-num{font-size:1.6rem;}
     .toolbar{flex-direction:column;align-items:stretch;}
     .view-tabs{justify-content:center;}
+    .dashboard-topbar{flex-direction:column;align-items:stretch;}
+    .topbar-actions-group{justify-content:center;}
     .day-chip{min-width:64px;padding:8px 10px;}
     .ds-expenses-grid{grid-template-columns:1fr;}
     .ds-btn-row{grid-template-columns:1fr;}
     .modal-field-row{grid-template-columns:1fr;}
   }
 </style>
+<script>
+  // تطبيق السمة المحفوظة فورًا قبل ما الصفحة تتحمّل، عشان محدش يشوف ومضة اللون الافتراضي
+  (function(){
+    try{
+      var saved = localStorage.getItem('clinicAdminTheme');
+      if(saved){ document.documentElement.setAttribute('data-theme', saved); }
+    }catch(e){}
+  })();
+</script>
 </head>
 <body>
 
@@ -616,6 +747,28 @@
       </div>
     </div>
 
+    <div class="dashboard-topbar">
+      <div class="view-tabs">
+        <button class="view-tab active" id="tabTable">جدول</button>
+        <button class="view-tab" id="tabCalendar">تقويم</button>
+        <button class="view-tab" id="tabPatients">المرضى</button>
+        <button class="view-tab" id="tabAccounts">الحسابات</button>
+        <button class="view-tab" id="tabAnalytics">التحليلات</button>
+      </div>
+      <div class="topbar-actions-group">
+        <button class="btn btn-gold" id="newBookingBtn">➕ حجز جديد</button>
+        <button class="btn btn-gold" id="remindBtn">📨 تذكير حجوزات بكرة</button>
+        <div class="more-menu-wrap">
+          <button class="btn btn-outline" id="moreActionsBtn">⋮ المزيد</button>
+          <div class="more-menu" id="moreActionsMenu">
+            <button type="button" id="printBtn">🖨️ طباعة جدول اليوم</button>
+            <button type="button" id="exportBtn">📊 تصدير CSV</button>
+            <button type="button" id="backupBtn">💾 نسخة احتياطية كاملة</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="toolbar">
       <input type="text" id="searchInput" placeholder="دور باسم المريض أو رقم الموبايل...">
       <select id="statusFilter">
@@ -633,29 +786,6 @@
       <button class="btn btn-outline" id="tableDayPrevBtn" title="اليوم السابق">◀</button>
       <button class="btn btn-outline" id="tableDayTodayBtn">اليوم</button>
       <button class="btn btn-outline" id="tableDayNextBtn" title="اليوم التالي">▶</button>
-      <div class="spacer"></div>
-      <div class="view-tabs">
-        <button class="view-tab active" id="tabTable">جدول</button>
-        <button class="view-tab" id="tabCalendar">تقويم</button>
-        <button class="view-tab" id="tabPatients">المرضى</button>
-        <button class="view-tab" id="tabAccounts">الحسابات</button>
-        <button class="view-tab" id="tabAnalytics">التحليلات</button>
-      </div>
-      <button class="btn btn-gold" id="newBookingBtn">
-        ➕ حجز جديد
-      </button>
-      <button class="btn btn-gold" id="remindBtn">
-        📨 تذكير حجوزات بكرة
-      </button>
-      <button class="btn btn-outline" id="printBtn">
-        🖨️ طباعة جدول اليوم
-      </button>
-      <button class="btn btn-outline" id="exportBtn">
-        تصدير CSV
-      </button>
-      <button class="btn btn-outline" id="backupBtn">
-        💾 نسخة احتياطية كاملة
-      </button>
     </div>
 
     <div class="blocked-days-card" id="blockedDaysCard">
@@ -783,8 +913,9 @@
         <div class="empty-mini" id="accountsEmpty" style="display:none;">مفيش حالات ليها حساب مسجّل لسه — استخدم زرار "تعديل" على أي حجز وحدد الإجراء والمبلغ.</div>
       </div>
 
-      <div class="chart-card">
-        <h3>الملخص المالي اليومي</h3>
+      <div class="chart-card" id="dailySummaryCard">
+        <h3 class="accordion-head"><span>💰 الملخص المالي اليومي</span><span class="accordion-chevron">▾</span></h3>
+        <div class="accordion-body">
         <span class="chart-hint">المبلغ الكلي بيتحسب من الدفعات اللي اتحصّلت فعليًا في اليوم ده (مش من قيمة الحجوزات بس) — يعني لو مريض دفع باقي فلوسه في يوم تاني غير يوم الكشف، المبلغ ده بيتحسب على اليوم اللي دفع فيه فعليًا. نصيب الفريق بيتخصم الأول على شرائح (50 جنيه عن كل 1000 جنيه كاملة — أقل من 1000 يبقى صفر)، وبعدين نسبة الدكتور والمصاريف بتتقسم من الباقي.</span>
 
         <div class="daily-summary-toolbar">
@@ -847,23 +978,28 @@
         </div>
         <button class="btn btn-outline" id="dsResetBtn" style="width:100%;justify-content:center;margin-top:10px;color:#D64545;border-color:#F3C9C9;">🗑️ مسح بيانات اليوم (محتاج كود)</button>
         <p class="modal-error" id="dsSaveMsg"></p>
+        </div>
       </div>
 
-      <div class="chart-card">
-        <h3>التقرير الشهري</h3>
+      <div class="chart-card collapsed" id="monthlyReportCard">
+        <h3 class="accordion-head"><span>📅 التقرير الشهري</span><span class="accordion-chevron">▾</span></h3>
+        <div class="accordion-body">
         <span class="chart-hint">تقرير كامل بحسابات شهر معيّن — إجمالي الشهر، نصيب الفريق والدكتور والمصاريف، وتفصيل يوم بيوم.</span>
         <div class="daily-summary-toolbar">
           <label>اختار الشهر</label>
           <input type="month" id="monthlyPrintMonth">
         </div>
         <button class="btn btn-outline" id="dsMonthlyPrintBtn" style="width:100%;justify-content:center;margin-top:10px;">🖨️ طباعة حسابات الشهر كامل</button>
+        </div>
       </div>
 
-      <div class="chart-card danger-zone">
-        <h3>⚠️ منطقة خطر</h3>
+      <div class="chart-card danger-zone collapsed" id="dangerZoneCard">
+        <h3 class="accordion-head"><span>⚠️ منطقة خطر</span><span class="accordion-chevron">▾</span></h3>
+        <div class="accordion-body">
         <span class="chart-hint">مسح كل البيانات المالية في النظام كله (كل الدفعات، كل مصاريف الأيام، ومبالغ كل الحجوزات). الإجراء ده نهائي ومينفعش يترجع فيه.</span>
         <button class="btn danger-btn" id="wipeFinancialBtn" style="width:100%;justify-content:center;margin-top:12px;">🗑️ مسح كل البيانات المالية</button>
         <p class="modal-error" id="wipeFinancialMsg"></p>
+        </div>
       </div>
     </div>
 
@@ -1159,6 +1295,8 @@
       <input type="tel" id="nbPhoneInput" placeholder="01xxxxxxxxx">
     </div>
 
+    <div id="nbOutstandingBox" class="outstanding-box" style="display:none;"></div>
+
     <div class="status-box">
       <strong>هيتسجل كمؤكد فورًا</strong>
       <span>الحجز ده بيتسجل مباشرة كمؤكد (أحمر)، من غير ما يعدي بمرحلة الانتظار.</span>
@@ -1168,6 +1306,9 @@
     <p class="modal-error" id="nbError"></p>
   </div>
 </div>
+
+<button class="theme-fab" id="themeFabBtn" aria-label="تغيير سمة اللوحة" title="تغيير السمة">🎨</button>
+<span class="theme-fab-label" id="themeFabLabel"></span>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -1196,6 +1337,43 @@
     '2026': null, // null = ask for the name every time (original behavior)
     '2005': 'حسن حمدي'
   };
+
+  // ====== Theme switcher (works regardless of login state) ======
+  (function(){
+    var THEMES = [
+      { id: 'default',  label: 'السمة الأساسية' },
+      { id: 'midnight',  label: 'أزرق ليلي' },
+      { id: 'violet',   label: 'بنفسجي' },
+      { id: 'emerald',  label: 'أخضر زمردي' }
+    ];
+    var fab = document.getElementById('themeFabBtn');
+    var label = document.getElementById('themeFabLabel');
+    if(!fab) return;
+
+    function currentIndex(){
+      var current = document.documentElement.getAttribute('data-theme') || 'default';
+      var idx = THEMES.findIndex(function(t){ return t.id === current; });
+      return idx === -1 ? 0 : idx;
+    }
+    function showLabel(text){
+      label.textContent = text;
+      label.classList.add('show');
+      clearTimeout(showLabel._t);
+      showLabel._t = setTimeout(function(){ label.classList.remove('show'); }, 1600);
+    }
+
+    fab.addEventListener('click', function(){
+      var next = THEMES[(currentIndex() + 1) % THEMES.length];
+      if(next.id === 'default'){ document.documentElement.removeAttribute('data-theme'); }
+      else { document.documentElement.setAttribute('data-theme', next.id); }
+      try{ localStorage.setItem('clinicAdminTheme', next.id === 'default' ? '' : next.id); }catch(e){}
+
+      fab.classList.remove('spin');
+      void fab.offsetWidth; // إعادة تشغيل الأنيميشن
+      fab.classList.add('spin');
+      showLabel(next.label);
+    });
+  })();
 
   var WEEKDAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   var ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -1553,6 +1731,22 @@
     });
 
     document.getElementById('newBookingBtn').addEventListener('click', openNewBookingModal);
+    document.getElementById('moreActionsBtn').addEventListener('click', function(e){
+      e.stopPropagation();
+      document.getElementById('moreActionsMenu').classList.toggle('show');
+    });
+    document.addEventListener('click', function(){
+      document.getElementById('moreActionsMenu').classList.remove('show');
+    });
+    document.getElementById('moreActionsMenu').addEventListener('click', function(e){
+      e.stopPropagation();
+      document.getElementById('moreActionsMenu').classList.remove('show');
+    });
+    document.querySelectorAll('.accordion-head').forEach(function(head){
+      head.addEventListener('click', function(){
+        head.closest('.chart-card').classList.toggle('collapsed');
+      });
+    });
     document.getElementById('newBookingClose').addEventListener('click', closeNewBookingModal);
     document.getElementById('newBookingOverlay').addEventListener('click', function(e){
       if(e.target.id === 'newBookingOverlay'){ closeNewBookingModal(); }
@@ -1593,10 +1787,14 @@
           document.getElementById('nbPatientSearch').value = '';
           listEl.innerHTML = '';
           listEl.classList.remove('show');
+          renderOutstandingBalance(m.phone);
         });
         listEl.appendChild(item);
       });
       listEl.classList.add('show');
+    });
+    document.getElementById('nbPhoneInput').addEventListener('change', function(){
+      renderOutstandingBalance(this.value.trim());
     });
 
     document.getElementById('paymentClose').addEventListener('click', closePaymentModal);
@@ -2057,12 +2255,90 @@
     document.getElementById('nbNameInput').value = '';
     document.getElementById('nbPhoneInput').value = '';
     document.getElementById('nbError').textContent = '';
+    document.getElementById('nbOutstandingBox').style.display = 'none';
 
     document.getElementById('newBookingOverlay').classList.add('open');
     setTimeout(function(){ document.getElementById('nbPatientSearch').focus(); }, 50);
   }
   function closeNewBookingModal(){
     document.getElementById('newBookingOverlay').classList.remove('open');
+  }
+  function renderOutstandingBalance(phone){
+    var box = document.getElementById('nbOutstandingBox');
+    if(!phone){ box.style.display = 'none'; return; }
+
+    var openBookings = allBookings.filter(function(b){
+      return b.phone === phone && b.totalAmount > 0 && (b.totalAmount - b.paidAmount) > 0;
+    }).sort(function(a, c){
+      var ka = a.dayIso + ' ' + a.slotValue, kb = c.dayIso + ' ' + c.slotValue;
+      return kb < ka ? -1 : kb > ka ? 1 : 0;
+    });
+
+    if(openBookings.length === 0){ box.style.display = 'none'; return; }
+
+    box.innerHTML = '';
+    var title = document.createElement('span');
+    title.className = 'ob-title';
+    title.textContent = '⚠ المريض ده عنده باقي مستحق من قبل — تقدر تحصّل جزء أو كله دلوقتي:';
+    box.appendChild(title);
+
+    openBookings.forEach(function(b){
+      var remaining = b.totalAmount - b.paidAmount;
+      var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
+
+      var item = document.createElement('div');
+      item.className = 'ob-item ob-item-full';
+      item.innerHTML =
+        '<div class="ob-item-head">' +
+          '<span>' + formatDateLabel(b.dayIso) + ' — ' + slotLabel + '</span>' +
+          '<span class="ob-amount">الباقي: ' + remaining.toLocaleString('ar-EG') + ' جنيه</span>' +
+        '</div>' +
+        '<div class="ob-inline-form">' +
+          '<input type="number" class="ob-amount-input" placeholder="المبلغ" min="1" max="' + remaining + '">' +
+          '<select class="ob-method-select">' +
+            '<option value="cash">كاش</option>' +
+            '<option value="vodafone_cash">فودافون كاش</option>' +
+          '</select>' +
+          '<button type="button" class="ob-pay-btn">تسجيل التحصيل</button>' +
+        '</div>' +
+        '<p class="ob-msg"></p>';
+      box.appendChild(item);
+
+      var amountInput = item.querySelector('.ob-amount-input');
+      var methodSelect = item.querySelector('.ob-method-select');
+      var payBtn = item.querySelector('.ob-pay-btn');
+      var msgEl = item.querySelector('.ob-msg');
+
+      payBtn.addEventListener('click', function(){
+        var amount = parseFloat(amountInput.value);
+        if(isNaN(amount) || amount <= 0){
+          msgEl.style.color = '#D64545';
+          msgEl.textContent = 'اكتب مبلغ صحيح أكبر من صفر.';
+          return;
+        }
+        var method = methodSelect.value;
+        var newPaid = Math.min(b.totalAmount, b.paidAmount + amount);
+        payBtn.disabled = true;
+
+        firestoreDb.collection('bookings').doc(b.id).update({ paidAmount: newPaid })
+          .then(function(){
+            var methodLabel = method === 'vodafone_cash' ? 'فودافون كاش' : 'كاش';
+            logActivity('payment', 'تسجيل دفعة ' + amount.toLocaleString('ar-EG') + ' جنيه (' + methodLabel + ') من ' + b.name + ' على حجز قديم — الإجمالي المحصّل الآن ' + newPaid.toLocaleString('ar-EG') + ' جنيه');
+            logPaymentReceived(b, amount, method);
+            b.paidAmount = newPaid; // نحدّث النسخة المحلية على طول عشان لو فيه باقي هيبان صح فورًا
+            msgEl.style.color = '#1E9E5A';
+            msgEl.textContent = 'اتسجلت ✓';
+            setTimeout(function(){ renderOutstandingBalance(phone); }, 500);
+          })
+          .catch(function(err){
+            payBtn.disabled = false;
+            msgEl.style.color = '#D64545';
+            msgEl.textContent = 'حصل خطأ: ' + err.message;
+          });
+      });
+    });
+
+    box.style.display = 'block';
   }
   function updateNbWeekdayLabel(dayIso){
     var label = document.getElementById('nbDayWeekday');
