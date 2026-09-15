@@ -363,6 +363,27 @@
     font-size:.78rem;color:var(--gold-deep);background:rgba(217,164,65,.12);
     border-radius:8px;padding:8px 12px;margin:-4px 0 12px;text-align:center;font-weight:600;
   }
+
+  .envelope-balance-box{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:linear-gradient(135deg, var(--deep-teal), var(--deep-teal-2));
+    color:#fff;border-radius:14px;padding:20px;margin-bottom:16px;
+  }
+  .envelope-balance-label{font-size:.82rem;color:#B9D9DB;font-weight:700;}
+  .envelope-balance-box strong{font-family:'Tajawal',sans-serif;font-weight:900;font-size:1.9rem;color:#fff;}
+  .envelope-history-title{font-size:.85rem;color:var(--ink-soft);margin:16px 0 10px;font-weight:700;}
+  .envelope-history-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;}
+  .eh-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:.83rem;background:var(--pale-aqua);
+  }
+  .eh-row .eh-info{flex:1;}
+  .eh-row .eh-reason{display:block;color:var(--ink);font-weight:700;}
+  .eh-row .eh-date{display:block;font-size:.74rem;color:var(--ink-soft);margin-top:2px;}
+  .eh-row .eh-amount{font-weight:800;white-space:nowrap;}
+  .eh-row .eh-amount.positive{color:#1E9E5A;}
+  .eh-row .eh-amount.negative{color:#D64545;}
+
   .ds-row.ds-remaining{background:linear-gradient(135deg, var(--deep-teal), var(--deep-teal-2));margin-top:8px;}
   .ds-row.ds-remaining span{color:#B9D9DB;}
   .ds-row.ds-remaining strong{color:#fff;}
@@ -996,6 +1017,27 @@
         </div>
         <button class="btn btn-outline" id="dsResetBtn" style="width:100%;justify-content:center;margin-top:10px;color:#D64545;border-color:#F3C9C9;">🗑️ مسح بيانات اليوم (محتاج كود)</button>
         <p class="modal-error" id="dsSaveMsg"></p>
+        </div>
+      </div>
+
+      <div class="chart-card" id="envelopeCard">
+        <h3 class="accordion-head"><span>🗄️ ظرف العيادة (الخزنة)</span><span class="accordion-chevron">▾</span></h3>
+        <div class="accordion-body">
+        <span class="chart-hint">مبلغ ثابت بيفضل ماشي مع الأيام، مش بيتصفّر يوم بيومه — زي خزنة العيادة. الأيام اللي فيها مصاريف كتير تاخد منه، والأيام اللي فيها دخل كويس تحطّله.</span>
+
+        <div class="envelope-balance-box">
+          <span class="envelope-balance-label">الرصيد الحالي</span>
+          <strong id="envelopeBalance">0 جنيه</strong>
+        </div>
+
+        <div class="ds-btn-row">
+          <button class="cta-btn gold" id="envelopeDepositBtn" style="width:100%;justify-content:center;">➕ إضافة للظرف</button>
+          <button class="btn btn-outline" id="envelopeWithdrawBtn" style="width:100%;justify-content:center;">➖ سحب من الظرف</button>
+        </div>
+
+        <h4 class="envelope-history-title">آخر الحركات</h4>
+        <div class="envelope-history-list" id="envelopeHistoryList"></div>
+        <div class="empty-mini" id="envelopeHistoryEmpty" style="display:none;">لسه مفيش حركات على الظرف.</div>
         </div>
       </div>
 
@@ -1891,6 +1933,23 @@
       if(amount > currentExpensePool){ alert('المبلغ أكبر من الباقي المتاح في المصاريف.'); return; }
       transferDoctorAdjustment(dayIso, -amount);
     });
+    document.getElementById('envelopeDepositBtn').addEventListener('click', function(){
+      var amountStr = prompt('قد إيه عايز تضيف للظرف؟', '');
+      if(amountStr === null) return;
+      var amount = parseFloat(amountStr);
+      if(isNaN(amount) || amount <= 0){ alert('اكتب مبلغ صحيح أكبر من صفر.'); return; }
+      var reason = prompt('سبب الإضافة (اختياري):', '') || '';
+      addEnvelopeTransaction(amount, reason);
+    });
+    document.getElementById('envelopeWithdrawBtn').addEventListener('click', function(){
+      var currentBalance = getEnvelopeBalance();
+      var amountStr = prompt('قد إيه عايز تسحب من الظرف؟ (الرصيد الحالي: ' + currentBalance.toLocaleString('ar-EG') + ' جنيه)', '');
+      if(amountStr === null) return;
+      var amount = parseFloat(amountStr);
+      if(isNaN(amount) || amount <= 0){ alert('اكتب مبلغ صحيح أكبر من صفر.'); return; }
+      var reason = prompt('سبب السحب (اختياري):', '') || '';
+      addEnvelopeTransaction(-amount, reason);
+    });
     document.getElementById('wipeFinancialBtn').addEventListener('click', wipeFinancialData);
     document.getElementById('dailySummaryDate').addEventListener('change', renderDailySummary);
     document.getElementById('dsMaterial').addEventListener('input', updateDailyRemaining);
@@ -1900,6 +1959,7 @@
     document.getElementById('dsPrintBtn').addEventListener('click', printDailyAccounts);
     document.getElementById('dsMonthlyPrintBtn').addEventListener('click', printMonthlyAccounts);
     watchDailyExpenses();
+    watchEnvelope();
     watchPayments();
   }
 
@@ -2585,6 +2645,73 @@
     }, function(err){
       console.warn('Firestore listener error for dailyExpenses.', err);
     });
+  }
+
+  // ---- Envelope (clinic reserve fund) — a running balance that carries over across days ----
+  var envelopeCache = []; // [{ id, amount, reason, dayIso, ts }]
+
+  function watchEnvelope(){
+    if(!firestoreDb) return;
+    firestoreDb.collection('envelopeTransactions').onSnapshot(function(snap){
+      envelopeCache = [];
+      snap.forEach(function(doc){
+        var data = doc.data();
+        data.id = doc.id;
+        envelopeCache.push(data);
+      });
+      renderEnvelope();
+    }, function(err){
+      console.warn('Firestore listener error for envelopeTransactions.', err);
+    });
+  }
+
+  function getEnvelopeBalance(){
+    return envelopeCache.reduce(function(sum, t){ return sum + (t.amount || 0); }, 0);
+  }
+
+  function renderEnvelope(){
+    var balanceEl = document.getElementById('envelopeBalance');
+    if(!balanceEl) return;
+
+    var balance = getEnvelopeBalance();
+    balanceEl.textContent = balance.toLocaleString('ar-EG') + ' جنيه';
+
+    var listEl = document.getElementById('envelopeHistoryList');
+    var emptyEl = document.getElementById('envelopeHistoryEmpty');
+    listEl.innerHTML = '';
+
+    var sorted = envelopeCache.slice().sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); }).slice(0, 30);
+    if(sorted.length === 0){
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    sorted.forEach(function(t){
+      var isPositive = (t.amount || 0) >= 0;
+      var row = document.createElement('div');
+      row.className = 'eh-row';
+      row.innerHTML =
+        '<span class="eh-info">' +
+          '<span class="eh-reason">' + escapeHtml(t.reason || (isPositive ? 'إضافة للظرف' : 'سحب من الظرف')) + '</span>' +
+          '<span class="eh-date">' + formatDateLabel(t.dayIso) + '</span>' +
+        '</span>' +
+        '<span class="eh-amount ' + (isPositive ? 'positive' : 'negative') + '">' +
+          (isPositive ? '+' : '−') + Math.abs(t.amount || 0).toLocaleString('ar-EG') + ' جنيه' +
+        '</span>';
+      listEl.appendChild(row);
+    });
+  }
+
+  function addEnvelopeTransaction(amount, reason){
+    firestoreDb.collection('envelopeTransactions').add({
+      amount: amount,
+      reason: reason || '',
+      dayIso: todayIso(),
+      ts: Date.now()
+    }).then(function(){
+      logActivity('daily_expenses', (amount > 0 ? 'إضافة ' + amount.toLocaleString('ar-EG') + ' جنيه للظرف' : 'سحب ' + Math.abs(amount).toLocaleString('ar-EG') + ' جنيه من الظرف') + (reason ? ' — ' + reason : ''));
+    }).catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
   function getDayConfirmedTotal(dayIso){
