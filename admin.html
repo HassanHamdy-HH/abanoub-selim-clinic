@@ -698,19 +698,57 @@
     .stats-grid{grid-template-columns:repeat(2,1fr);}
   }
   @media (max-width:640px){
-    main.content{padding:16px;}
-    header.topbar{padding:14px 16px;}
-    .stats-grid{grid-template-columns:1fr 1fr;gap:12px;}
-    .stat-card{padding:16px;}
-    .stat-card .stat-num{font-size:1.6rem;}
-    .toolbar{flex-direction:column;align-items:stretch;}
-    .view-tabs{justify-content:center;}
-    .dashboard-topbar{flex-direction:column;align-items:stretch;}
-    .topbar-actions-group{justify-content:center;}
+    main.content{padding:14px;}
+    header.topbar{padding:12px 14px;}
+    .topbar-brand img{width:36px;height:36px;}
+    .topbar-brand div span{display:none;}
+    .topbar-brand div strong{font-size:.88rem;}
+    .today-chip{display:none;}
+    .stats-grid{grid-template-columns:1fr 1fr;gap:10px;}
+    .stat-card{padding:14px;}
+    .stat-card .stat-num{font-size:1.35rem;}
+    .stat-card .stat-ic{width:32px;height:32px;top:12px;left:12px;font-size:.95rem;}
+    .stat-card .stat-label{font-size:.76rem;}
+
+    .toolbar{flex-direction:row;flex-wrap:wrap;gap:8px;}
+    .toolbar > input[type="text"], .toolbar > select, .toolbar > input[type="date"]{flex:1 1 100%;}
+    .toolbar > button{flex:1 1 auto;padding:9px 10px;font-size:.78rem;}
+
+    .dashboard-topbar{flex-direction:column;align-items:stretch;gap:10px;}
+    .view-tabs{justify-content:flex-start;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .view-tab{padding:7px 12px;font-size:.78rem;white-space:nowrap;}
+    .topbar-actions-group{justify-content:stretch;flex-wrap:wrap;}
+    .topbar-actions-group .btn{flex:1 1 auto;font-size:.78rem;padding:9px 12px;}
+    .more-menu{left:0;right:auto;min-width:180px;}
+
     .day-chip{min-width:64px;padding:8px 10px;}
     .ds-expenses-grid{grid-template-columns:1fr;}
     .ds-btn-row{grid-template-columns:1fr;}
     .modal-field-row{grid-template-columns:1fr;}
+
+    .booking-modal-overlay{padding:10px;}
+    .booking-modal{padding:20px 16px;max-height:90vh;}
+    .booking-modal h3{font-size:1rem;}
+    .service-check-list{max-height:180px;}
+    .service-check-item{flex-wrap:wrap;}
+
+    .daily-summary-toolbar{flex-wrap:wrap;gap:8px;}
+    .daily-summary-grid{gap:8px;}
+    .ds-row{flex-wrap:wrap;padding:10px 12px;}
+    .ds-value-group{gap:6px;}
+    .envelope-balance-box{padding:16px;}
+    .envelope-balance-box strong{font-size:1.5rem;}
+    .eh-row, .cd-row, .ob-item-full{font-size:.78rem;}
+
+    .theme-fab{width:44px;height:44px;font-size:1.05rem;left:12px;bottom:12px;}
+    .theme-fab-label{left:64px;bottom:22px;font-size:.7rem;}
+
+    .cal-nav{gap:8px;}
+    .cal-nav .btn{padding:7px 10px;font-size:.74rem;}
+    .cal-range-label{min-width:0;font-size:.78rem;}
+
+    table.bookings{font-size:.8rem;}
+    table.bookings th, table.bookings td{padding:8px 10px;white-space:nowrap;}
   }
 </style>
 <script>
@@ -1023,7 +1061,7 @@
       <div class="chart-card" id="envelopeCard">
         <h3 class="accordion-head"><span>🗄️ ظرف العيادة (الخزنة)</span><span class="accordion-chevron">▾</span></h3>
         <div class="accordion-body">
-        <span class="chart-hint">مبلغ ثابت بيفضل ماشي مع الأيام، مش بيتصفّر يوم بيومه — زي خزنة العيادة. الأيام اللي فيها مصاريف كتير تاخد منه، والأيام اللي فيها دخل كويس تحطّله.</span>
+        <span class="chart-hint">مبلغ ثابت بيفضل ماشي مع الأيام، مش بيتصفّر يوم بيومه — زي خزنة العيادة. لما تدوس "حفظ مصاريف اليوم" في الملخص اليومي، "الباقي بعد كل الخصومات" بيتربط تلقائيًا هنا: لو بالسالب الظرف بيكمله، ولو بالموجب بيتضاف له. وتقدر كمان تضيف أو تسحب يدويًا في أي وقت.</span>
 
         <div class="envelope-balance-box">
           <span class="envelope-balance-label">الرصيد الحالي</span>
@@ -2894,18 +2932,26 @@
       .catch(function(err){ errorEl.textContent = 'حصل خطأ: ' + err.message; });
   }
 
-  function updateDailyRemaining(){
-    var dayIso = document.getElementById('dailySummaryDate').value;
+  function getDayRemaining(dayIso, materialOverride, labOverride, otherOverride){
     var total = getDayCollectedTotal(dayIso);
     var teamShare = computeTeamShare(total);
     var doctorShare = total * 0.4;
     var expensePool = total - teamShare - doctorShare;
     var adjustment = (dailyExpensesCache[dayIso] || {}).doctorAdjustment || 0;
     expensePool += adjustment;
+    var saved = dailyExpensesCache[dayIso] || {};
+    var material = materialOverride != null ? materialOverride : (saved.material || 0);
+    var lab = labOverride != null ? labOverride : (saved.lab || 0);
+    var other = otherOverride != null ? otherOverride : (saved.other || 0);
+    return expensePool - (material + lab + other);
+  }
+
+  function updateDailyRemaining(){
+    var dayIso = document.getElementById('dailySummaryDate').value;
     var material = parseFloat(document.getElementById('dsMaterial').value) || 0;
     var lab = parseFloat(document.getElementById('dsLab').value) || 0;
     var other = parseFloat(document.getElementById('dsOther').value) || 0;
-    var remaining = expensePool - (material + lab + other);
+    var remaining = getDayRemaining(dayIso, material, lab, other);
     document.getElementById('dsRemaining').textContent = remaining.toLocaleString('ar-EG') + ' جنيه';
   }
 
@@ -2917,12 +2963,23 @@
     var other = parseFloat(document.getElementById('dsOther').value) || 0;
     var existingAdjustment = (dailyExpensesCache[dayIso] || {}).doctorAdjustment || 0;
     var msgEl = document.getElementById('dsSaveMsg');
+    var remaining = getDayRemaining(dayIso, material, lab, other);
 
     firestoreDb.collection('dailyExpenses').doc(dayIso).set({ material: material, lab: lab, other: other, doctorAdjustment: existingAdjustment, ts: Date.now() })
       .then(function(){
+        // اليوم بيقفل حساباته في الظرف: لو الباقي بالسالب، الظرف بيكمله؛ ولو بالموجب، بيتضاف له
+        return firestoreDb.collection('envelopeTransactions').doc('auto_' + dayIso).set({
+          amount: remaining,
+          reason: 'إقفال حسابات يوم ' + formatDateLabel(dayIso) + ' تلقائي',
+          dayIso: dayIso,
+          auto: true,
+          ts: Date.now()
+        });
+      })
+      .then(function(){
         msgEl.style.color = '#1E9E5A';
-        msgEl.textContent = 'تم الحفظ ✓';
-        logActivity('daily_expenses', 'حفظ مصاريف يوم ' + formatDateLabel(dayIso) + ' — ماتريال ' + material.toLocaleString('ar-EG') + '، معمل ' + lab.toLocaleString('ar-EG') + '، أخرى ' + other.toLocaleString('ar-EG'));
+        msgEl.textContent = 'تم الحفظ وربط الباقي بالظرف تلقائيًا ✓';
+        logActivity('daily_expenses', 'حفظ مصاريف يوم ' + formatDateLabel(dayIso) + ' — ماتريال ' + material.toLocaleString('ar-EG') + '، معمل ' + lab.toLocaleString('ar-EG') + '، أخرى ' + other.toLocaleString('ar-EG') + ' — الباقي (' + (remaining >= 0 ? '+' : '') + remaining.toLocaleString('ar-EG') + ') اتربط بالظرف');
       })
       .catch(function(err){
         msgEl.style.color = '#D64545';
@@ -2998,6 +3055,9 @@
 
     firestoreDb.collection('dailyExpenses').doc(dayIso).delete()
       .then(function(){
+        return firestoreDb.collection('envelopeTransactions').doc('auto_' + dayIso).delete().catch(function(){});
+      })
+      .then(function(){
         document.getElementById('dsMaterial').value = '';
         document.getElementById('dsLab').value = '';
         document.getElementById('dsOther').value = '';
@@ -3010,8 +3070,8 @@
         document.getElementById('dsRemaining').textContent = '0 جنيه';
         document.getElementById('dsAdjustmentNote').style.display = 'none';
         msgEl.style.color = '#1E9E5A';
-        msgEl.textContent = 'اتمسحت بيانات اليوم ده كلها ✓ — دوس "إعادة حساب الأرقام" لو عايز ترجّعها تاني.';
-        logActivity('daily_expenses', 'مسح كل بيانات يوم ' + formatDateLabel(dayIso) + ' (الإجمالي والنسب والمصاريف) وإعادة تصفيرها');
+        msgEl.textContent = 'اتمسحت بيانات اليوم ده كلها (وارتباطه بالظرف) ✓ — دوس "إعادة حساب الأرقام" لو عايز ترجّعها تاني.';
+        logActivity('daily_expenses', 'مسح كل بيانات يوم ' + formatDateLabel(dayIso) + ' (الإجمالي والنسب والمصاريف وربط الظرف) وإعادة تصفيرها');
       })
       .catch(function(err){
         msgEl.style.color = '#D64545';
