@@ -440,7 +440,7 @@
 
   .day-tabs{
     display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:28px;
-    scrollbar-width:thin;
+    scrollbar-width:thin;-webkit-overflow-scrolling:touch;
   }
   .day-tab{
     flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:14px;
@@ -781,11 +781,12 @@
     .day-tab{min-width:76px;padding:8px 12px;}
     .day-tab .dt-date{font-size:.9rem;}
     .chairs-grid{grid-template-columns:repeat(auto-fill, minmax(70px, 1fr));gap:8px;}
-    .seat-btn{padding:9px 4px;}
+    .seat-btn{padding:9px 4px;min-height:64px;}
     .seat-btn .seat-time{font-size:.68rem;}
-    .chairs-legend{gap:14px 18px;font-size:.76rem;}
+    .chairs-legend{gap:10px 16px;font-size:.74rem;}
 
-    .booking-modal{padding:24px 18px;}
+    .booking-modal-overlay{padding:12px;}
+    .booking-modal{padding:22px 16px;}
     .map-card iframe{height:180px;}
 
     .wa-float{width:50px;height:50px;bottom:16px;left:16px;}
