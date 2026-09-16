@@ -630,6 +630,7 @@
   }
   .patient-name{font-weight:700;color:var(--deep-teal);font-size:.95rem;}
   .patient-phone{font-size:.8rem;color:var(--ink-soft);direction:ltr;text-align:right;}
+  .patient-age-gender{font-size:.76rem;color:var(--teal);font-weight:600;margin-top:2px;}
   .patient-stats{display:flex;gap:8px;flex-wrap:wrap;}
   .patient-tag{
     font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap;
@@ -1273,6 +1274,20 @@
       <label>رقم الموبايل</label>
       <input type="tel" id="editPhoneInput" placeholder="01xxxxxxxxx">
     </div>
+    <div class="modal-field-row">
+      <div class="modal-field">
+        <label>العمر</label>
+        <input type="number" id="editAgeInput" placeholder="مثلًا 30" min="0" max="120">
+      </div>
+      <div class="modal-field">
+        <label>الجنس</label>
+        <select id="editGenderInput">
+          <option value="">بدون تحديد</option>
+          <option value="male">ذكر</option>
+          <option value="female">أنثى</option>
+        </select>
+      </div>
+    </div>
     <div class="modal-field">
       <label>حالة الحجز</label>
       <select id="editStatusInput">
@@ -1444,6 +1459,20 @@
     <div class="modal-field">
       <label>رقم الموبايل</label>
       <input type="tel" id="nbPhoneInput" placeholder="01xxxxxxxxx">
+    </div>
+    <div class="modal-field-row">
+      <div class="modal-field">
+        <label>العمر</label>
+        <input type="number" id="nbAgeInput" placeholder="مثلًا 30" min="0" max="120">
+      </div>
+      <div class="modal-field">
+        <label>الجنس</label>
+        <select id="nbGenderInput">
+          <option value="">بدون تحديد</option>
+          <option value="male">ذكر</option>
+          <option value="female">أنثى</option>
+        </select>
+      </div>
     </div>
 
     <div id="nbOutstandingBox" class="outstanding-box" style="display:none;"></div>
@@ -1715,6 +1744,8 @@
           slotValue: parts[1],
           name: data.name || '',
           phone: data.phone || '',
+          age: typeof data.age === 'number' ? data.age : null,
+          gender: data.gender || '',
           status: data.status || 'pending',
           bookedBy: data.bookedBy || 'patient',
           notes: data.notes || '',
@@ -1933,7 +1964,7 @@
         if(hay.indexOf(q) === -1) return;
         if(seen[b.phone]) return;
         seen[b.phone] = true;
-        matches.push({ name: b.name, phone: b.phone });
+        matches.push({ name: b.name, phone: b.phone, age: b.age, gender: b.gender });
       });
       matches = matches.slice(0, 8);
 
@@ -1947,6 +1978,8 @@
         item.addEventListener('click', function(){
           document.getElementById('nbNameInput').value = m.name;
           document.getElementById('nbPhoneInput').value = m.phone;
+          document.getElementById('nbAgeInput').value = m.age != null ? m.age : '';
+          document.getElementById('nbGenderInput').value = m.gender || '';
           document.getElementById('nbPatientSearch').value = '';
           listEl.innerHTML = '';
           listEl.classList.remove('show');
@@ -2525,6 +2558,8 @@
     document.getElementById('nbSuggestList').classList.remove('show');
     document.getElementById('nbNameInput').value = '';
     document.getElementById('nbPhoneInput').value = '';
+    document.getElementById('nbAgeInput').value = '';
+    document.getElementById('nbGenderInput').value = '';
     document.getElementById('nbError').textContent = '';
     document.getElementById('nbOutstandingBox').style.display = 'none';
 
@@ -2669,6 +2704,9 @@
     var slotValue = document.getElementById('nbSlotSelect').value;
     var name = document.getElementById('nbNameInput').value.trim();
     var phone = document.getElementById('nbPhoneInput').value.trim();
+    var age = parseInt(document.getElementById('nbAgeInput').value, 10);
+    age = isNaN(age) ? null : age;
+    var gender = document.getElementById('nbGenderInput').value;
     var errorEl = document.getElementById('nbError');
 
     if(!dayIso){
@@ -2690,7 +2728,7 @@
 
     var key = dayIso + '_' + slotValue;
     firestoreDb.collection('bookings').doc(key).set({
-      name: name, phone: phone, status: 'confirmed', bookedBy: 'staff', ts: Date.now()
+      name: name, phone: phone, age: age, gender: gender, status: 'confirmed', bookedBy: 'staff', ts: Date.now()
     })
       .then(function(){
         logActivity('confirm', 'حجز جديد من الفريق لـ ' + name + ' — ' + formatDateLabel(dayIso) + ' ' + SLOT_LABELS[slotValue]);
@@ -3247,7 +3285,11 @@
       var name = visits[0].name;
       var phone = visits[0].phone;
       var noShowCount = visits.filter(function(v){ return v.status === 'no_show'; }).length;
-      return { phone: phone, name: name, visits: visits, noShowCount: noShowCount };
+      var withAge = visits.filter(function(v){ return v.age != null; })[0];
+      var withGender = visits.filter(function(v){ return v.gender; })[0];
+      var age = withAge ? withAge.age : null;
+      var gender = withGender ? withGender.gender : '';
+      return { phone: phone, name: name, age: age, gender: gender, visits: visits, noShowCount: noShowCount };
     });
 
     if(q){
@@ -3288,6 +3330,11 @@
       var initials = p.name.trim().split(/\s+/).slice(0,2).map(function(w){ return w[0] || ''; }).join('');
       var lastVisit = p.visits[0];
       var lastLabel = formatDateLabel(lastVisit.dayIso);
+      var genderLabel = p.gender === 'male' ? 'ذكر' : p.gender === 'female' ? 'أنثى' : '';
+      var ageGenderParts = [];
+      if(p.age != null) ageGenderParts.push(p.age + ' سنة');
+      if(genderLabel) ageGenderParts.push(genderLabel);
+      var ageGenderLine = ageGenderParts.join(' — ');
 
       var head = document.createElement('div');
       head.className = 'patient-head';
@@ -3297,6 +3344,7 @@
           '<div>' +
             '<div class="patient-name">' + escapeHtml(p.name) + '</div>' +
             '<div class="patient-phone">' + escapeHtml(p.phone) + '</div>' +
+            (ageGenderLine ? '<div class="patient-age-gender">' + escapeHtml(ageGenderLine) + '</div>' : '') +
           '</div>' +
         '</div>' +
         '<div class="patient-stats">' +
@@ -3693,6 +3741,8 @@
     document.getElementById('editBookingSlotInfo').textContent = formatDateLabel(b.dayIso) + ' — ' + slotLabel;
     document.getElementById('editNameInput').value = b.name;
     document.getElementById('editPhoneInput').value = b.phone;
+    document.getElementById('editAgeInput').value = b.age != null ? b.age : '';
+    document.getElementById('editGenderInput').value = b.gender || '';
     document.getElementById('editStatusInput').value = b.status;
 
     document.getElementById('editDayInput').value = b.dayIso;
@@ -3919,6 +3969,9 @@
     var name = document.getElementById('editNameInput').value.trim();
     var phone = document.getElementById('editPhoneInput').value.trim();
     var status = document.getElementById('editStatusInput').value;
+    var age = parseInt(document.getElementById('editAgeInput').value, 10);
+    age = isNaN(age) ? null : age;
+    var gender = document.getElementById('editGenderInput').value;
     var errorEl = document.getElementById('editBookingError');
     var newDayIso = document.getElementById('editDayInput').value;
     var newSlotValue = document.getElementById('editSlotInput').value;
@@ -3944,7 +3997,7 @@
     // بيحفظ التعديلات على الحجز (extraFields)، وبينقله لتاريخ/ميعاد جديد لو اختلفوا
     function persistBooking(extraFields){
       var merged = Object.assign({}, {
-        name: b.name, phone: b.phone, status: b.status, bookedBy: b.bookedBy || 'staff',
+        name: b.name, phone: b.phone, age: b.age, gender: b.gender || '', status: b.status, bookedBy: b.bookedBy || 'staff',
         services: b.services || [], serviceDiscounts: b.serviceDiscounts || {},
         serviceQuantities: b.serviceQuantities || {}, customService: b.customService || null,
         totalAmount: b.totalAmount || 0, paidAmount: b.paidAmount || 0,
@@ -3978,7 +4031,7 @@
       if(phone !== b.phone) changes.push('رقم الموبايل');
       if(status !== b.status) changes.push('الحالة');
 
-      persistBooking({ name: name, phone: phone, status: status })
+      persistBooking({ name: name, phone: phone, age: age, gender: gender, status: status })
         .then(function(){
           if(changes.length){
             var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
@@ -4044,7 +4097,7 @@
     if(dateTimeChanged) changes.push('التاريخ/الميعاد');
 
     persistBooking({
-      name: name, phone: phone, status: status, services: services,
+      name: name, phone: phone, age: age, gender: gender, status: status, services: services,
       serviceDiscounts: serviceDiscounts, serviceQuantities: serviceQuantities,
       customService: customService,
       totalAmount: totalAmount, paidAmount: paidAmount
