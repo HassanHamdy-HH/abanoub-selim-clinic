@@ -563,11 +563,93 @@
   .edit-remaining-line.settled{color:#1E9E5A;background:#E7F6EE;}
   .edit-remaining-line.open{color:#E0A945;background:#FBF3E3;}
   .modal-field label{display:block;font-size:.82rem;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
-  .modal-field input, .modal-field select{
+  .modal-field input, .modal-field select, .modal-field textarea{
     width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--line);
     font-family:inherit;font-size:.9rem;background:var(--pale-aqua);color:var(--ink);
   }
-  .modal-field input:focus, .modal-field select:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  .modal-field textarea{resize:vertical;line-height:1.6;}
+  .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus{outline:2px solid var(--gold);outline-offset:1px;}
+
+  /* ---------- PATIENT FILE (digital patient sheet) ---------- */
+  .patient-file-modal{max-width:720px;}
+  .pf-sheets-list{display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;}
+  .pf-sheet-item{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--pale-aqua);
+  }
+  .pf-sheet-item .pfs-info b{display:block;color:var(--deep-teal);font-size:.88rem;}
+  .pf-sheet-item .pfs-info span{display:block;color:var(--ink-soft);font-size:.78rem;margin-top:2px;}
+  .pf-sheet-item .pfs-open-btn{
+    background:var(--teal);color:#fff;border:none;padding:8px 14px;border-radius:8px;
+    font-size:.8rem;font-weight:700;
+  }
+  .pf-sheet-item .pfs-open-btn:hover{background:var(--deep-teal);}
+  .pf-sheet-header{
+    display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--deep-teal);
+    padding-bottom:14px;margin-bottom:16px;
+  }
+  .pf-sheet-header img{width:50px;height:50px;border-radius:50%;}
+  .pf-sheet-header-text strong{display:block;font-family:'Tajawal',sans-serif;font-weight:800;color:var(--deep-teal);font-size:1.05rem;}
+  .pf-sheet-header-text span{font-size:.76rem;color:var(--ink-soft);}
+  .pf-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .pf-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .pf-plan-item{
+    display:flex;align-items:center;gap:8px;background:var(--pale-aqua);border-radius:8px;
+    padding:8px 10px;font-size:.84rem;color:var(--ink);cursor:pointer;
+  }
+  .pf-plan-item input{width:16px;height:16px;flex:0 0 auto;cursor:pointer;}
+  .pf-tooth-chart{
+    display:flex;flex-direction:column;gap:4px;background:var(--pale-aqua);border-radius:10px;
+    padding:12px;overflow-x:auto;
+  }
+  .pf-tooth-row{display:flex;gap:4px;justify-content:center;}
+  .pf-tooth-half{display:flex;gap:4px;}
+  .pf-tooth-divider{width:2px;background:var(--line);margin:0 4px;flex:0 0 auto;}
+  .pf-tooth-btn{
+    width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:#fff;
+    font-size:.72rem;font-weight:700;color:var(--ink-soft);cursor:pointer;flex:0 0 auto;
+  }
+  .pf-tooth-btn.affected{background:#FBEAEA;border-color:#D64545;color:#D64545;}
+  .pf-tooth-btn.treated{background:#E7F6EE;border-color:#1E9E5A;color:#1E9E5A;}
+  .pf-tooth-legend{display:flex;gap:16px;margin-top:8px;font-size:.76rem;color:var(--ink-soft);flex-wrap:wrap;}
+  .pf-tooth-dot{width:12px;height:12px;border-radius:3px;display:inline-block;vertical-align:middle;margin-left:4px;}
+  .pf-tooth-dot.normal{background:#fff;border:1px solid var(--line);}
+  .pf-tooth-dot.affected{background:#FBEAEA;border:1px solid #D64545;}
+  .pf-tooth-dot.treated{background:#E7F6EE;border:1px solid #1E9E5A;}
+  .pf-sig-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .pf-sig-box label{display:block;font-size:.82rem;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
+  .pf-sig-box canvas{
+    width:100%;border:1px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;
+  }
+  .pf-sig-clear{width:100%;justify-content:center;margin-top:6px;padding:6px;font-size:.76rem;}
+  .pf-xray-grid{
+    display:grid;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:10px;margin-top:12px;
+  }
+  .pf-xray-item{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1;}
+  .pf-xray-item img{width:100%;height:100%;object-fit:cover;cursor:pointer;display:block;}
+  .pf-xray-item .pf-xray-del{
+    position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;
+    background:rgba(214,69,69,.9);color:#fff;border:none;font-size:.72rem;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .pf-xray-item .pf-xray-del:hover{background:#D64545;}
+
+  .rx-search-wrap{position:relative;}
+  .rx-drug-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+  .rx-drug-item{
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--pale-aqua);
+    display:grid;grid-template-columns:1.6fr .8fr 1.4fr auto;gap:8px;align-items:center;
+  }
+  .rx-drug-item .rx-drug-name{font-size:.84rem;font-weight:700;color:var(--deep-teal);}
+  .rx-drug-item input{
+    padding:8px 10px;border-radius:8px;border:1px solid var(--line);font-size:.82rem;background:#fff;
+  }
+  .rx-drug-remove{
+    width:28px;height:28px;border-radius:50%;border:none;background:#FBEAEA;color:#D64545;
+    font-weight:800;font-size:.8rem;flex:0 0 auto;
+  }
+  .rx-drug-remove:hover{background:#D64545;color:#fff;}
+
   .modal-error{color:#D64545;font-size:.82rem;text-align:center;margin-top:10px;min-height:1em;font-weight:600;}
   .status-box{
     background:var(--pale-aqua);border-radius:12px;padding:14px 16px;margin:16px 0;
@@ -642,12 +724,14 @@
   .patient-card.open .patient-chevron{transform:rotate(180deg);}
   .patient-history{display:none;border-top:1px solid var(--line);}
   .patient-card.open .patient-history{display:block;}
-  .patient-file-bar{padding:0 20px 14px;}
+  .patient-file-bar{padding:0 20px 14px;display:flex;gap:10px;flex-wrap:wrap;}
   .patient-file-btn{
     background:var(--pale-aqua);color:var(--teal);border:1px solid var(--line);
     padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;
   }
   .patient-file-btn:hover{background:var(--teal);color:#fff;}
+  .patient-rx-btn{background:#FFF3E0;color:var(--gold-deep);border-color:#F0DCB0;}
+  .patient-rx-btn:hover{background:var(--gold);color:var(--deep-teal);}
   .ph-row{
     display:flex;align-items:center;justify-content:space-between;gap:12px;
     padding:10px 20px;border-bottom:1px solid var(--line);font-size:.85rem;
@@ -753,6 +837,11 @@
     .ds-expenses-grid{grid-template-columns:1fr;}
     .ds-btn-row{grid-template-columns:1fr;}
     .modal-field-row{grid-template-columns:1fr;}
+    .pf-row3{grid-template-columns:1fr;}
+    .pf-sig-row{grid-template-columns:1fr;}
+    .pf-plan-grid{grid-template-columns:1fr;}
+    .patient-file-modal{max-width:100%;}
+    .rx-drug-item{grid-template-columns:1fr;}
 
     .booking-modal-overlay{padding:10px;}
     .booking-modal{padding:20px 16px;max-height:90vh;}
@@ -1409,7 +1498,7 @@
 </div>
 
 <div class="booking-modal-overlay" id="patientFileOverlay">
-  <div class="booking-modal">
+  <div class="booking-modal patient-file-modal">
     <button class="modal-close" id="patientFileClose" aria-label="إغلاق">✕</button>
     <h3>ملف المريض</h3>
     <p class="modal-slot-info" id="patientFileNameLabel"></p>
@@ -1424,7 +1513,174 @@
     </div>
 
     <div id="patientFileContent" style="display:none;">
-      <div class="empty-mini">لسه مفيش ملف مرفوع للمريض ده. هيتم رفعه قريبًا.</div>
+
+      <div id="pfListView">
+        <button class="cta-btn gold" id="pfNewSheetBtn" style="width:100%;justify-content:center;margin-bottom:16px;">➕ ملف جديد</button>
+        <div id="pfSheetsList" class="pf-sheets-list"></div>
+        <div class="empty-mini" id="pfSheetsEmpty" style="display:none;">لسه مفيش أي ملف مسجّل للمريض ده.</div>
+      </div>
+
+      <div id="pfFormView" style="display:none;">
+        <div class="pf-sheet-header">
+          <img id="pfLogoImg" alt="شعار العيادة">
+          <div class="pf-sheet-header-text">
+            <strong>PATIENT SHEET</strong>
+            <span>Abanoub Selim Dental Clinic</span>
+          </div>
+        </div>
+
+        <div class="pf-row3">
+          <div class="modal-field"><label>الاسم</label><input type="text" id="pfNameInput"></div>
+          <div class="modal-field"><label>الجنس</label>
+            <select id="pfGenderInput"><option value="">—</option><option value="male">ذكر</option><option value="female">أنثى</option></select>
+          </div>
+          <div class="modal-field"><label>السن</label><input type="number" id="pfAgeInput" min="0" max="120"></div>
+        </div>
+        <div class="modal-field"><label>التاريخ</label><input type="date" id="pfDateInput"></div>
+
+        <div class="modal-field"><label>الشكوى الأساسية (Chief Complaint)</label>
+          <textarea id="pfComplaintInput" rows="2" placeholder="اكتب شكوى المريض..."></textarea>
+        </div>
+
+        <div class="modal-field">
+          <label>التاريخ المرضي (Medical History)</label>
+          <div class="pf-plan-grid">
+            <label class="pf-plan-item"><input type="checkbox" data-mh="diabetes"><span>Diabetes</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-mh="hypertension"><span>Hypertension</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-mh="heart"><span>Heart Disease</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-mh="bleeding"><span>Bleeding Disorder / Anticoagulants</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-mh="allergy"><span>Drug Allergy</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-mh="pregnancy"><span>Pregnancy</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-mh="asthma"><span>Asthma</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-mh="hepatitis"><span>Hepatitis</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-mh="kidney"><span>Kidney Disease</span></label>
+          </div>
+          <div class="modal-field" style="margin-top:8px;">
+            <label>Others / تفاصيل إضافية</label>
+            <input type="text" id="pfMedHistoryOthersInput" placeholder="أي حاجة تانية في التاريخ المرضي...">
+          </div>
+        </div>
+
+        <div class="modal-field"><label>التشخيص (Diagnosis)</label>
+          <textarea id="pfDiagnosisInput" rows="2" placeholder="اكتب التشخيص..."></textarea>
+        </div>
+
+        <div class="modal-field">
+          <label>خطة العلاج (Treatment Plan)</label>
+          <div class="pf-plan-grid">
+            <label class="pf-plan-item"><input type="checkbox" data-plan="endodontic"><span>Endodontic treatment</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-plan="restoration"><span>Restoration</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-plan="prosthodontic"><span>Prosthodontic treatment</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-plan="surgery"><span>Surgery</span></label>
+            <label class="pf-plan-item"><input type="checkbox" data-plan="scaling"><span>Scaling and polishing</span></label>
+          </div>
+          <div class="modal-field" style="margin-top:8px;">
+            <label>Others</label>
+            <input type="text" id="pfOthersInput" placeholder="أي إجراء تاني...">
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <label>خريطة الأسنان — دوس على أي سنة عشان تعلّم عليها</label>
+          <div class="pf-tooth-chart" id="pfToothChart"></div>
+          <div class="pf-tooth-legend">
+            <span><i class="pf-tooth-dot normal"></i> سليمة</span>
+            <span><i class="pf-tooth-dot affected"></i> فيها مشكلة</span>
+            <span><i class="pf-tooth-dot treated"></i> تم علاجها</span>
+          </div>
+        </div>
+
+        <div class="modal-field"><label>خطوات العلاج ونتيجة الأشعة (Treatment steps and X-ray Finding)</label>
+          <textarea id="pfStepsInput" rows="4" placeholder="اكتب خطوات العلاج، سطر لكل خطوة..."></textarea>
+        </div>
+
+        <div class="modal-field">
+          <label>الأشعة (X-rays) — بتبقى مشتركة لنفس المريض في كل ملفاته</label>
+          <input type="file" id="pfXrayInput" accept="image/*" multiple>
+          <div class="pf-xray-grid" id="pfXrayGrid"></div>
+          <div class="empty-mini" id="pfXrayEmpty" style="display:none;">لسه مفيش أشعة مرفوعة للمريض ده.</div>
+        </div>
+
+        <div class="pf-sig-row">
+          <div class="pf-sig-box">
+            <label>توقيع الدكتور</label>
+            <canvas id="pfDoctorSigCanvas" width="260" height="90"></canvas>
+            <button type="button" class="btn btn-outline pf-sig-clear" data-target="pfDoctorSigCanvas">مسح التوقيع</button>
+          </div>
+          <div class="pf-sig-box">
+            <label>توقيع المريض</label>
+            <canvas id="pfPatientSigCanvas" width="260" height="90"></canvas>
+            <button type="button" class="btn btn-outline pf-sig-clear" data-target="pfPatientSigCanvas">مسح التوقيع</button>
+          </div>
+        </div>
+
+        <div class="ds-btn-row">
+          <button class="cta-btn gold" id="pfSaveBtn" style="width:100%;justify-content:center;">حفظ الملف</button>
+          <button class="btn btn-outline" id="pfPrintBtn" style="width:100%;justify-content:center;">🖨️ طباعة</button>
+        </div>
+        <button class="btn btn-outline" id="pfBackBtn" style="width:100%;justify-content:center;margin-top:8px;">◀ رجوع لقايمة الملفات</button>
+        <p class="modal-error" id="pfError"></p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="prescriptionOverlay">
+  <div class="booking-modal patient-file-modal">
+    <button class="modal-close" id="rxClose" aria-label="إغلاق">✕</button>
+    <h3>الروشتة</h3>
+    <p class="modal-slot-info" id="rxNameLabel"></p>
+
+    <div id="rxListView">
+      <button class="cta-btn gold" id="rxNewBtn" style="width:100%;justify-content:center;margin-bottom:16px;">➕ روشتة جديدة</button>
+      <div id="rxSheetsList" class="pf-sheets-list"></div>
+      <div class="empty-mini" id="rxSheetsEmpty" style="display:none;">لسه مفيش أي روشتة مسجّلة للمريض ده.</div>
+    </div>
+
+    <div id="rxFormView" style="display:none;">
+      <div class="pf-sheet-header">
+        <img id="rxLogoImg" alt="شعار العيادة">
+        <div class="pf-sheet-header-text">
+          <strong>Dr. Abanoub Selim Mounir</strong>
+          <span>Oral and Maxillofacial Surgeon</span>
+        </div>
+      </div>
+
+      <div class="pf-row3">
+        <div class="modal-field"><label>الاسم</label><input type="text" id="rxNameInput"></div>
+        <div class="modal-field"><label>الجنس</label>
+          <select id="rxGenderInput"><option value="">—</option><option value="male">ذكر</option><option value="female">أنثى</option></select>
+        </div>
+        <div class="modal-field"><label>السن</label><input type="number" id="rxAgeInput" min="0" max="120"></div>
+      </div>
+      <div class="modal-field-row">
+        <div class="modal-field"><label>التاريخ</label><input type="date" id="rxDateInput"></div>
+        <div class="modal-field"><label>التشخيص</label><input type="text" id="rxDiagnosisInput" placeholder="اختياري"></div>
+      </div>
+
+      <div class="modal-field">
+        <label>Rx — دوّر على الدواء وضيفه</label>
+        <span class="total-auto-note" style="display:block;margin-bottom:8px;">صيغة الجرعة: عدد المرات في اليوم × الجرعة الواحدة × عدد الأيام — مثال: 2×1×5 = مرتين يوميًا لمدة 5 أيام</span>
+        <div class="rx-search-wrap">
+          <input type="text" id="rxDrugSearch" placeholder="اكتب اسم الدواء...">
+          <div class="patient-suggest-list" id="rxDrugSuggest"></div>
+        </div>
+        <div class="rx-drug-list" id="rxDrugList"></div>
+        <div class="empty-mini" id="rxDrugEmpty">لسه مفيش أدوية مضافة للروشتة دي.</div>
+      </div>
+
+      <div class="modal-field">
+        <label>ملاحظات إضافية (اختياري)</label>
+        <textarea id="rxNotesInput" rows="2" placeholder="أي تعليمات تانية للمريض..."></textarea>
+      </div>
+
+      <div class="ds-btn-row">
+        <button class="cta-btn gold" id="rxSaveBtn" style="width:100%;justify-content:center;">حفظ الروشتة</button>
+        <button class="btn btn-outline" id="rxPrintBtn" style="width:100%;justify-content:center;">🖨️ طباعة</button>
+      </div>
+      <button class="btn btn-outline" id="rxBackBtn" style="width:100%;justify-content:center;margin-top:8px;">◀ رجوع لقايمة الروشتات</button>
+      <p class="modal-error" id="rxError"></p>
     </div>
   </div>
 </div>
@@ -1587,6 +1843,29 @@
   ];
   var SERVICE_BY_ID = {};
   SERVICES.forEach(function(s){ SERVICE_BY_ID[s.id] = s; });
+
+  // قايمة الأدوية اللي العيادة بتكتبها عادةً — من روشتة د. أبانوب المرجعية
+  // صيغة الجرعة المتفق عليها: [عدد مرات اليوم] × [الجرعة الواحدة] × [عدد الأيام] — مثال: 2×1×5 = مرتين يوميًا لمدة 5 أيام
+  var MEDICATIONS = [
+    { category: 'مضاد حيوي', name: 'Amoxicillin + Clavulanic Acid', mg: 500 },
+    { category: 'مضاد حيوي', name: 'Amoxicillin + Clavulanic Acid', mg: 1000 },
+    { category: 'مضاد حيوي', name: 'Clindamycin', mg: 150 },
+    { category: 'مضاد حيوي', name: 'Clindamycin', mg: 300 },
+    { category: 'مضاد حيوي', name: 'Metronidazole', mg: 500 },
+    { category: 'مسكن', name: 'Diclofenac Sodium', mg: 50 },
+    { category: 'مسكن', name: 'Diclofenac Potassium', mg: null },
+    { category: 'مسكن', name: 'Ibuprofen', mg: 200 },
+    { category: 'مسكن', name: 'Ibuprofen', mg: 400 },
+    { category: 'مسكن', name: 'Ibuprofen', mg: 600 },
+    { category: 'إنزيم مضاد للالتهاب', name: 'Trypsin + α-Chymotrypsin', mg: null, defaultDosage: 'قبل الأكل بساعة' },
+    { category: 'مضمضة', name: 'Betadine Mouthwash', mg: null },
+    { category: 'مضمضة', name: 'Oravex', mg: null },
+    { category: 'مضمضة', name: 'Ora Top', mg: null },
+    { category: 'جل فموي', name: 'Oracure Gel', mg: null },
+    { category: 'معجون أسنان', name: 'Sensodyne Sensitive', mg: null },
+    { category: 'فيتامين', name: 'Vitamin C (للرجال)', mg: 90 },
+    { category: 'فيتامين', name: 'Vitamin C (للسيدات)', mg: 75 }
+  ];
 
   var PAYMENT_ICONS = {
     cash: 'data:image/png;base64,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',
@@ -1923,6 +2202,54 @@
     document.getElementById('patientFilePinInput').addEventListener('keydown', function(e){
       if(e.key === 'Enter'){ checkPatientFilePin(); }
     });
+    document.getElementById('pfNewSheetBtn').addEventListener('click', function(){ openPatientFileForm(null); });
+    document.getElementById('pfBackBtn').addEventListener('click', renderPatientFilesList);
+    document.getElementById('pfSaveBtn').addEventListener('click', savePatientFileSheet);
+    document.getElementById('pfPrintBtn').addEventListener('click', printPatientFileSheet);
+    document.getElementById('pfXrayInput').addEventListener('change', function(){
+      if(this.files && this.files.length){ handleXrayUpload(this.files); }
+      this.value = '';
+    });
+    document.querySelectorAll('.pf-sig-clear').forEach(function(btn){
+      btn.addEventListener('click', function(){ clearSignatureCanvas(btn.getAttribute('data-target')); });
+    });
+
+    document.getElementById('rxClose').addEventListener('click', closePrescriptionModal);
+    document.getElementById('prescriptionOverlay').addEventListener('click', function(e){
+      if(e.target.id === 'prescriptionOverlay'){ closePrescriptionModal(); }
+    });
+    document.getElementById('rxNewBtn').addEventListener('click', function(){ openPrescriptionForm(null); });
+    document.getElementById('rxBackBtn').addEventListener('click', renderPrescriptionsList);
+    document.getElementById('rxSaveBtn').addEventListener('click', saveRxPrescription);
+    document.getElementById('rxPrintBtn').addEventListener('click', printRxPrescription);
+    document.getElementById('rxDrugSearch').addEventListener('input', function(){
+      var q = this.value.trim().toLowerCase();
+      var listEl = document.getElementById('rxDrugSuggest');
+      listEl.innerHTML = '';
+      if(q.length < 2){ listEl.classList.remove('show'); return; }
+
+      var matches = MEDICATIONS.filter(function(m){
+        return (m.name + ' ' + m.category).toLowerCase().indexOf(q) !== -1;
+      }).slice(0, 8);
+
+      if(matches.length === 0){ listEl.classList.remove('show'); return; }
+      matches.forEach(function(m){
+        var item = document.createElement('div');
+        item.className = 'patient-suggest-item';
+        item.innerHTML = '<span class="ps-name"></span><span class="ps-phone"></span>';
+        item.querySelector('.ps-name').textContent = m.name + (m.mg ? ' ' + m.mg + 'mg' : '');
+        item.querySelector('.ps-phone').textContent = m.category;
+        item.addEventListener('click', function(){
+          rxDrugs.push({ name: m.name, mg: m.mg, dosage: m.defaultDosage || '' });
+          renderRxDrugList();
+          document.getElementById('rxDrugSearch').value = '';
+          listEl.innerHTML = '';
+          listEl.classList.remove('show');
+        });
+        listEl.appendChild(item);
+      });
+      listEl.classList.add('show');
+    });
 
     document.getElementById('newBookingBtn').addEventListener('click', openNewBookingModal);
     document.getElementById('moreActionsBtn').addEventListener('click', function(e){
@@ -2090,6 +2417,9 @@
     document.getElementById('dsMonthlyPrintBtn').addEventListener('click', printMonthlyAccounts);
     watchDailyExpenses();
     watchEnvelope();
+    watchPatientFiles();
+    watchPatientXrays();
+    watchPrescriptions();
     watchPayments();
   }
 
@@ -2516,9 +2846,118 @@
     });
   }
 
-  // ---- Patient file (PIN-gated, content to be added later) ----
+  // ---- Patient file (PIN-gated digital patient sheet) ----
   var PATIENT_FILE_PIN = '2018';
   var pendingPatientFile = null;
+  var patientFilesCache = [];
+  var pfCurrentSheetId = null; // null = new sheet, else editing this doc id
+  var pfToothMarks = {}; // { toothKey: 'affected' | 'treated' }
+  var pfSigCanvases = {}; // { canvasId: { ctx, drawing } }
+
+  var TOOTH_NUMBERS = [8,7,6,5,4,3,2,1];
+
+  function watchPatientFiles(){
+    if(!firestoreDb) return;
+    firestoreDb.collection('patientFiles').onSnapshot(function(snap){
+      patientFilesCache = [];
+      snap.forEach(function(doc){
+        var data = doc.data();
+        data.id = doc.id;
+        patientFilesCache.push(data);
+      });
+    }, function(err){
+      console.warn('Firestore listener error for patientFiles.', err);
+    });
+  }
+
+  // ---- Patient X-rays (shared per patient, across all their sheets) ----
+  var patientXraysCache = [];
+
+  function watchPatientXrays(){
+    if(!firestoreDb) return;
+    firestoreDb.collection('patientXrays').onSnapshot(function(snap){
+      patientXraysCache = [];
+      snap.forEach(function(doc){
+        var data = doc.data();
+        data.id = doc.id;
+        patientXraysCache.push(data);
+      });
+      renderXrayGrid();
+    }, function(err){
+      console.warn('Firestore listener error for patientXrays.', err);
+    });
+  }
+
+  function renderXrayGrid(){
+    var grid = document.getElementById('pfXrayGrid');
+    var emptyEl = document.getElementById('pfXrayEmpty');
+    if(!grid || !pendingPatientFile) return;
+
+    var key = pfPatientKey(pendingPatientFile);
+    var mine = patientXraysCache.filter(function(x){ return x.patientKey === key; })
+      .sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+
+    grid.innerHTML = '';
+    if(mine.length === 0){ emptyEl.style.display = 'block'; return; }
+    emptyEl.style.display = 'none';
+
+    mine.forEach(function(x){
+      var item = document.createElement('div');
+      item.className = 'pf-xray-item';
+      var img = document.createElement('img');
+      img.src = x.imageData;
+      img.addEventListener('click', function(){ window.open(x.imageData, '_blank'); });
+      var delBtn = document.createElement('button');
+      delBtn.className = 'pf-xray-del';
+      delBtn.textContent = '✕';
+      delBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(!confirm('تحذف الأشعة دي؟')) return;
+        firestoreDb.collection('patientXrays').doc(x.id).delete().catch(function(err){ alert('حصل خطأ: ' + err.message); });
+      });
+      item.appendChild(img);
+      item.appendChild(delBtn);
+      grid.appendChild(item);
+    });
+  }
+
+  // بيصغّر الصورة قبل الرفع عشان الحجم يفضل مناسب لقاعدة البيانات
+  function compressImageFile(file, maxDim, quality){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        var img = new Image();
+        img.onload = function(){
+          var w = img.width, h = img.height;
+          if(w > maxDim || h > maxDim){
+            if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+            else { w = Math.round(w * maxDim / h); h = maxDim; }
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function handleXrayUpload(fileList){
+    var key = pfPatientKey(pendingPatientFile);
+    Array.prototype.forEach.call(fileList, function(file){
+      compressImageFile(file, 1200, 0.72).then(function(dataUrl){
+        firestoreDb.collection('patientXrays').add({
+          patientKey: key, name: pendingPatientFile.name, imageData: dataUrl, ts: Date.now()
+        }).catch(function(err){ alert('حصل خطأ في رفع الأشعة: ' + err.message); });
+      }).catch(function(){
+        alert('حصل خطأ في قراءة الصورة.');
+      });
+    });
+  }
 
   function openPatientFile(p){
     pendingPatientFile = p;
@@ -2544,6 +2983,574 @@
     }
     document.getElementById('patientFilePinStep').style.display = 'none';
     document.getElementById('patientFileContent').style.display = 'block';
+    renderPatientFilesList();
+  }
+
+  function pfPatientKey(p){
+    return p.phone + '|' + (p.name || '').trim().toLowerCase();
+  }
+
+  function renderPatientFilesList(){
+    document.getElementById('pfFormView').style.display = 'none';
+    document.getElementById('pfListView').style.display = 'block';
+
+    var p = pendingPatientFile;
+    var key = pfPatientKey(p);
+    var sheets = patientFilesCache.filter(function(s){ return s.patientKey === key; })
+      .sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+
+    var listEl = document.getElementById('pfSheetsList');
+    var emptyEl = document.getElementById('pfSheetsEmpty');
+    listEl.innerHTML = '';
+    if(sheets.length === 0){
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    sheets.forEach(function(s){
+      var item = document.createElement('div');
+      item.className = 'pf-sheet-item';
+      item.innerHTML =
+        '<div class="pfs-info">' +
+          '<b>' + escapeHtml(s.diagnosis ? s.diagnosis.slice(0, 40) : (s.chiefComplaint ? s.chiefComplaint.slice(0, 40) : 'ملف بدون وصف')) + '</b>' +
+          '<span>بتاريخ ' + (s.date ? formatDateLabel(s.date) : '—') + '</span>' +
+        '</div>';
+      var openBtn = document.createElement('button');
+      openBtn.className = 'pfs-open-btn';
+      openBtn.textContent = 'عرض / تعديل';
+      openBtn.addEventListener('click', function(){ openPatientFileForm(s); });
+      item.appendChild(openBtn);
+      listEl.appendChild(item);
+    });
+  }
+
+  function renderToothChart(){
+    var chart = document.getElementById('pfToothChart');
+    chart.innerHTML = '';
+
+    ['U', 'L'].forEach(function(rowPrefix){
+      var row = document.createElement('div');
+      row.className = 'pf-tooth-row';
+
+      var leftHalf = document.createElement('div');
+      leftHalf.className = 'pf-tooth-half';
+      TOOTH_NUMBERS.forEach(function(n){
+        leftHalf.appendChild(buildToothBtn(rowPrefix + 'L' + n, n));
+      });
+
+      var divider = document.createElement('div');
+      divider.className = 'pf-tooth-divider';
+
+      var rightHalf = document.createElement('div');
+      rightHalf.className = 'pf-tooth-half';
+      TOOTH_NUMBERS.slice().reverse().forEach(function(n){
+        rightHalf.appendChild(buildToothBtn(rowPrefix + 'R' + n, n));
+      });
+
+      row.appendChild(leftHalf);
+      row.appendChild(divider);
+      row.appendChild(rightHalf);
+      chart.appendChild(row);
+    });
+  }
+  function buildToothBtn(key, label){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pf-tooth-btn' + (pfToothMarks[key] ? ' ' + pfToothMarks[key] : '');
+    btn.textContent = label;
+    btn.addEventListener('click', function(){
+      var current = pfToothMarks[key];
+      var next = !current ? 'affected' : current === 'affected' ? 'treated' : null;
+      if(next){ pfToothMarks[key] = next; } else { delete pfToothMarks[key]; }
+      btn.className = 'pf-tooth-btn' + (next ? ' ' + next : '');
+    });
+    return btn;
+  }
+
+  function setupSignatureCanvas(canvasId){
+    var canvas = document.getElementById(canvasId);
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#0E2B30';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    var drawing = false;
+
+    function pos(e){
+      var rect = canvas.getBoundingClientRect();
+      var scaleX = canvas.width / rect.width;
+      var scaleY = canvas.height / rect.height;
+      var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+    function start(e){ drawing = true; var p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
+    function move(e){ if(!drawing) return; var p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }
+    function end(){ drawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', start);
+    canvas.addEventListener('touchmove', move);
+    canvas.addEventListener('touchend', end);
+
+    pfSigCanvases[canvasId] = ctx;
+  }
+  function loadSignatureImage(canvasId, dataUrl){
+    var canvas = document.getElementById(canvasId);
+    var ctx = pfSigCanvases[canvasId];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(!dataUrl) return;
+    var img = new Image();
+    img.onload = function(){ ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+    img.src = dataUrl;
+  }
+  function clearSignatureCanvas(canvasId){
+    var canvas = document.getElementById(canvasId);
+    pfSigCanvases[canvasId].clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // ---- Prescriptions (Rx) — linked to patient, reuses the clinic's prescription pad design ----
+  var prescriptionsCache = [];
+  var pendingPrescriptionPatient = null;
+  var rxCurrentSheetId = null;
+  var rxDrugs = []; // [{ name, mg, dosage }]
+
+  function watchPrescriptions(){
+    if(!firestoreDb) return;
+    firestoreDb.collection('prescriptions').onSnapshot(function(snap){
+      prescriptionsCache = [];
+      snap.forEach(function(doc){
+        var data = doc.data();
+        data.id = doc.id;
+        prescriptionsCache.push(data);
+      });
+    }, function(err){
+      console.warn('Firestore listener error for prescriptions.', err);
+    });
+  }
+
+  function openPrescriptionModal(p){
+    pendingPrescriptionPatient = p;
+    document.getElementById('rxNameLabel').textContent = p.name + ' — ' + p.phone;
+    document.getElementById('rxListView').style.display = 'block';
+    document.getElementById('rxFormView').style.display = 'none';
+    document.getElementById('prescriptionOverlay').classList.add('open');
+    renderPrescriptionsList();
+  }
+  function closePrescriptionModal(){
+    document.getElementById('prescriptionOverlay').classList.remove('open');
+    pendingPrescriptionPatient = null;
+  }
+
+  function renderPrescriptionsList(){
+    document.getElementById('rxFormView').style.display = 'none';
+    document.getElementById('rxListView').style.display = 'block';
+
+    var p = pendingPrescriptionPatient;
+    var key = pfPatientKey(p);
+    var sheets = prescriptionsCache.filter(function(s){ return s.patientKey === key; })
+      .sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+
+    var listEl = document.getElementById('rxSheetsList');
+    var emptyEl = document.getElementById('rxSheetsEmpty');
+    listEl.innerHTML = '';
+    if(sheets.length === 0){ emptyEl.style.display = 'block'; return; }
+    emptyEl.style.display = 'none';
+
+    sheets.forEach(function(s){
+      var drugNames = (s.drugs || []).map(function(d){ return d.name; }).join('، ');
+      var item = document.createElement('div');
+      item.className = 'pf-sheet-item';
+      item.innerHTML =
+        '<div class="pfs-info">' +
+          '<b>' + escapeHtml(drugNames || 'روشتة بدون أدوية') + '</b>' +
+          '<span>بتاريخ ' + (s.date ? formatDateLabel(s.date) : '—') + '</span>' +
+        '</div>';
+      var openBtn = document.createElement('button');
+      openBtn.className = 'pfs-open-btn';
+      openBtn.textContent = 'عرض / تعديل';
+      openBtn.addEventListener('click', function(){ openPrescriptionForm(s); });
+      item.appendChild(openBtn);
+      listEl.appendChild(item);
+    });
+  }
+
+  function openPrescriptionForm(existingSheet){
+    document.getElementById('rxListView').style.display = 'none';
+    document.getElementById('rxFormView').style.display = 'block';
+    document.getElementById('rxError').textContent = '';
+    document.getElementById('rxLogoImg').src = document.querySelector('.topbar-brand img').src;
+
+    var p = pendingPrescriptionPatient;
+    rxCurrentSheetId = existingSheet ? existingSheet.id : null;
+    var s = existingSheet || {};
+
+    document.getElementById('rxNameInput').value = s.name || p.name || '';
+    document.getElementById('rxGenderInput').value = s.gender || p.gender || '';
+    document.getElementById('rxAgeInput').value = s.age != null ? s.age : (p.age != null ? p.age : '');
+    document.getElementById('rxDateInput').value = s.date || todayIso();
+    document.getElementById('rxDiagnosisInput').value = s.diagnosis || '';
+    document.getElementById('rxNotesInput').value = s.notes || '';
+    document.getElementById('rxDrugSearch').value = '';
+    document.getElementById('rxDrugSuggest').classList.remove('show');
+
+    rxDrugs = (s.drugs || []).map(function(d){ return Object.assign({}, d); });
+    renderRxDrugList();
+  }
+
+  function renderRxDrugList(){
+    var listEl = document.getElementById('rxDrugList');
+    var emptyEl = document.getElementById('rxDrugEmpty');
+    listEl.innerHTML = '';
+    if(rxDrugs.length === 0){ emptyEl.style.display = 'block'; return; }
+    emptyEl.style.display = 'none';
+
+    rxDrugs.forEach(function(drug, idx){
+      var row = document.createElement('div');
+      row.className = 'rx-drug-item';
+
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'rx-drug-name';
+      nameSpan.textContent = drug.name;
+
+      var mgInput = document.createElement('input');
+      mgInput.type = 'number';
+      mgInput.min = '0';
+      mgInput.placeholder = 'mg';
+      mgInput.value = drug.mg != null ? drug.mg : '';
+      mgInput.addEventListener('input', function(){ drug.mg = mgInput.value ? parseFloat(mgInput.value) : null; });
+
+      var dosageInput = document.createElement('input');
+      dosageInput.type = 'text';
+      dosageInput.placeholder = 'عدد المرات×الجرعة×عدد الأيام — مثلًا 2×1×5';
+      dosageInput.value = drug.dosage || '';
+      dosageInput.addEventListener('input', function(){ drug.dosage = dosageInput.value; });
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'rx-drug-remove';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', function(){
+        rxDrugs.splice(idx, 1);
+        renderRxDrugList();
+      });
+
+      row.appendChild(nameSpan);
+      row.appendChild(mgInput);
+      row.appendChild(dosageInput);
+      row.appendChild(removeBtn);
+      listEl.appendChild(row);
+    });
+  }
+
+  function saveRxPrescription(){
+    var p = pendingPrescriptionPatient;
+    var errorEl = document.getElementById('rxError');
+    var name = document.getElementById('rxNameInput').value.trim();
+    if(!name){
+      errorEl.textContent = 'اكتب اسم المريض.';
+      return;
+    }
+
+    var data = {
+      patientKey: pfPatientKey(p),
+      name: name,
+      gender: document.getElementById('rxGenderInput').value,
+      age: parseInt(document.getElementById('rxAgeInput').value, 10) || null,
+      date: document.getElementById('rxDateInput').value || todayIso(),
+      diagnosis: document.getElementById('rxDiagnosisInput').value.trim(),
+      notes: document.getElementById('rxNotesInput').value.trim(),
+      drugs: rxDrugs,
+      ts: Date.now()
+    };
+
+    var ref = rxCurrentSheetId
+      ? firestoreDb.collection('prescriptions').doc(rxCurrentSheetId)
+      : firestoreDb.collection('prescriptions').doc();
+
+    ref.set(data)
+      .then(function(){
+        logActivity('edit', (rxCurrentSheetId ? 'تعديل' : 'إضافة') + ' روشتة — ' + name);
+        rxCurrentSheetId = ref.id;
+        errorEl.style.color = '#1E9E5A';
+        errorEl.textContent = 'تم الحفظ ✓';
+      })
+      .catch(function(err){
+        errorEl.style.color = '#D64545';
+        errorEl.textContent = 'حصل خطأ: ' + err.message;
+      });
+  }
+
+  function printRxPrescription(){
+    var logoSrc = document.querySelector('.topbar-brand img').src;
+    var name = document.getElementById('rxNameInput').value || '';
+    var gender = document.getElementById('rxGenderInput').value === 'male' ? 'Male' : document.getElementById('rxGenderInput').value === 'female' ? 'Female' : '';
+    var age = document.getElementById('rxAgeInput').value || '';
+    var date = document.getElementById('rxDateInput').value ? formatDateLabel(document.getElementById('rxDateInput').value) : '';
+    var diagnosis = document.getElementById('rxDiagnosisInput').value || '';
+    var notes = document.getElementById('rxNotesInput').value || '';
+
+    var drugsHtml = rxDrugs.map(function(d){
+      return '<li><span class="rx-p-name">' + escapeHtml(d.name) + (d.mg ? ' ' + d.mg + 'mg' : '') + '</span>' +
+        '<span class="rx-p-dose">' + escapeHtml(d.dosage || '') + '</span></li>';
+    }).join('');
+
+    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>روشتة — ' + escapeHtml(name) + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">' +
+      '<style>' +
+        '*{box-sizing:border-box;margin:0;padding:0;}' +
+        'body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#0E2B30;padding:30px 36px;}' +
+        '.rx-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0B3B47;padding-bottom:16px;margin-bottom:20px;}' +
+        '.rx-head-left{display:flex;align-items:center;gap:14px;}' +
+        '.rx-head-left img{width:56px;height:56px;border-radius:50%;}' +
+        '.rx-head-left strong{display:block;font-family:"Tajawal",sans-serif;font-weight:800;color:#0B3B47;font-size:1.05rem;}' +
+        '.rx-head-left span{display:block;font-size:.76rem;color:#4A6067;}' +
+        '.rx-head-right{text-align:left;direction:ltr;}' +
+        '.rx-head-right strong{display:block;font-family:Georgia,serif;font-weight:700;color:#0B3B47;font-size:1.15rem;}' +
+        '.rx-head-right span{display:block;font-size:.74rem;color:#4A6067;}' +
+        '.rx-info-box{border:1px solid #DCE8E8;border-radius:10px;padding:12px 16px;margin-bottom:22px;font-size:.86rem;}' +
+        '.rx-info-row{display:flex;gap:24px;margin-bottom:6px;}' +
+        '.rx-info-row:last-child{margin-bottom:0;}' +
+        '.rx-symbol{font-family:Georgia,serif;font-size:1.6rem;font-weight:700;color:#0B3B47;margin-bottom:14px;}' +
+        'ul.rx-list{list-style:none;}' +
+        'ul.rx-list li{display:flex;justify-content:space-between;gap:20px;padding:10px 0;border-bottom:1px dashed #DCE8E8;font-size:.92rem;}' +
+        '.rx-p-name{font-weight:700;color:#0B3B47;}' +
+        '.rx-p-dose{color:#4A6067;direction:ltr;}' +
+        '.rx-notes{margin-top:20px;font-size:.85rem;color:#4A6067;}' +
+        '.rx-footer{margin-top:34px;text-align:center;font-size:.76rem;color:#4A6067;border-top:1px solid #DCE8E8;padding-top:12px;}' +
+        '@media print{ body{padding:14px 18px;} }' +
+      '</style></head><body>' +
+        '<div class="rx-head">' +
+          '<div class="rx-head-left"><img src="' + logoSrc + '"><div><strong>عيادة د. أبانوب سليم لطب الأسنان</strong><span>Abanoub Selim Dental Clinic</span></div></div>' +
+          '<div class="rx-head-right"><strong>Dr. Abanoub Selim Mounir</strong><span>Oral and Maxillofacial Surgeon</span></div>' +
+        '</div>' +
+        '<div class="rx-info-box">' +
+          '<div class="rx-info-row"><span><b>Name:</b> ' + escapeHtml(name) + '</span><span><b>Date:</b> ' + date + '</span></div>' +
+          '<div class="rx-info-row"><span><b>Gender:</b> ' + gender + '</span><span><b>Age:</b> ' + age + '</span></div>' +
+          (diagnosis ? '<div class="rx-info-row"><span><b>Diagnosis:</b> ' + escapeHtml(diagnosis) + '</span></div>' : '') +
+        '</div>' +
+        '<div class="rx-symbol">℞</div>' +
+        '<ul class="rx-list">' + drugsHtml + '</ul>' +
+        (notes ? '<div class="rx-notes"><b>ملاحظات:</b> ' + escapeHtml(notes) + '</div>' : '') +
+        '<p class="rx-footer">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p>' +
+      '</body></html>';
+
+    var printWin = window.open('', '_blank');
+    if(!printWin){
+      alert('المتصفح منع فتح نافذة الطباعة. اسمح بالنوافذ المنبثقة (Pop-ups) لهذا الموقع وجرّب تاني.');
+      return;
+    }
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+    printWin.onload = function(){
+      setTimeout(function(){ printWin.focus(); printWin.print(); }, 300);
+    };
+  }
+
+  function openPatientFileForm(existingSheet){
+    document.getElementById('pfListView').style.display = 'none';
+    document.getElementById('pfFormView').style.display = 'block';
+    document.getElementById('pfError').textContent = '';
+    document.getElementById('pfLogoImg').src = document.querySelector('.topbar-brand img').src;
+
+    var p = pendingPatientFile;
+    pfCurrentSheetId = existingSheet ? existingSheet.id : null;
+    var s = existingSheet || {};
+
+    document.getElementById('pfNameInput').value = s.name || p.name || '';
+    document.getElementById('pfGenderInput').value = s.gender || p.gender || '';
+    document.getElementById('pfAgeInput').value = s.age != null ? s.age : (p.age != null ? p.age : '');
+    document.getElementById('pfDateInput').value = s.date || todayIso();
+    document.getElementById('pfComplaintInput').value = s.chiefComplaint || '';
+    document.getElementById('pfDiagnosisInput').value = s.diagnosis || '';
+
+    var medHistory = s.medicalHistory || {};
+    document.querySelectorAll('#pfFormView [data-mh]').forEach(function(cb){
+      cb.checked = !!medHistory[cb.getAttribute('data-mh')];
+    });
+    document.getElementById('pfMedHistoryOthersInput').value = medHistory.others || '';
+
+    var plan = s.treatmentPlan || {};
+    document.querySelectorAll('#pfFormView [data-plan]').forEach(function(cb){
+      cb.checked = !!plan[cb.getAttribute('data-plan')];
+    });
+    document.getElementById('pfOthersInput').value = s.othersText || '';
+
+    document.getElementById('pfStepsInput').value = s.treatmentSteps || '';
+
+    pfToothMarks = Object.assign({}, s.toothChart || {});
+    renderToothChart();
+
+    if(!pfSigCanvases.pfDoctorSigCanvas){ setupSignatureCanvas('pfDoctorSigCanvas'); }
+    if(!pfSigCanvases.pfPatientSigCanvas){ setupSignatureCanvas('pfPatientSigCanvas'); }
+    loadSignatureImage('pfDoctorSigCanvas', s.doctorSignature);
+    loadSignatureImage('pfPatientSigCanvas', s.patientSignature);
+
+    document.getElementById('pfXrayInput').value = '';
+    renderXrayGrid();
+  }
+
+  function savePatientFileSheet(){
+    var p = pendingPatientFile;
+    var errorEl = document.getElementById('pfError');
+    var name = document.getElementById('pfNameInput').value.trim();
+    if(!name){
+      errorEl.textContent = 'اكتب اسم المريض.';
+      return;
+    }
+
+    var plan = {};
+    document.querySelectorAll('#pfFormView [data-plan]').forEach(function(cb){
+      plan[cb.getAttribute('data-plan')] = cb.checked;
+    });
+
+    var medHistory = {};
+    document.querySelectorAll('#pfFormView [data-mh]').forEach(function(cb){
+      medHistory[cb.getAttribute('data-mh')] = cb.checked;
+    });
+    medHistory.others = document.getElementById('pfMedHistoryOthersInput').value.trim();
+
+    var data = {
+      patientKey: pfPatientKey(p),
+      name: name,
+      gender: document.getElementById('pfGenderInput').value,
+      age: parseInt(document.getElementById('pfAgeInput').value, 10) || null,
+      date: document.getElementById('pfDateInput').value || todayIso(),
+      chiefComplaint: document.getElementById('pfComplaintInput').value.trim(),
+      medicalHistory: medHistory,
+      diagnosis: document.getElementById('pfDiagnosisInput').value.trim(),
+      treatmentPlan: plan,
+      othersText: document.getElementById('pfOthersInput').value.trim(),
+      toothChart: pfToothMarks,
+      treatmentSteps: document.getElementById('pfStepsInput').value.trim(),
+      doctorSignature: document.getElementById('pfDoctorSigCanvas').toDataURL(),
+      patientSignature: document.getElementById('pfPatientSigCanvas').toDataURL(),
+      ts: Date.now()
+    };
+
+    var ref = pfCurrentSheetId
+      ? firestoreDb.collection('patientFiles').doc(pfCurrentSheetId)
+      : firestoreDb.collection('patientFiles').doc();
+
+    ref.set(data)
+      .then(function(){
+        logActivity('edit', (pfCurrentSheetId ? 'تعديل' : 'إضافة') + ' ملف مريض — ' + name);
+        pfCurrentSheetId = ref.id;
+        errorEl.style.color = '#1E9E5A';
+        errorEl.textContent = 'تم الحفظ ✓';
+      })
+      .catch(function(err){
+        errorEl.style.color = '#D64545';
+        errorEl.textContent = 'حصل خطأ: ' + err.message;
+      });
+  }
+
+  function printPatientFileSheet(){
+    var logoSrc = document.querySelector('.topbar-brand img').src;
+    var patientKey = pfPatientKey(pendingPatientFile);
+    var xrayImgsHtml = patientXraysCache
+      .filter(function(x){ return x.patientKey === patientKey; })
+      .map(function(x){ return '<img src="' + x.imageData + '">'; })
+      .join('');
+    var name = document.getElementById('pfNameInput').value || '';
+    var gender = document.getElementById('pfGenderInput').value === 'male' ? 'Male' : document.getElementById('pfGenderInput').value === 'female' ? 'Female' : '';
+    var age = document.getElementById('pfAgeInput').value || '';
+    var date = document.getElementById('pfDateInput').value ? formatDateLabel(document.getElementById('pfDateInput').value) : '';
+    var complaint = document.getElementById('pfComplaintInput').value || '';
+    var diagnosis = document.getElementById('pfDiagnosisInput').value || '';
+    var others = document.getElementById('pfOthersInput').value || '';
+    var steps = document.getElementById('pfStepsInput').value || '';
+    var doctorSig = document.getElementById('pfDoctorSigCanvas').toDataURL();
+    var patientSig = document.getElementById('pfPatientSigCanvas').toDataURL();
+
+    var planLabels = { endodontic: 'Endodontic treatment', restoration: 'Restoration', prosthodontic: 'Prosthodontic treatment', surgery: 'Surgery', scaling: 'Scaling and polishing' };
+    var planHtml = '';
+    document.querySelectorAll('#pfFormView [data-plan]').forEach(function(cb){
+      var key = cb.getAttribute('data-plan');
+      planHtml += '<li>' + planLabels[key] + ' <b>' + (cb.checked ? '✔' : '') + '</b></li>';
+    });
+
+    var mhLabels = { diabetes: 'Diabetes', hypertension: 'Hypertension', heart: 'Heart Disease', bleeding: 'Bleeding Disorder / Anticoagulants', allergy: 'Drug Allergy', pregnancy: 'Pregnancy', asthma: 'Asthma', hepatitis: 'Hepatitis', kidney: 'Kidney Disease' };
+    var checkedMh = [];
+    document.querySelectorAll('#pfFormView [data-mh]').forEach(function(cb){
+      if(cb.checked){ checkedMh.push(mhLabels[cb.getAttribute('data-mh')]); }
+    });
+    var mhOthers = document.getElementById('pfMedHistoryOthersInput').value || '';
+    if(mhOthers){ checkedMh.push(mhOthers); }
+    var mhText = checkedMh.length ? checkedMh.join(', ') : 'Nothing significant';
+
+    var toothRowsHtml = '';
+    ['U', 'L'].forEach(function(rowPrefix){
+      var leftCells = '', rightCells = '';
+      TOOTH_NUMBERS.forEach(function(n){
+        var key = rowPrefix + 'L' + n;
+        var mark = pfToothMarks[key];
+        leftCells += '<td class="' + (mark || '') + '">' + n + '</td>';
+      });
+      TOOTH_NUMBERS.slice().reverse().forEach(function(n){
+        var key = rowPrefix + 'R' + n;
+        var mark = pfToothMarks[key];
+        rightCells += '<td class="' + (mark || '') + '">' + n + '</td>';
+      });
+      toothRowsHtml += '<tr>' + leftCells + '<td class="pf-div"></td>' + rightCells + '</tr>';
+    });
+
+    var html = '<!DOCTYPE html><html lang="en" dir="ltr"><head><meta charset="UTF-8"><title>Patient Sheet — ' + name + '</title>' +
+      '<style>' +
+        '*{box-sizing:border-box;} body{font-family:Georgia,serif;color:#0E2B30;padding:26px 34px;}' +
+        '.ps-head{display:flex;align-items:center;gap:16px;border:2px solid #0B3B47;border-radius:10px;padding:14px 20px;margin-bottom:20px;}' +
+        '.ps-head img{width:56px;height:56px;border-radius:50%;}' +
+        '.ps-head h1{font-size:1.3rem;color:#0B3B47;letter-spacing:1px;}' +
+        '.pf-row{display:flex;gap:24px;margin-bottom:10px;font-size:.92rem;}' +
+        '.pf-row b{color:#0B3B47;}' +
+        '.pf-block{margin-bottom:14px;font-size:.92rem;}' +
+        '.pf-block-label{font-weight:700;color:#0B3B47;display:block;margin-bottom:4px;}' +
+        'ul.pf-plan{list-style:none;padding:0;margin:6px 0;}' +
+        'ul.pf-plan li{padding:3px 0;font-size:.9rem;}' +
+        'table.pf-chart{border-collapse:collapse;margin:10px 0;}' +
+        'table.pf-chart td{width:26px;height:26px;text-align:center;border:1px solid #999;font-size:.8rem;}' +
+        'table.pf-chart td.pf-div{border:none;width:8px;}' +
+        'table.pf-chart td.affected{background:#FBEAEA;color:#D64545;font-weight:700;}' +
+        'table.pf-chart td.treated{background:#E7F6EE;color:#1E9E5A;font-weight:700;}' +
+        '.pf-xray-print{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}' +
+        '.pf-xray-print img{width:140px;height:140px;object-fit:cover;border:1px solid #999;border-radius:4px;}' +
+        '.pf-sig-row{display:flex;justify-content:space-between;margin-top:26px;}' +
+        '.pf-sig-col{text-align:center;width:45%;}' +
+        '.pf-sig-col img{max-width:100%;height:60px;border-bottom:1px solid #666;}' +
+        '@media print{ body{padding:10px 16px;} }' +
+      '</style></head><body>' +
+        '<div class="ps-head"><img src="' + logoSrc + '"><h1>PATIENT SHEET</h1></div>' +
+        '<div class="pf-row"><span><b>Name:</b> ' + escapeHtml(name) + '</span><span><b>Gender:</b> ' + gender + '</span></div>' +
+        '<div class="pf-row"><span><b>Age:</b> ' + age + '</span><span><b>Date:</b> ' + date + '</span></div>' +
+        '<div class="pf-block"><span class="pf-block-label">Chief Complaint:</span>' + escapeHtml(complaint).replace(/\n/g,'<br>') + '</div>' +
+        '<div class="pf-block"><span class="pf-block-label">Medical History:</span>' + escapeHtml(mhText) + '</div>' +
+        '<div class="pf-block"><span class="pf-block-label">Diagnosis:</span>' + escapeHtml(diagnosis).replace(/\n/g,'<br>') + '</div>' +
+        '<div class="pf-block"><span class="pf-block-label">Treatment Plan:</span><ul class="pf-plan">' + planHtml + '<li>Others: ' + escapeHtml(others) + '</li></ul></div>' +
+        '<div class="pf-block"><span class="pf-block-label">Tooth Chart:</span><table class="pf-chart">' + toothRowsHtml + '</table></div>' +
+        '<div class="pf-block"><span class="pf-block-label">Treatment steps and X-ray Finding:</span>' + escapeHtml(steps).replace(/\n/g,'<br>') + '</div>' +
+        (xrayImgsHtml ? '<div class="pf-block"><span class="pf-block-label">X-rays:</span><div class="pf-xray-print">' + xrayImgsHtml + '</div></div>' : '') +
+        '<div class="pf-sig-row">' +
+          '<div class="pf-sig-col"><img src="' + doctorSig + '"><div>Doctor Signature</div></div>' +
+          '<div class="pf-sig-col"><img src="' + patientSig + '"><div>Patient Signature</div></div>' +
+        '</div>' +
+      '</body></html>';
+
+    var printWin = window.open('', '_blank');
+    if(!printWin){
+      alert('المتصفح منع فتح نافذة الطباعة. اسمح بالنوافذ المنبثقة (Pop-ups) لهذا الموقع وجرّب تاني.');
+      return;
+    }
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+    printWin.onload = function(){
+      setTimeout(function(){ printWin.focus(); printWin.print(); }, 300);
+    };
   }
 
   // ---- New booking (staff, from inside the dashboard) ----
@@ -3328,8 +4335,10 @@
       card.className = 'patient-card';
 
       var initials = p.name.trim().split(/\s+/).slice(0,2).map(function(w){ return w[0] || ''; }).join('');
-      var lastVisit = p.visits[0];
-      var lastLabel = formatDateLabel(lastVisit.dayIso);
+      var t = todayIso();
+      var pastVisits = p.visits.filter(function(v){ return v.dayIso <= t; }); // visits[] already sorted newest-first
+      var lastVisit = pastVisits[0];
+      var lastLabel = lastVisit ? formatDateLabel(lastVisit.dayIso) : 'لسه معملش زيارة';
       var genderLabel = p.gender === 'male' ? 'ذكر' : p.gender === 'female' ? 'أنثى' : '';
       var ageGenderParts = [];
       if(p.age != null) ageGenderParts.push(p.age + ' سنة');
@@ -3350,7 +4359,7 @@
         '<div class="patient-stats">' +
           '<span class="patient-tag visits">' + p.visits.length + ' زيارة</span>' +
           (p.noShowCount > 0 ? '<span class="patient-tag noshow">' + p.noShowCount + ' غياب</span>' : '') +
-          '<span class="patient-tag last">آخر زيارة ' + lastLabel + '</span>' +
+          '<span class="patient-tag last">' + (lastVisit ? 'آخر زيارة ' + lastLabel : lastLabel) + '</span>' +
         '</div>' +
         '<span class="patient-chevron">▾</span>';
       head.addEventListener('click', function(){ card.classList.toggle('open'); });
@@ -3366,6 +4375,14 @@
         openPatientFile(p);
       });
       fileBar.appendChild(fileBtn);
+      var rxBtn = document.createElement('button');
+      rxBtn.className = 'patient-file-btn patient-rx-btn';
+      rxBtn.textContent = '💊 الروشتة';
+      rxBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        openPrescriptionModal(p);
+      });
+      fileBar.appendChild(rxBtn);
       card.appendChild(fileBar);
 
       var history = document.createElement('div');
