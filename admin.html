@@ -638,17 +638,21 @@
   .rx-drug-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
   .rx-drug-item{
     border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--pale-aqua);
-    display:grid;grid-template-columns:1.6fr .8fr 1.4fr auto;gap:8px;align-items:center;
+    display:flex;flex-direction:column;gap:8px;
   }
-  .rx-drug-item .rx-drug-name{font-size:.84rem;font-weight:700;color:var(--deep-teal);}
-  .rx-drug-item input{
-    padding:8px 10px;border-radius:8px;border:1px solid var(--line);font-size:.82rem;background:#fff;
+  .rx-drug-row1{display:grid;grid-template-columns:1.6fr .8fr 1.4fr auto;gap:8px;align-items:center;}
+  .rx-drug-item .rx-drug-name{font-size:.84rem;font-weight:700;color:var(--deep-teal);direction:ltr;text-align:left;}
+  .rx-drug-item input, .rx-drug-item select{
+    padding:8px 10px;border-radius:8px;border:1px solid var(--line);font-size:.82rem;background:#fff;width:100%;
   }
+  .rx-drug-note{width:100%;}
   .rx-drug-remove{
     width:28px;height:28px;border-radius:50%;border:none;background:#FBEAEA;color:#D64545;
     font-weight:800;font-size:.8rem;flex:0 0 auto;
   }
   .rx-drug-remove:hover{background:#D64545;color:#fff;}
+  .rx-wa-btn{background:#E7F6EE;color:#1E9E5A;border-color:#C9EBD9;}
+  .rx-wa-btn:hover{background:#1E9E5A;color:#fff;}
 
   .modal-error{color:#D64545;font-size:.82rem;text-align:center;margin-top:10px;min-height:1em;font-weight:600;}
   .status-box{
@@ -841,7 +845,7 @@
     .pf-sig-row{grid-template-columns:1fr;}
     .pf-plan-grid{grid-template-columns:1fr;}
     .patient-file-modal{max-width:100%;}
-    .rx-drug-item{grid-template-columns:1fr;}
+    .rx-drug-row1{grid-template-columns:1fr;}
 
     .booking-modal-overlay{padding:10px;}
     .booking-modal{padding:20px 16px;max-height:90vh;}
@@ -1670,15 +1674,11 @@
         <div class="empty-mini" id="rxDrugEmpty">لسه مفيش أدوية مضافة للروشتة دي.</div>
       </div>
 
-      <div class="modal-field">
-        <label>ملاحظات إضافية (اختياري)</label>
-        <textarea id="rxNotesInput" rows="2" placeholder="أي تعليمات تانية للمريض..."></textarea>
-      </div>
-
       <div class="ds-btn-row">
         <button class="cta-btn gold" id="rxSaveBtn" style="width:100%;justify-content:center;">حفظ الروشتة</button>
         <button class="btn btn-outline" id="rxPrintBtn" style="width:100%;justify-content:center;">🖨️ طباعة</button>
       </div>
+      <button class="btn btn-outline rx-wa-btn" id="rxWhatsappBtn" style="width:100%;justify-content:center;margin-top:8px;">📱 إرسال الروشتة على واتساب</button>
       <button class="btn btn-outline" id="rxBackBtn" style="width:100%;justify-content:center;margin-top:8px;">◀ رجوع لقايمة الروشتات</button>
       <p class="modal-error" id="rxError"></p>
     </div>
@@ -1865,6 +1865,14 @@
     { category: 'معجون أسنان', name: 'Sensodyne Sensitive', mg: null },
     { category: 'فيتامين', name: 'Vitamin C (للرجال)', mg: 90 },
     { category: 'فيتامين', name: 'Vitamin C (للسيدات)', mg: 75 }
+  ];
+
+  // جرعات جاهزة زي ما كانت مكتوبة في الروشتة المرجعية — الصيغة: عدد المرات باليوم × الجرعة × عدد الأيام
+  var DOSAGE_PRESETS = [
+    '1×1×3', '1×1×5', '1×1×7',
+    '2×1×3', '2×1×5', '2×1×7',
+    '3×1×3', '3×1×5', '3×1×7',
+    'قبل الأكل بساعة', 'بعد الأكل مباشرة', 'حسب الحاجة'
   ];
 
   var PAYMENT_ICONS = {
@@ -2222,6 +2230,7 @@
     document.getElementById('rxBackBtn').addEventListener('click', renderPrescriptionsList);
     document.getElementById('rxSaveBtn').addEventListener('click', saveRxPrescription);
     document.getElementById('rxPrintBtn').addEventListener('click', printRxPrescription);
+    document.getElementById('rxWhatsappBtn').addEventListener('click', sendRxOnWhatsapp);
     document.getElementById('rxDrugSearch').addEventListener('input', function(){
       var q = this.value.trim().toLowerCase();
       var listEl = document.getElementById('rxDrugSuggest');
@@ -3194,7 +3203,6 @@
     document.getElementById('rxAgeInput').value = s.age != null ? s.age : (p.age != null ? p.age : '');
     document.getElementById('rxDateInput').value = s.date || todayIso();
     document.getElementById('rxDiagnosisInput').value = s.diagnosis || '';
-    document.getElementById('rxNotesInput').value = s.notes || '';
     document.getElementById('rxDrugSearch').value = '';
     document.getElementById('rxDrugSuggest').classList.remove('show');
 
@@ -3213,6 +3221,9 @@
       var row = document.createElement('div');
       row.className = 'rx-drug-item';
 
+      var row1 = document.createElement('div');
+      row1.className = 'rx-drug-row1';
+
       var nameSpan = document.createElement('span');
       nameSpan.className = 'rx-drug-name';
       nameSpan.textContent = drug.name;
@@ -3224,11 +3235,46 @@
       mgInput.value = drug.mg != null ? drug.mg : '';
       mgInput.addEventListener('input', function(){ drug.mg = mgInput.value ? parseFloat(mgInput.value) : null; });
 
-      var dosageInput = document.createElement('input');
-      dosageInput.type = 'text';
-      dosageInput.placeholder = 'عدد المرات×الجرعة×عدد الأيام — مثلًا 2×1×5';
-      dosageInput.value = drug.dosage || '';
-      dosageInput.addEventListener('input', function(){ drug.dosage = dosageInput.value; });
+      var dosageWrap = document.createElement('div');
+      dosageWrap.style.display = 'flex';
+      dosageWrap.style.flexDirection = 'column';
+      dosageWrap.style.gap = '6px';
+
+      var dosageSelect = document.createElement('select');
+      var isPreset = DOSAGE_PRESETS.indexOf(drug.dosage) !== -1;
+      var blankOpt = document.createElement('option');
+      blankOpt.value = ''; blankOpt.textContent = 'اختار الجرعة';
+      dosageSelect.appendChild(blankOpt);
+      DOSAGE_PRESETS.forEach(function(preset){
+        var opt = document.createElement('option');
+        opt.value = preset; opt.textContent = preset;
+        dosageSelect.appendChild(opt);
+      });
+      var customOpt = document.createElement('option');
+      customOpt.value = '__custom__'; customOpt.textContent = 'أخرى (اكتب يدوي)';
+      dosageSelect.appendChild(customOpt);
+
+      var customInput = document.createElement('input');
+      customInput.type = 'text';
+      customInput.placeholder = 'اكتب الجرعة يدويًا';
+      customInput.style.display = (drug.dosage && !isPreset) ? 'block' : 'none';
+      customInput.value = (drug.dosage && !isPreset) ? drug.dosage : '';
+
+      dosageSelect.value = isPreset ? drug.dosage : (customInput.value ? '__custom__' : '');
+      dosageSelect.addEventListener('change', function(){
+        if(dosageSelect.value === '__custom__'){
+          customInput.style.display = 'block';
+          customInput.focus();
+          drug.dosage = customInput.value;
+        } else {
+          customInput.style.display = 'none';
+          drug.dosage = dosageSelect.value;
+        }
+      });
+      customInput.addEventListener('input', function(){ drug.dosage = customInput.value; });
+
+      dosageWrap.appendChild(dosageSelect);
+      dosageWrap.appendChild(customInput);
 
       var removeBtn = document.createElement('button');
       removeBtn.type = 'button';
@@ -3239,10 +3285,20 @@
         renderRxDrugList();
       });
 
-      row.appendChild(nameSpan);
-      row.appendChild(mgInput);
-      row.appendChild(dosageInput);
-      row.appendChild(removeBtn);
+      row1.appendChild(nameSpan);
+      row1.appendChild(mgInput);
+      row1.appendChild(dosageWrap);
+      row1.appendChild(removeBtn);
+      row.appendChild(row1);
+
+      var noteInput = document.createElement('input');
+      noteInput.type = 'text';
+      noteInput.className = 'rx-drug-note';
+      noteInput.placeholder = 'ملاحظة للدواء ده (اختياري)...';
+      noteInput.value = drug.note || '';
+      noteInput.addEventListener('input', function(){ drug.note = noteInput.value; });
+      row.appendChild(noteInput);
+
       listEl.appendChild(row);
     });
   }
@@ -3263,7 +3319,6 @@
       age: parseInt(document.getElementById('rxAgeInput').value, 10) || null,
       date: document.getElementById('rxDateInput').value || todayIso(),
       diagnosis: document.getElementById('rxDiagnosisInput').value.trim(),
-      notes: document.getElementById('rxNotesInput').value.trim(),
       drugs: rxDrugs,
       ts: Date.now()
     };
@@ -3285,6 +3340,43 @@
       });
   }
 
+  function sendRxOnWhatsapp(){
+    var p = pendingPrescriptionPatient;
+    var errorEl = document.getElementById('rxError');
+    if(!p || !p.phone){
+      errorEl.style.color = '#D64545';
+      errorEl.textContent = 'مفيش رقم موبايل مسجّل للمريض ده.';
+      return;
+    }
+    if(rxDrugs.length === 0){
+      errorEl.style.color = '#D64545';
+      errorEl.textContent = 'ضيف دواء واحد على الأقل قبل ما تبعت الروشتة.';
+      return;
+    }
+
+    var name = document.getElementById('rxNameInput').value || p.name || '';
+    var date = document.getElementById('rxDateInput').value ? formatDateLabel(document.getElementById('rxDateInput').value) : '';
+    var diagnosis = document.getElementById('rxDiagnosisInput').value.trim();
+
+    var lines = [];
+    lines.push('عيادة د. أبانوب سليم لطب الأسنان 🦷');
+    lines.push('روشتة الأستاذ/ة ' + name + (date ? ' — ' + date : ''));
+    if(diagnosis){ lines.push('التشخيص: ' + diagnosis); }
+    lines.push('');
+    rxDrugs.forEach(function(d, idx){
+      var line = (idx + 1) + '. ' + d.name + (d.mg ? ' ' + d.mg + 'mg' : '');
+      if(d.dosage){ line += ' — ' + d.dosage; }
+      lines.push(line);
+      if(d.note){ lines.push('   (' + d.note + ')'); }
+    });
+    lines.push('');
+    lines.push('لأي استفسار كلمونا على العيادة 🌸');
+
+    var waPhone = p.phone.replace(/^0/, '20');
+    var waMsg = encodeURIComponent(lines.join('\n'));
+    window.open('https://wa.me/' + waPhone + '?text=' + waMsg, '_blank', 'noopener');
+  }
+
   function printRxPrescription(){
     var logoSrc = document.querySelector('.topbar-brand img').src;
     var name = document.getElementById('rxNameInput').value || '';
@@ -3292,24 +3384,28 @@
     var age = document.getElementById('rxAgeInput').value || '';
     var date = document.getElementById('rxDateInput').value ? formatDateLabel(document.getElementById('rxDateInput').value) : '';
     var diagnosis = document.getElementById('rxDiagnosisInput').value || '';
-    var notes = document.getElementById('rxNotesInput').value || '';
 
     var drugsHtml = rxDrugs.map(function(d){
-      return '<li><span class="rx-p-name">' + escapeHtml(d.name) + (d.mg ? ' ' + d.mg + 'mg' : '') + '</span>' +
-        '<span class="rx-p-dose">' + escapeHtml(d.dosage || '') + '</span></li>';
+      return '<li>' +
+          '<div class="rx-li-top"><span class="rx-p-name">' + escapeHtml(d.name) + (d.mg ? ' ' + d.mg + 'mg' : '') + '</span>' +
+          '<span class="rx-p-dose">' + escapeHtml(d.dosage || '') + '</span></div>' +
+          (d.note ? '<div class="rx-p-note">' + escapeHtml(d.note) + '</div>' : '') +
+        '</li>';
     }).join('');
 
-    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>روشتة — ' + escapeHtml(name) + '</title>' +
+    // الصفحة كلها LTR (زي الروشتة الورقية الأصلية اللي الدوا فيها إنجليزي) عشان أسماء الأدوية والبيانات متبقاش مقلوبة،
+    // والعناصر العربية (اسم العيادة والعنوان) بتاخد اتجاهها الصح بشكل منفصل جوه نفسها
+    var html = '<!DOCTYPE html><html lang="en" dir="ltr"><head><meta charset="UTF-8"><title>Prescription - ' + escapeHtml(name) + '</title>' +
       '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">' +
       '<style>' +
         '*{box-sizing:border-box;margin:0;padding:0;}' +
         'body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#0E2B30;padding:30px 36px;}' +
-        '.rx-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0B3B47;padding-bottom:16px;margin-bottom:20px;}' +
-        '.rx-head-left{display:flex;align-items:center;gap:14px;}' +
+        '.rx-head{display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0B3B47;padding-bottom:16px;margin-bottom:20px;}' +
+        '.rx-head-left{display:flex;align-items:center;gap:14px;direction:rtl;text-align:right;}' +
         '.rx-head-left img{width:56px;height:56px;border-radius:50%;}' +
         '.rx-head-left strong{display:block;font-family:"Tajawal",sans-serif;font-weight:800;color:#0B3B47;font-size:1.05rem;}' +
         '.rx-head-left span{display:block;font-size:.76rem;color:#4A6067;}' +
-        '.rx-head-right{text-align:left;direction:ltr;}' +
+        '.rx-head-right{text-align:left;}' +
         '.rx-head-right strong{display:block;font-family:Georgia,serif;font-weight:700;color:#0B3B47;font-size:1.15rem;}' +
         '.rx-head-right span{display:block;font-size:.74rem;color:#4A6067;}' +
         '.rx-info-box{border:1px solid #DCE8E8;border-radius:10px;padding:12px 16px;margin-bottom:22px;font-size:.86rem;}' +
@@ -3317,11 +3413,12 @@
         '.rx-info-row:last-child{margin-bottom:0;}' +
         '.rx-symbol{font-family:Georgia,serif;font-size:1.6rem;font-weight:700;color:#0B3B47;margin-bottom:14px;}' +
         'ul.rx-list{list-style:none;}' +
-        'ul.rx-list li{display:flex;justify-content:space-between;gap:20px;padding:10px 0;border-bottom:1px dashed #DCE8E8;font-size:.92rem;}' +
+        'ul.rx-list li{padding:10px 0;border-bottom:1px dashed #DCE8E8;font-size:.92rem;}' +
+        '.rx-li-top{display:flex;justify-content:space-between;gap:20px;}' +
         '.rx-p-name{font-weight:700;color:#0B3B47;}' +
-        '.rx-p-dose{color:#4A6067;direction:ltr;}' +
-        '.rx-notes{margin-top:20px;font-size:.85rem;color:#4A6067;}' +
-        '.rx-footer{margin-top:34px;text-align:center;font-size:.76rem;color:#4A6067;border-top:1px solid #DCE8E8;padding-top:12px;}' +
+        '.rx-p-dose{color:#4A6067;}' +
+        '.rx-p-note{margin-top:4px;font-size:.8rem;color:#8a6d1f;direction:rtl;text-align:right;}' +
+        '.rx-footer{margin-top:34px;text-align:center;font-size:.76rem;color:#4A6067;border-top:1px solid #DCE8E8;padding-top:12px;direction:rtl;}' +
         '@media print{ body{padding:14px 18px;} }' +
       '</style></head><body>' +
         '<div class="rx-head">' +
@@ -3335,7 +3432,6 @@
         '</div>' +
         '<div class="rx-symbol">℞</div>' +
         '<ul class="rx-list">' + drugsHtml + '</ul>' +
-        (notes ? '<div class="rx-notes"><b>ملاحظات:</b> ' + escapeHtml(notes) + '</div>' : '') +
         '<p class="rx-footer">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p>' +
       '</body></html>';
 
