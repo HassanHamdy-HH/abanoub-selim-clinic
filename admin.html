@@ -626,6 +626,7 @@
   }
   .pf-tooth-btn.affected{background:#FBEAEA;border-color:#D64545;color:#D64545;}
   .pf-tooth-btn.treated{background:#E7F6EE;border-color:#1E9E5A;color:#1E9E5A;}
+  .pf-tooth-swipe{display:none;text-align:center;font-size:.76rem;color:var(--ink-soft);margin-top:6px;}
   .pf-tooth-legend{display:flex;gap:16px;margin-top:8px;font-size:.76rem;color:var(--ink-soft);flex-wrap:wrap;}
   .pf-tooth-dot{width:12px;height:12px;border-radius:3px;display:inline-block;vertical-align:middle;margin-left:4px;}
   .pf-tooth-dot.normal{background:#fff;border:1px solid var(--line);}
@@ -882,13 +883,14 @@
     .pf-xray-grid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr));}
     .pf-xray-item .pf-xray-del{width:30px;height:30px;font-size:.85rem;}
 
-    /* خريطة الأسنان: كل جهة في سطر لوحدها بأزرار كبيرة سهلة اللمس، ومفيش حاجة بتتقطع */
-    .pf-tooth-chart{padding:8px;gap:8px;}
-    .pf-tooth-row{flex-direction:column;gap:10px;background:rgba(255,255,255,.65);border-radius:10px;padding:6px;}
-    .pf-tooth-divider{display:none;}
-    .pf-tooth-half{flex:0 0 auto;width:100%;}
-    .pf-tooth-half::before{display:block;}
-    .pf-tooth-btn{height:40px;max-width:none;font-size:.9rem;}
+    /* خريطة الأسنان: جدول واحد زي الورقة، بتسحبه يمين وشمال */
+    .pf-tooth-chart{padding:10px;gap:8px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:thin;}
+    .pf-tooth-row{flex-wrap:nowrap;width:max-content;min-width:100%;gap:8px;justify-content:flex-start;}
+    .pf-tooth-half{flex:0 0 auto;flex-wrap:nowrap;gap:4px;}
+    .pf-tooth-half::before{display:none;}
+    .pf-tooth-divider{display:block;}
+    .pf-tooth-btn{flex:0 0 auto;width:40px;height:42px;max-width:none;font-size:.9rem;}
+    .pf-tooth-swipe{display:block;}
 
     /* الروشتة: الاسم وزرار الحذف في سطر، والـmg والجرعة في سطر */
     .rx-drug-item{padding:10px;}
@@ -1646,6 +1648,7 @@
         <div class="modal-field">
           <label>خريطة الأسنان<span class="lbl-note">دوس على السنة عشان تعلّم عليها (الجانب الأيمن/الأيسر زي ما هو مرسوم في الورقة)</span></label>
           <div class="pf-tooth-chart" id="pfToothChart"></div>
+          <div class="pf-tooth-swipe">↔ اسحب الجدول يمين وشمال عشان تشوف كل الأسنان</div>
           <div class="pf-tooth-legend">
             <span><i class="pf-tooth-dot normal"></i> سليمة</span>
             <span><i class="pf-tooth-dot affected"></i> فيها مشكلة</span>
