@@ -571,7 +571,8 @@
   .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus{outline:2px solid var(--gold);outline-offset:1px;}
 
   /* ---------- PATIENT FILE (digital patient sheet) ---------- */
-  .patient-file-modal{max-width:720px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+  html,body{overscroll-behavior-x:none;}
+  .patient-file-modal{max-width:720px;overscroll-behavior:contain;overscroll-behavior-x:none;-webkit-overflow-scrolling:touch;}
   .patient-file-modal .pf-modal-head{
     position:sticky;top:-28px;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:10px;
     background:#fff;margin:-28px -26px 14px;padding:18px 26px 12px;border-bottom:1px solid var(--line);
@@ -626,7 +627,8 @@
   }
   .pf-tooth-btn.affected{background:#FBEAEA;border-color:#D64545;color:#D64545;}
   .pf-tooth-btn.treated{background:#E7F6EE;border-color:#1E9E5A;color:#1E9E5A;}
-  .pf-tooth-swipe{display:none;text-align:center;font-size:.76rem;color:var(--ink-soft);margin-top:6px;}
+  .pf-tooth-swipe{display:none;align-items:center;justify-content:space-between;gap:6px;font-size:.74rem;color:var(--ink-soft);margin-top:8px;direction:ltr;}
+  .pf-tooth-jump{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px;font:inherit;font-weight:700;color:var(--ink-soft);cursor:pointer;touch-action:manipulation;}
   .pf-tooth-legend{display:flex;gap:16px;margin-top:8px;font-size:.76rem;color:var(--ink-soft);flex-wrap:wrap;}
   .pf-tooth-dot{width:12px;height:12px;border-radius:3px;display:inline-block;vertical-align:middle;margin-left:4px;}
   .pf-tooth-dot.normal{background:#fff;border:1px solid var(--line);}
@@ -884,13 +886,13 @@
     .pf-xray-item .pf-xray-del{width:30px;height:30px;font-size:.85rem;}
 
     /* خريطة الأسنان: جدول واحد زي الورقة، بتسحبه يمين وشمال */
-    .pf-tooth-chart{padding:10px;gap:8px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:thin;}
+    .pf-tooth-chart{padding:10px;gap:8px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:none;touch-action:pan-x pan-y;scrollbar-width:thin;}
     .pf-tooth-row{flex-wrap:nowrap;width:max-content;min-width:100%;gap:8px;justify-content:flex-start;}
     .pf-tooth-half{flex:0 0 auto;flex-wrap:nowrap;gap:4px;}
     .pf-tooth-half::before{display:none;}
     .pf-tooth-divider{display:block;}
     .pf-tooth-btn{flex:0 0 auto;width:40px;height:42px;max-width:none;font-size:.9rem;}
-    .pf-tooth-swipe{display:block;}
+    .pf-tooth-swipe{display:flex;}
 
     /* الروشتة: الاسم وزرار الحذف في سطر، والـmg والجرعة في سطر */
     .rx-drug-item{padding:10px;}
@@ -1648,7 +1650,11 @@
         <div class="modal-field">
           <label>خريطة الأسنان<span class="lbl-note">دوس على السنة عشان تعلّم عليها (الجانب الأيمن/الأيسر زي ما هو مرسوم في الورقة)</span></label>
           <div class="pf-tooth-chart" id="pfToothChart"></div>
-          <div class="pf-tooth-swipe">↔ اسحب الجدول يمين وشمال عشان تشوف كل الأسنان</div>
+          <div class="pf-tooth-swipe">
+            <button type="button" class="pf-tooth-jump" id="pfToothJumpLeft">⇤ الجانب الأيسر (8)</button>
+            <span>↔ اسحب الجدول</span>
+            <button type="button" class="pf-tooth-jump" id="pfToothJumpRight">الجانب الأيمن (8) ⇥</button>
+          </div>
           <div class="pf-tooth-legend">
             <span><i class="pf-tooth-dot normal"></i> سليمة</span>
             <span><i class="pf-tooth-dot affected"></i> فيها مشكلة</span>
@@ -3115,6 +3121,11 @@
   function renderToothChart(){
     var chart = document.getElementById('pfToothChart');
     chart.innerHTML = '';
+    chart.setAttribute('dir', 'ltr');
+    var jl = document.getElementById('pfToothJumpLeft'), jr = document.getElementById('pfToothJumpRight');
+    if (jl && !jl._b){ jl._b = 1; jl.addEventListener('click', function(){ chart.scrollTo({left:0, behavior:'smooth'}); }); }
+    if (jr && !jr._b){ jr._b = 1; jr.addEventListener('click', function(){ chart.scrollTo({left:chart.scrollWidth, behavior:'smooth'}); }); }
+    chart.scrollLeft = 0;
 
     ['U', 'L'].forEach(function(rowPrefix){
       var row = document.createElement('div');
