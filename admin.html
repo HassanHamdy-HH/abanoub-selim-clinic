@@ -931,7 +931,33 @@
 
     table.bookings{font-size:.8rem;}
     table.bookings th, table.bookings td{padding:8px 10px;white-space:nowrap;}
+
+    /* ===== واجهة الهاتف: الصفوف تتحول لكروت بدل جدول عريض ===== */
+    .patients-toolbar{flex-wrap:wrap;gap:8px;}
+    .patients-toolbar input{flex:1 1 100%;min-width:0;}
+    .patients-toolbar select{flex:1 1 auto;min-width:0;}
+    .table-card .table-wrap{overflow-x:visible;}
+    table.bookings.cards-mobile{min-width:0;width:100%;display:block;}
+    table.bookings.cards-mobile thead{display:none;}
+    table.bookings.cards-mobile tbody{display:flex;flex-direction:column;gap:10px;padding:10px;}
+    table.bookings.cards-mobile tbody tr{
+      display:flex;flex-direction:column;gap:2px;
+      background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 14px;
+    }
+    table.bookings.cards-mobile tbody td{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      border:none !important;padding:5px 0;white-space:normal;text-align:left;
+      border-bottom:1px dashed var(--line) !important;
+    }
+    table.bookings.cards-mobile tbody td:last-child{border-bottom:none !important;}
+    table.bookings.cards-mobile tbody td::before{
+      content:attr(data-l);font-size:.72rem;font-weight:700;color:var(--ink-soft);flex:0 0 auto;text-align:right;
+    }
+    table.bookings.cards-mobile .row-actions{flex-wrap:wrap;gap:6px;}
+    table.bookings.cards-mobile .mini-btn{padding:8px 12px;min-height:36px;}
+    table.bookings.cards-mobile td.name-cell{white-space:normal;}
   }
+  html,body{max-width:100%;overflow-x:clip;}
 </style>
 <script>
   // تطبيق السمة المحفوظة فورًا قبل ما الصفحة تتحمّل، عشان محدش يشوف ومضة اللون الافتراضي
@@ -1050,7 +1076,7 @@
 
     <div class="table-card" id="tableView">
       <div class="table-wrap">
-        <table class="bookings">
+        <table class="bookings cards-mobile">
           <thead>
             <tr>
               <th>التاريخ</th>
@@ -1146,7 +1172,7 @@
 
       <div class="table-card">
         <div class="table-wrap">
-          <table class="bookings">
+          <table class="bookings cards-mobile">
             <thead>
               <tr>
                 <th>التاريخ</th>
@@ -2849,16 +2875,16 @@
 
       var tr = document.createElement('tr');
       tr.innerHTML =
-        '<td>' + formatDateLabel(b.dayIso) + '</td>' +
-        '<td class="name-cell">' + escapeHtml(b.name) + '</td>' +
-        '<td>' + escapeHtml(serviceName) + '</td>' +
-        '<td>' + pmHtml + '</td>' +
-        '<td>' + b.paidAmount.toLocaleString('ar-EG') + '</td>' +
-        '<td>' + (remaining > 0
+        '<td data-l="التاريخ">' + formatDateLabel(b.dayIso) + '</td>' +
+        '<td data-l="المريض" class="name-cell">' + escapeHtml(b.name) + '</td>' +
+        '<td data-l="الإجراء">' + escapeHtml(serviceName) + '</td>' +
+        '<td data-l="الدفع">' + pmHtml + '</td>' +
+        '<td data-l="المدفوع">' + b.paidAmount.toLocaleString('ar-EG') + '</td>' +
+        '<td data-l="الباقي">' + (remaining > 0
           ? '<span class="badge pending">' + remaining.toLocaleString('ar-EG') + '</span>'
           : '<span class="badge confirmed">متحصّل</span>') + '</td>' +
-        '<td>' + b.totalAmount.toLocaleString('ar-EG') + '</td>' +
-        '<td><div class="row-actions"></div></td>';
+        '<td data-l="الإجمالي">' + b.totalAmount.toLocaleString('ar-EG') + '</td>' +
+        '<td data-l="إجراءات"><div class="row-actions"></div></td>';
 
       var actions = tr.querySelector('.row-actions');
       var editBtn = document.createElement('button');
@@ -4908,14 +4934,14 @@
       var waPhone = b.phone.replace(/^0/, '20');
 
       tr.innerHTML =
-        '<td>' + formatDateLabel(b.dayIso) + '</td>' +
-        '<td>' + slotLabel + '</td>' +
-        '<td class="name-cell">' + escapeHtml(b.name) + '</td>' +
-        '<td class="phone-cell">' + escapeHtml(b.phone) + '</td>' +
-        '<td><span class="badge ' + badgeClass + '"><span class="dot"></span>' + badgeText + '</span></td>' +
-        '<td>' + sourceText + '</td>' +
-        '<td class="notes-cell"></td>' +
-        '<td><div class="row-actions"></div></td>';
+        '<td data-l="التاريخ">' + formatDateLabel(b.dayIso) + '</td>' +
+        '<td data-l="الساعة">' + slotLabel + '</td>' +
+        '<td data-l="المريض" class="name-cell">' + escapeHtml(b.name) + '</td>' +
+        '<td data-l="الموبايل" class="phone-cell">' + escapeHtml(b.phone) + '</td>' +
+        '<td data-l="الحالة"><span class="badge ' + badgeClass + '"><span class="dot"></span>' + badgeText + '</span></td>' +
+        '<td data-l="المصدر">' + sourceText + '</td>' +
+        '<td data-l="ملاحظات" class="notes-cell"></td>' +
+        '<td data-l="إجراءات"><div class="row-actions"></div></td>';
 
       var notesCell = tr.querySelector('.notes-cell');
       var notesBtn = document.createElement('button');
