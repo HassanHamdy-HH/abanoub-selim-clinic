@@ -371,6 +371,16 @@
   }
   .envelope-balance-label{font-size:.82rem;color:#B9D9DB;font-weight:700;}
   .envelope-balance-box strong{font-family:'Tajawal',sans-serif;font-weight:900;font-size:1.9rem;color:#fff;}
+  .envelope-wallets{display:flex;gap:10px;width:100%;margin-top:12px;}
+  .envelope-wallet{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:10px 6px;min-width:0;}
+  .envelope-wallet span{font-size:.76rem;color:#B9D9DB;font-weight:700;}
+  .envelope-wallet strong{font-size:1.15rem !important;white-space:nowrap;}
+  .envelope-wallet-pick{display:flex;gap:8px;margin-bottom:10px;}
+  .envelope-wallet-pick label{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:10px 8px;font-size:.86rem;font-weight:700;color:var(--ink-soft);cursor:pointer;background:#fff;}
+  .envelope-wallet-pick input{accent-color:var(--deep-teal);}
+  .envelope-wallet-pick label.on{border-color:var(--deep-teal);background:var(--pale-aqua);color:var(--deep-teal);}
+  .eh-wallet{display:inline-block;font-size:.68rem;font-weight:700;padding:1px 8px;border-radius:999px;background:#E3EEF0;color:var(--deep-teal);margin-right:6px;}
+  .eh-wallet.vf{background:#FFE9E9;color:#C0392B;}
   .envelope-history-title{font-size:.85rem;color:var(--ink-soft);margin:16px 0 10px;font-weight:700;}
   .envelope-history-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;}
   .eh-row{
@@ -655,6 +665,23 @@
   .pf-xray-item .pf-xray-del:hover{background:#D64545;}
 
   .rx-search-wrap{position:relative;}
+  .rx-manual-btn{margin-top:8px;width:100%;justify-content:center;}
+  .rx-manual-box{display:none;margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:var(--pale-aqua);}
+  .rx-manual-box.show{display:block;}
+  .rx-manual-row{display:grid;grid-template-columns:1.6fr .8fr auto;gap:8px;align-items:center;}
+  .rx-manual-row input{padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;min-width:0;background:#fff;}
+  .rx-xray-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .rx-xray-btns .btn{flex:1 1 auto;justify-content:center;}
+  .rx-xray-item{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;}
+  .rx-xray-item .rx-xray-type{font-weight:700;color:var(--deep-teal);font-size:.86rem;direction:ltr;text-align:left;}
+  .rx-xray-item input{padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;min-width:0;width:100%;}
+  .rx-xray-item .rx-xray-note{grid-column:1/-1;}
+  .rx-xray-item .rx-teeth-summary{font-size:.82rem;color:var(--ink-soft);direction:ltr;text-align:left;min-width:0;overflow-wrap:anywhere;}
+  .rx-xray-item .rx-teeth-wrap{grid-column:1/-1;min-width:0;}
+  .rx-xray-item .rx-teeth-wrap .pf-tooth-chart{margin:0;}
+  .pf-tooth-btn.xray-sel{background:#E6F2FF;border-color:#1F6FD1;color:#1F6FD1;box-shadow:0 0 0 2px rgba(31,111,209,.18);}
+  .rx-teeth-tools{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:6px;font-size:.74rem;color:var(--ink-soft);}
+  .rx-teeth-tools button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font:inherit;font-weight:700;color:var(--ink-soft);cursor:pointer;touch-action:manipulation;}
   .rx-drug-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
   .rx-drug-item{
     border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--pale-aqua);
@@ -1054,9 +1081,9 @@
         <option value="pending">في انتظار التأكيد</option>
         <option value="confirmed">تم تأكيدها</option>
       </select>
-      <select id="dateFilter">
+      <select id="dateFilter" autocomplete="off">
         <option value="all">كل التواريخ</option>
-        <option value="today">النهاردة بس</option>
+        <option value="today" selected>النهاردة بس</option>
         <option value="upcoming">القادمة فقط</option>
         <optgroup label="يوم معيّن" id="dateFilterDays"></optgroup>
       </select>
@@ -1161,9 +1188,9 @@
 
       <div class="toolbar">
         <input type="text" id="accountsSearchInput" placeholder="دور باسم المريض...">
-        <select id="accountsFilter">
+        <select id="accountsFilter" autocomplete="off">
           <option value="all">كل الحالات</option>
-          <option value="open">عليها باقي بس</option>
+          <option value="open" selected>عليها باقي بس</option>
           <option value="settled">متحصّلة بالكامل</option>
         </select>
         <input type="date" id="accountsDateFilter" title="فلتر بتاريخ معيّن">
@@ -1274,11 +1301,21 @@
         <div class="envelope-balance-box">
           <span class="envelope-balance-label">الرصيد الحالي</span>
           <strong id="envelopeBalance">0 جنيه</strong>
+          <div class="envelope-wallets">
+            <div class="envelope-wallet"><span>💵 كاش</span><strong id="envelopeCashBalance">0 جنيه</strong></div>
+            <div class="envelope-wallet"><span>📱 فودافون كاش</span><strong id="envelopeVfBalance">0 جنيه</strong></div>
+          </div>
+        </div>
+
+        <div class="envelope-wallet-pick" id="envelopeWalletPick">
+          <label class="on"><input type="radio" name="envelopeWallet" value="cash" checked> 💵 كاش</label>
+          <label><input type="radio" name="envelopeWallet" value="vodafone_cash"> 📱 فودافون كاش</label>
         </div>
 
         <div class="ds-btn-row">
           <button class="cta-btn gold" id="envelopeDepositBtn" style="width:100%;justify-content:center;">➕ إضافة للظرف</button>
           <button class="btn btn-outline" id="envelopeWithdrawBtn" style="width:100%;justify-content:center;">➖ سحب من الظرف</button>
+          <button class="btn btn-outline" id="envelopeTransferBtn" style="width:100%;justify-content:center;">🔁 تحويل بين كاش وفودافون كاش</button>
         </div>
 
         <h4 class="envelope-history-title">آخر الحركات</h4>
@@ -1772,8 +1809,27 @@
           <input type="text" id="rxDrugSearch" placeholder="اكتب اسم الدواء...">
           <div class="patient-suggest-list" id="rxDrugSuggest"></div>
         </div>
-        <div class="rx-drug-list" id="rxDrugList"></div>
+        <button type="button" class="btn btn-outline rx-manual-btn" id="rxManualToggle">✍️ إضافة دواء يدويًا (مش في القايمة)</button>
+        <div class="rx-manual-box" id="rxManualBox">
+          <div class="rx-manual-row">
+            <input type="text" id="rxManualName" dir="auto" placeholder="اسم الدواء">
+            <input type="number" id="rxManualMg" min="0" placeholder="mg (اختياري)">
+            <button type="button" class="cta-btn gold" id="rxManualAdd" style="padding:9px 16px;">إضافة</button>
+          </div>
+        </div>
+        <div class="rx-drug-list" id="rxDrugList" style="margin-top:10px;"></div>
         <div class="empty-mini" id="rxDrugEmpty">لسه مفيش أدوية مضافة للروشتة دي.</div>
+      </div>
+
+      <div class="modal-field">
+        <label>طلب أشعة</label>
+        <div class="rx-xray-btns">
+          <button type="button" class="btn btn-outline" id="rxAddPeriapical">🦷 أشعة على سنة / أسنان معينة</button>
+          <button type="button" class="btn btn-outline" id="rxAddPanorama">🩻 بانوراما</button>
+          <button type="button" class="btn btn-outline" id="rxAddCbct">🧊 CBCT</button>
+        </div>
+        <div id="rxXrayList"></div>
+        <div class="empty-mini" id="rxXrayEmpty">مفيش أشعة مطلوبة في الروشتة دي.</div>
       </div>
 
       <div class="ds-btn-row">
@@ -1872,10 +1928,13 @@
 <script>
   // ====== Staff PINs — 2018/2005 log in with a fixed name; 2026 asks for the name each time ======
   var STAFF_PINS = {
-    '2018': 'دكتور أبانوب',
-    '2026': null, // null = ask for the name every time (original behavior)
-    '2005': 'حسن حمدي'
+    '2018': 'Dr. Abanoub Selim',
+    '2026': 'الفريق',
+    '2005': 'Dr. Hassan Hamdy'
   };
+  // أسماء قديمة اتسجلت قبل كده → الاسم الجديد
+  var STAFF_NAME_ALIASES = { 'دكتور أبانوب': 'Dr. Abanoub Selim', 'حسن حمدي': 'Dr. Hassan Hamdy' };
+  function normalizeStaffName(n){ return (n && STAFF_NAME_ALIASES[n]) || n || ''; }
 
   // ====== Theme switcher (works regardless of login state) ======
   (function(){
@@ -2094,7 +2153,7 @@
     }
   }
   function getStaffName(){
-    return sessionStorage.getItem('staffName') || 'الفريق';
+    return normalizeStaffName(sessionStorage.getItem('staffName')) || 'الفريق';
   }
   function logActivity(action, text){
     if(!firestoreDb) return;
@@ -2140,6 +2199,8 @@
           gender: data.gender || '',
           status: data.status || 'pending',
           bookedBy: data.bookedBy || 'patient',
+          bookedByName: data.bookedByName || '',
+          lastEditedBy: data.lastEditedBy || '',
           notes: data.notes || '',
           services: data.services || (data.service ? [data.service] : []),
           serviceDiscounts: data.serviceDiscounts || {},
@@ -2341,6 +2402,20 @@
     document.getElementById('rxPrintBtn').addEventListener('click', printRxPrescription);
     document.getElementById('rxWhatsappBtn').addEventListener('click', sendRxOnWhatsapp);
     document.getElementById('rxDeleteBtn').addEventListener('click', deleteRxSheet);
+    document.getElementById('rxManualToggle').addEventListener('click', function(){
+      var box = document.getElementById('rxManualBox');
+      box.classList.toggle('show');
+      if(box.classList.contains('show')){
+        var q = document.getElementById('rxDrugSearch').value.trim();
+        if(q){ document.getElementById('rxManualName').value = q; }
+        document.getElementById('rxManualName').focus();
+      }
+    });
+    document.getElementById('rxManualAdd').addEventListener('click', addManualRxDrug);
+    document.getElementById('rxManualName').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); addManualRxDrug(); } });
+    document.getElementById('rxAddPeriapical').addEventListener('click', function(){ rxXrays.push({ type: 'periapical', teeth: '', note: '' }); renderRxXrayList(); });
+    document.getElementById('rxAddPanorama').addEventListener('click', function(){ rxXrays.push({ type: 'panorama', teeth: '', note: '' }); renderRxXrayList(); });
+    document.getElementById('rxAddCbct').addEventListener('click', function(){ rxXrays.push({ type: 'cbct', teeth: '', note: '' }); renderRxXrayList(); });
     document.getElementById('rxDrugSearch').addEventListener('input', function(){
       var q = this.value.trim().toLowerCase();
       var listEl = document.getElementById('rxDrugSuggest');
@@ -2351,7 +2426,22 @@
         return (m.name + ' ' + m.category).toLowerCase().indexOf(q) !== -1;
       }).slice(0, 8);
 
-      if(matches.length === 0){ listEl.classList.remove('show'); return; }
+      var rawQ = this.value.trim();
+      var addManualItem = function(){
+        var mi = document.createElement('div');
+        mi.className = 'patient-suggest-item';
+        mi.innerHTML = '<span class="ps-name"></span><span class="ps-phone">دواء يدوي</span>';
+        mi.querySelector('.ps-name').textContent = '➕ إضافة «' + rawQ + '» كدواء يدوي';
+        mi.addEventListener('click', function(){
+          rxDrugs.push({ name: rawQ, mg: null, dosage: '', manual: true });
+          renderRxDrugList();
+          document.getElementById('rxDrugSearch').value = '';
+          listEl.innerHTML = '';
+          listEl.classList.remove('show');
+        });
+        listEl.appendChild(mi);
+      };
+      if(matches.length === 0){ addManualItem(); listEl.classList.add('show'); return; }
       matches.forEach(function(m){
         var item = document.createElement('div');
         item.className = 'patient-suggest-item';
@@ -2367,6 +2457,7 @@
         });
         listEl.appendChild(item);
       });
+      addManualItem();
       listEl.classList.add('show');
     });
 
@@ -2509,22 +2600,45 @@
       if(amount > currentExpensePool){ alert('المبلغ أكبر من الباقي المتاح في المصاريف.'); return; }
       transferDoctorAdjustment(dayIso, -amount);
     });
+    document.querySelectorAll('#envelopeWalletPick input').forEach(function(r){
+      r.addEventListener('change', function(){
+        document.querySelectorAll('#envelopeWalletPick label').forEach(function(l){ l.classList.toggle('on', l.querySelector('input').checked); });
+      });
+    });
+    function selectedEnvelopeWallet(){
+      var r = document.querySelector('#envelopeWalletPick input:checked');
+      return r ? r.value : 'cash';
+    }
     document.getElementById('envelopeDepositBtn').addEventListener('click', function(){
-      var amountStr = prompt('قد إيه عايز تضيف للظرف؟', '');
+      var wallet = selectedEnvelopeWallet();
+      var amountStr = prompt('قد إيه عايز تضيف لـ ' + ENVELOPE_WALLET_LABELS[wallet] + '؟', '');
       if(amountStr === null) return;
       var amount = parseFloat(amountStr);
       if(isNaN(amount) || amount <= 0){ alert('اكتب مبلغ صحيح أكبر من صفر.'); return; }
       var reason = prompt('سبب الإضافة (اختياري):', '') || '';
-      addEnvelopeTransaction(amount, reason);
+      addEnvelopeTransaction(amount, reason, wallet);
     });
     document.getElementById('envelopeWithdrawBtn').addEventListener('click', function(){
-      var currentBalance = getEnvelopeBalance();
-      var amountStr = prompt('قد إيه عايز تسحب من الظرف؟ (الرصيد الحالي: ' + currentBalance.toLocaleString('ar-EG') + ' جنيه)', '');
+      var wallet = selectedEnvelopeWallet();
+      var currentBalance = getEnvelopeBalance(wallet);
+      var amountStr = prompt('قد إيه عايز تسحب من ' + ENVELOPE_WALLET_LABELS[wallet] + '؟ (الرصيد الحالي: ' + currentBalance.toLocaleString('ar-EG') + ' جنيه)', '');
       if(amountStr === null) return;
       var amount = parseFloat(amountStr);
       if(isNaN(amount) || amount <= 0){ alert('اكتب مبلغ صحيح أكبر من صفر.'); return; }
+      if(amount > currentBalance && !confirm('المبلغ أكبر من رصيد ' + ENVELOPE_WALLET_LABELS[wallet] + ' الحالي. تكمل برضو؟')) return;
       var reason = prompt('سبب السحب (اختياري):', '') || '';
-      addEnvelopeTransaction(-amount, reason);
+      addEnvelopeTransaction(-amount, reason, wallet);
+    });
+    document.getElementById('envelopeTransferBtn').addEventListener('click', function(){
+      var from = selectedEnvelopeWallet();
+      var to = from === 'cash' ? 'vodafone_cash' : 'cash';
+      var fromBalance = getEnvelopeBalance(from);
+      var amountStr = prompt('قد إيه عايز تحوّل من ' + ENVELOPE_WALLET_LABELS[from] + ' إلى ' + ENVELOPE_WALLET_LABELS[to] + '؟ (رصيد ' + ENVELOPE_WALLET_LABELS[from] + ': ' + fromBalance.toLocaleString('ar-EG') + ' جنيه)', '');
+      if(amountStr === null) return;
+      var amount = parseFloat(amountStr);
+      if(isNaN(amount) || amount <= 0){ alert('اكتب مبلغ صحيح أكبر من صفر.'); return; }
+      if(amount > fromBalance && !confirm('المبلغ أكبر من رصيد ' + ENVELOPE_WALLET_LABELS[from] + ' الحالي. تكمل برضو؟')) return;
+      transferEnvelopeWallets(amount, from, to);
     });
     document.getElementById('wipeFinancialBtn').addEventListener('click', wipeFinancialData);
     document.getElementById('dailySummaryDate').addEventListener('change', renderDailySummary);
@@ -2776,7 +2890,7 @@
       'الموبايل: ' + b.phone,
       'الميعاد: ' + formatDateLabel(b.dayIso) + ' — ' + slotLabel,
       'الحالة: ' + (b.status === 'confirmed' ? 'تم التأكيد' : b.status === 'no_show' ? 'لم يحضر' : b.status === 'awaiting' ? 'لسه المريض ما أكدش' : 'في الانتظار'),
-      'المصدر: ' + (b.bookedBy === 'staff' ? 'الفريق' : 'الموقع')
+      'المصدر: ' + (b.bookedBy === 'staff' ? (normalizeStaffName(b.bookedByName) || 'الفريق') : 'الموقع')
     ];
     if(b.notes) lines.push('ملاحظات: ' + b.notes);
     var msg = lines.join('\n') + '\n\nاختر إجراء:\n- اكتب "تأكيد" للتأكيد\n- اكتب "إلغاء" للإلغاء\n- سيب فاضي وألغِ للخروج';
@@ -3253,6 +3367,175 @@
   var pendingPrescriptionPatient = null;
   var rxCurrentSheetId = null;
   var rxDrugs = []; // [{ name, mg, dosage }]
+  var rxXrays = []; // [{ type: 'periapical'|'panorama'|'cbct', teeth, note }]
+  var RX_XRAY_LABELS = {
+    periapical: { ar: 'أشعة على سنة / أسنان', en: 'Periapical X-ray' },
+    panorama:   { ar: 'بانوراما', en: 'Panoramic X-ray (OPG)' },
+    cbct:       { ar: 'CBCT', en: 'CBCT' }
+  };
+
+  var RX_QUAD_NAMES = { UL: 'Upper Left', UR: 'Upper Right', LL: 'Lower Left', LR: 'Lower Right' };
+
+  // key = U|L (الفك) + L|R (الجانب زي الجدول) + رقم السنة  — مثال: ULL6 → UL6
+  function rxTeethSelectionText(sel){
+    var groups = { UR: [], UL: [], LR: [], LL: [] };
+    Object.keys(sel || {}).forEach(function(k){
+      if(!sel[k]) return;
+      var jaw = k.charAt(0), side = k.charAt(1), n = parseInt(k.slice(2), 10);
+      var g = jaw + side;
+      if(groups[g]) groups[g].push(n);
+    });
+    var parts = [];
+    ['UL', 'UR', 'LL', 'LR'].forEach(function(g){
+      if(groups[g].length){
+        groups[g].sort(function(a, b){ return a - b; });
+        parts.push(RX_QUAD_NAMES[g] + ': ' + groups[g].join(', '));
+      }
+    });
+    return parts.join(' | ');
+  }
+
+  function buildRxTeethPicker(x, onChange){
+    var wrap = document.createElement('div');
+    wrap.className = 'rx-teeth-wrap';
+    var chart = document.createElement('div');
+    chart.className = 'pf-tooth-chart';
+    chart.setAttribute('dir', 'ltr');
+
+    ['U', 'L'].forEach(function(jaw){
+      var row = document.createElement('div');
+      row.className = 'pf-tooth-row';
+      var leftHalf = document.createElement('div');
+      leftHalf.className = 'pf-tooth-half';
+      var divider = document.createElement('div');
+      divider.className = 'pf-tooth-divider';
+      var rightHalf = document.createElement('div');
+      rightHalf.className = 'pf-tooth-half';
+
+      var addBtn = function(half, side, n){
+        var key = jaw + side + n;
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pf-tooth-btn' + (x.teethSel[key] ? ' xray-sel' : '');
+        btn.textContent = n;
+        btn.setAttribute('aria-label', 'سنة رقم ' + n);
+        btn.addEventListener('click', function(){
+          if(x.teethSel[key]){ delete x.teethSel[key]; btn.classList.remove('xray-sel'); }
+          else { x.teethSel[key] = true; btn.classList.add('xray-sel'); }
+          onChange();
+        });
+        half.appendChild(btn);
+      };
+      TOOTH_NUMBERS.forEach(function(n){ addBtn(leftHalf, 'L', n); });
+      TOOTH_NUMBERS.slice().reverse().forEach(function(n){ addBtn(rightHalf, 'R', n); });
+
+      row.appendChild(leftHalf);
+      row.appendChild(divider);
+      row.appendChild(rightHalf);
+      chart.appendChild(row);
+    });
+    wrap.appendChild(chart);
+
+    var tools = document.createElement('div');
+    tools.className = 'rx-teeth-tools';
+    var clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.textContent = 'مسح الاختيار';
+    clearBtn.addEventListener('click', function(){
+      x.teethSel = {};
+      chart.querySelectorAll('.xray-sel').forEach(function(b){ b.classList.remove('xray-sel'); });
+      onChange();
+    });
+    var hint = document.createElement('span');
+    hint.textContent = '↔ اسحب الجدول لو مش باين كله';
+    tools.appendChild(clearBtn);
+    tools.appendChild(hint);
+    wrap.appendChild(tools);
+    return wrap;
+  }
+
+  function renderRxXrayList(){
+    var listEl = document.getElementById('rxXrayList');
+    var emptyEl = document.getElementById('rxXrayEmpty');
+    listEl.innerHTML = '';
+    emptyEl.style.display = rxXrays.length ? 'none' : 'block';
+    rxXrays.forEach(function(x, idx){
+      var meta = RX_XRAY_LABELS[x.type] || RX_XRAY_LABELS.periapical;
+      var row = document.createElement('div');
+      row.className = 'rx-xray-item';
+      var typeSpan = document.createElement('span');
+      typeSpan.className = 'rx-xray-type';
+      typeSpan.textContent = meta.en;
+      row.appendChild(typeSpan);
+
+      var teethInput = document.createElement('input');
+      teethInput.type = 'text';
+      teethInput.setAttribute('dir', 'auto');
+      var teethSummary = null;
+      if(x.type === 'panorama'){
+        teethInput.style.visibility = 'hidden';
+        row.appendChild(teethInput);
+      } else if(x.type === 'periapical'){
+        x.teethSel = x.teethSel || {};
+        teethSummary = document.createElement('div');
+        teethSummary.className = 'rx-teeth-summary';
+        var legacyText = (!Object.keys(x.teethSel).length && x.teeth) ? x.teeth : '';
+        var refreshSummary = function(){
+          var t = rxTeethSelectionText(x.teethSel);
+          if(t){ legacyText = ''; }
+          x.teeth = t || legacyText;
+          teethSummary.textContent = x.teeth || 'اختار الأسنان من الجدول ↓';
+        };
+        refreshSummary();
+        row.appendChild(teethSummary);
+      } else {
+        teethInput.placeholder = 'المنطقة (اختياري) — مثال: الفك السفلي / 36-37';
+        teethInput.value = x.teeth || '';
+        teethInput.addEventListener('input', function(){ x.teeth = teethInput.value; });
+        row.appendChild(teethInput);
+      }
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'rx-drug-remove';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', function(){ rxXrays.splice(idx, 1); renderRxXrayList(); });
+      row.appendChild(removeBtn);
+
+      if(x.type === 'periapical'){
+        row.appendChild(buildRxTeethPicker(x, refreshSummary));
+      }
+
+      var noteInput = document.createElement('input');
+      noteInput.type = 'text';
+      noteInput.setAttribute('dir', 'auto');
+      noteInput.className = 'rx-xray-note';
+      noteInput.placeholder = 'ملاحظة (اختياري)...';
+      noteInput.value = x.note || '';
+      noteInput.addEventListener('input', function(){ x.note = noteInput.value; });
+      row.appendChild(noteInput);
+
+      listEl.appendChild(row);
+    });
+  }
+
+  function addManualRxDrug(){
+    var nameEl = document.getElementById('rxManualName');
+    var mgEl = document.getElementById('rxManualMg');
+    var name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    rxDrugs.push({ name: name, mg: mgEl.value ? parseFloat(mgEl.value) : null, dosage: '', manual: true });
+    nameEl.value = ''; mgEl.value = '';
+    renderRxDrugList();
+    nameEl.focus();
+  }
+
+  function rxXrayText(x){
+    var meta = RX_XRAY_LABELS[x.type] || RX_XRAY_LABELS.periapical;
+    var t = meta.en;
+    if(x.teeth && x.teeth.trim()){ t += ' — ' + (x.type === 'cbct' ? 'Region: ' : 'Teeth: ') + x.teeth.trim(); }
+    return t;
+  }
 
   function watchPrescriptions(){
     if(!firestoreDb) return;
@@ -3298,11 +3581,13 @@
 
     sheets.forEach(function(s){
       var drugNames = (s.drugs || []).map(function(d){ return d.name; }).join('، ');
+      var xrayNames = (s.xrays || []).map(function(x){ return (RX_XRAY_LABELS[x.type] || {}).ar || ''; }).filter(Boolean).join('، ');
+      var titleText = drugNames + (drugNames && xrayNames ? ' + ' : '') + (xrayNames ? 'أشعة: ' + xrayNames : '');
       var item = document.createElement('div');
       item.className = 'pf-sheet-item';
       item.innerHTML =
         '<div class="pfs-info">' +
-          '<b>' + escapeHtml(drugNames || 'روشتة بدون أدوية') + '</b>' +
+          '<b>' + escapeHtml(titleText || 'روشتة فاضية') + '</b>' +
           '<span>بتاريخ ' + (s.date ? formatDateLabel(s.date) : '—') + '</span>' +
         '</div>';
       var openBtn = document.createElement('button');
@@ -3334,7 +3619,12 @@
     document.getElementById('rxDrugSuggest').classList.remove('show');
 
     rxDrugs = (s.drugs || []).map(function(d){ return Object.assign({}, d); });
+    rxXrays = (s.xrays || []).map(function(x){ return Object.assign({}, x); });
+    document.getElementById('rxManualBox').classList.remove('show');
+    document.getElementById('rxManualName').value = '';
+    document.getElementById('rxManualMg').value = '';
     renderRxDrugList();
+    renderRxXrayList();
   }
 
   function renderRxDrugList(){
@@ -3457,6 +3747,7 @@
       date: document.getElementById('rxDateInput').value || todayIso(),
       diagnosis: document.getElementById('rxDiagnosisInput').value.trim(),
       drugs: rxDrugs,
+      xrays: rxXrays,
       ts: Date.now()
     };
 
@@ -3485,9 +3776,9 @@
       errorEl.textContent = 'مفيش رقم موبايل مسجّل للمريض ده.';
       return;
     }
-    if(rxDrugs.length === 0){
+    if(rxDrugs.length === 0 && rxXrays.length === 0){
       errorEl.style.color = '#D64545';
-      errorEl.textContent = 'ضيف دواء واحد على الأقل قبل ما تبعت الروشتة.';
+      errorEl.textContent = 'ضيف دواء أو طلب أشعة قبل ما تبعت الروشتة.';
       return;
     }
 
@@ -3506,6 +3797,15 @@
       lines.push(line);
       if(d.note){ lines.push('   (' + d.note + ')'); }
     });
+    if(rxXrays.length){
+      lines.push('');
+      lines.push('الأشعة المطلوبة:');
+      rxXrays.forEach(function(x, idx){
+        var meta = RX_XRAY_LABELS[x.type] || RX_XRAY_LABELS.periapical;
+        lines.push((idx + 1) + '. ' + meta.ar + (x.teeth && x.teeth.trim() ? ' — ' + x.teeth.trim() : ''));
+        if(x.note){ lines.push('   (' + x.note + ')'); }
+      });
+    }
     lines.push('');
     lines.push('لأي استفسار كلمونا على العيادة 🌸');
 
@@ -3551,6 +3851,15 @@
         '</li>';
     }).join('');
 
+    var xraysHtml = '';
+    if(rxXrays.length){
+      xraysHtml = '<div class="rx-xray-block"><div class="rx-xray-title">Radiographs Requested</div><ul class="rx-xray-list">' +
+        rxXrays.map(function(x){
+          return '<li><span class="rx-xray-box"></span><div><div class="rx-xray-main">' + escapeHtml(rxXrayText(x)) + '</div>' +
+            (x.note ? '<div class="rx-p-note">' + escapeHtml(x.note) + '</div>' : '') + '</div></li>';
+        }).join('') + '</ul></div>';
+    }
+
     // الصفحة كلها LTR (زي الروشتة الورقية الأصلية اللي الدوا فيها إنجليزي) عشان أسماء الأدوية والبيانات متبقاش مقلوبة،
     // والعناصر العربية (اسم العيادة والعنوان) بتاخد اتجاهها الصح بشكل منفصل جوه نفسها
     var html = '<!DOCTYPE html><html lang="en" dir="ltr"><head><meta charset="UTF-8"><title>Prescription - ' + escapeHtml(name) + '</title>' +
@@ -3588,6 +3897,13 @@
         '.rx-p-mg{font-weight:500;color:#4FA0A8;font-size:1.05rem;}' +
         '.rx-p-dose{color:#fff;background:#4FA0A8;padding:5px 16px;border-radius:999px;font-size:.94rem;font-weight:600;white-space:nowrap;}' +
         '.rx-p-note{margin-top:9px;font-size:1rem;color:#8a6d1f;background:#FFF8E8;border-right:4px solid #D9A441;padding:9px 14px;border-radius:6px;direction:rtl;text-align:right;}' +
+        '.rx-xray-block{margin-top:30px;border:2px solid #0B3B47;border-radius:14px;padding:20px 24px;page-break-inside:avoid;}' +
+        '.rx-xray-title{font-family:Georgia,serif;font-weight:700;color:#0B3B47;font-size:1.3rem;margin-bottom:12px;letter-spacing:.3px;}' +
+        'ul.rx-xray-list{list-style:none;}' +
+        'ul.rx-xray-list li{display:flex;gap:14px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #E7EFEF;}' +
+        'ul.rx-xray-list li:last-child{border-bottom:none;}' +
+        '.rx-xray-box{flex:0 0 auto;width:20px;height:20px;border:2px solid #0B3B47;border-radius:4px;margin-top:3px;}' +
+        '.rx-xray-main{font-weight:700;color:#0B3B47;font-size:1.2rem;}' +
         '.rx-footer{margin-top:50px;text-align:center;font-size:.9rem;color:#82969b;border-top:1px solid #E7EFEF;padding-top:20px;direction:rtl;letter-spacing:.2px;}' +
 
       '</style></head><body>' +
@@ -3606,6 +3922,7 @@
         '</div>' +
         '<div class="rx-symbol-row"><span class="rx-symbol">℞</span><span class="rx-symbol-line"></span></div>' +
         '<ul class="rx-list">' + drugsHtml + '</ul>' +
+        xraysHtml +
         '<p class="rx-footer">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p>' +
       '</body></html>';
 
@@ -4049,7 +4366,7 @@
 
     var key = dayIso + '_' + slotValue;
     firestoreDb.collection('bookings').doc(key).set({
-      name: name, phone: phone, age: age, gender: gender, status: 'confirmed', bookedBy: 'staff', ts: Date.now()
+      name: name, phone: phone, age: age, gender: gender, status: 'confirmed', bookedBy: 'staff', bookedByName: getStaffName(), ts: Date.now()
     })
       .then(function(){
         logActivity('confirm', 'حجز جديد من الفريق لـ ' + name + ' — ' + formatDateLabel(dayIso) + ' ' + SLOT_LABELS[slotValue]);
@@ -4152,8 +4469,26 @@
     });
   }
 
-  function getEnvelopeBalance(){
-    return envelopeCache.reduce(function(sum, t){ return sum + (t.amount || 0); }, 0);
+  var ENVELOPE_WALLET_LABELS = { cash: 'كاش', vodafone_cash: 'فودافون كاش' };
+
+  // الحركات القديمة (من غير wallet) بتتحسب كاش
+  function getEnvelopeBalance(wallet){
+    return envelopeCache.reduce(function(sum, t){
+      if(wallet && (t.wallet === 'vodafone_cash' ? 'vodafone_cash' : 'cash') !== wallet) return sum;
+      return sum + (t.amount || 0);
+    }, 0);
+  }
+
+  function transferEnvelopeWallets(amount, from, to){
+    var now = Date.now(), day = todayIso();
+    var reason = 'تحويل من ' + ENVELOPE_WALLET_LABELS[from] + ' إلى ' + ENVELOPE_WALLET_LABELS[to];
+    var col = firestoreDb.collection('envelopeTransactions');
+    Promise.all([
+      col.add({ amount: -amount, reason: reason, wallet: from, transfer: true, dayIso: day, ts: now }),
+      col.add({ amount: amount, reason: reason, wallet: to, transfer: true, dayIso: day, ts: now + 1 })
+    ]).then(function(){
+      logActivity('daily_expenses', reason + ' — ' + amount.toLocaleString('ar-EG') + ' جنيه');
+    }).catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
   function renderEnvelope(){
@@ -4162,6 +4497,10 @@
 
     var balance = getEnvelopeBalance();
     balanceEl.textContent = balance.toLocaleString('ar-EG') + ' جنيه';
+    var cashEl = document.getElementById('envelopeCashBalance');
+    var vfEl = document.getElementById('envelopeVfBalance');
+    if(cashEl) cashEl.textContent = getEnvelopeBalance('cash').toLocaleString('ar-EG') + ' جنيه';
+    if(vfEl) vfEl.textContent = getEnvelopeBalance('vodafone_cash').toLocaleString('ar-EG') + ' جنيه';
 
     var listEl = document.getElementById('envelopeHistoryList');
     var emptyEl = document.getElementById('envelopeHistoryEmpty');
@@ -4180,7 +4519,8 @@
       row.className = 'eh-row';
       row.innerHTML =
         '<span class="eh-info">' +
-          '<span class="eh-reason">' + escapeHtml(t.reason || (isPositive ? 'إضافة للظرف' : 'سحب من الظرف')) + '</span>' +
+          '<span class="eh-reason">' + escapeHtml(t.reason || (isPositive ? 'إضافة للظرف' : 'سحب من الظرف')) +
+            '<span class="eh-wallet' + (t.wallet === 'vodafone_cash' ? ' vf' : '') + '">' + (t.wallet === 'vodafone_cash' ? 'فودافون كاش' : 'كاش') + '</span></span>' +
           '<span class="eh-date">' + formatDateLabel(t.dayIso) + '</span>' +
         '</span>' +
         '<span class="eh-amount ' + (isPositive ? 'positive' : 'negative') + '">' +
@@ -4190,14 +4530,16 @@
     });
   }
 
-  function addEnvelopeTransaction(amount, reason){
+  function addEnvelopeTransaction(amount, reason, wallet){
+    wallet = wallet === 'vodafone_cash' ? 'vodafone_cash' : 'cash';
     firestoreDb.collection('envelopeTransactions').add({
       amount: amount,
       reason: reason || '',
+      wallet: wallet,
       dayIso: todayIso(),
       ts: Date.now()
     }).then(function(){
-      logActivity('daily_expenses', (amount > 0 ? 'إضافة ' + amount.toLocaleString('ar-EG') + ' جنيه للظرف' : 'سحب ' + Math.abs(amount).toLocaleString('ar-EG') + ' جنيه من الظرف') + (reason ? ' — ' + reason : ''));
+      logActivity('daily_expenses', (amount > 0 ? 'إضافة ' + amount.toLocaleString('ar-EG') + ' جنيه للظرف' : 'سحب ' + Math.abs(amount).toLocaleString('ar-EG') + ' جنيه من الظرف') + ' (' + ENVELOPE_WALLET_LABELS[wallet] + ')' + (reason ? ' — ' + reason : ''));
     }).catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
@@ -4421,6 +4763,7 @@
           amount: remaining,
           reason: 'إقفال حسابات يوم ' + formatDateLabel(dayIso) + ' تلقائي',
           dayIso: dayIso,
+          wallet: 'cash',
           auto: true,
           ts: Date.now()
         });
@@ -4857,7 +5200,7 @@
           '<span class="act-ic">' + (iconMap[entry.action] || '•') + '</span>' +
           '<span class="act-body">' +
             '<span class="act-text">' + escapeHtml(entry.text || '') + '</span>' +
-            '<span class="act-meta">' + escapeHtml(entry.staffName || 'الفريق') + ' — ' + timeStr + '</span>' +
+            '<span class="act-meta">' + escapeHtml(normalizeStaffName(entry.staffName) || 'الفريق') + ' — ' + timeStr + '</span>' +
           '</span>';
         activityListEl.appendChild(item);
       });
@@ -4928,7 +5271,7 @@
       var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
       var badgeClass = b.status === 'confirmed' ? 'confirmed' : b.status === 'no_show' ? 'noshow' : b.status === 'awaiting' ? 'awaiting' : 'pending';
       var badgeText = b.status === 'confirmed' ? 'تم التأكيد' : b.status === 'no_show' ? 'لم يحضر' : b.status === 'awaiting' ? 'لسه المريض ما أكدش' : 'في الانتظار';
-      var sourceText = b.bookedBy === 'staff' ? '👤 الفريق' : '🌐 الموقع';
+      var sourceText = b.bookedBy === 'staff' ? '👤 ' + (normalizeStaffName(b.bookedByName) || 'الفريق') : '🌐 الموقع';
 
       var waMsg = encodeURIComponent('مرحبًا ' + b.name + '، بخصوص حجزك يوم ' + formatDateLabel(b.dayIso) + ' الساعة ' + slotLabel + ' في عيادة د. أبانوب سليم.');
       var waPhone = b.phone.replace(/^0/, '20');
@@ -5328,7 +5671,7 @@
     // بيحفظ التعديلات على الحجز (extraFields)، وبينقله لتاريخ/ميعاد جديد لو اختلفوا
     function persistBooking(extraFields){
       var merged = Object.assign({}, {
-        name: b.name, phone: b.phone, age: b.age, gender: b.gender || '', status: b.status, bookedBy: b.bookedBy || 'staff',
+        name: b.name, phone: b.phone, age: b.age, gender: b.gender || '', status: b.status, bookedBy: b.bookedBy || 'staff', bookedByName: b.bookedByName || '', lastEditedBy: getStaffName(),
         services: b.services || [], serviceDiscounts: b.serviceDiscounts || {},
         serviceQuantities: b.serviceQuantities || {}, customService: b.customService || null,
         totalAmount: b.totalAmount || 0, paidAmount: b.paidAmount || 0,
@@ -5462,7 +5805,7 @@
     rows.forEach(function(b){
       var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
       var status = b.status === 'confirmed' ? 'Confirmed' : b.status === 'no_show' ? 'No-show' : 'Pending';
-      var source = b.bookedBy === 'staff' ? 'Staff' : 'Website';
+      var source = b.bookedBy === 'staff' ? (normalizeStaffName(b.bookedByName) || 'Staff') : 'Website';
       var notes = '"' + (b.notes || '').replace(/"/g,'""') + '"';
       var line = [b.dayIso, slotLabel, '"' + b.name.replace(/"/g,'""') + '"', b.phone, status, source, notes].join(',');
       lines.push(line);
