@@ -664,6 +664,9 @@
   }
   .pf-xray-item .pf-xray-del:hover{background:#D64545;}
 
+  .pf-candidates{margin-top:16px;padding:12px;border:1px dashed #D9A441;border-radius:12px;background:#FFF8E8;}
+  .pf-candidates .pf-cand-title{font-size:.82rem;font-weight:700;color:#8a6d1f;margin-bottom:10px;}
+  .pf-candidates .pf-sheet-item{margin-bottom:8px;}
   .rx-search-wrap{position:relative;}
   .rx-manual-btn{margin-top:8px;width:100%;justify-content:center;}
   .rx-manual-box{display:none;margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:var(--pale-aqua);}
@@ -1648,6 +1651,7 @@
         <button class="cta-btn gold" id="pfNewSheetBtn" style="width:100%;justify-content:center;margin-bottom:16px;">➕ ملف جديد</button>
         <div id="pfSheetsList" class="pf-sheets-list"></div>
         <div class="empty-mini" id="pfSheetsEmpty" style="display:none;">لسه مفيش أي ملف مسجّل للمريض ده.</div>
+        <div id="pfCandidates" class="pf-candidates" style="display:none;"></div>
       </div>
 
       <div id="pfFormView" style="display:none;">
@@ -3127,7 +3131,7 @@
     if(!grid || !pendingPatientFile) return;
 
     var key = pfPatientKey(pendingPatientFile);
-    var mine = patientXraysCache.filter(function(x){ return x.patientKey === key; })
+    var mine = patientXraysCache.filter(function(x){ return pfKeysMatch(x.patientKey, key); })
       .sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
 
     grid.innerHTML = '';
@@ -3223,18 +3227,75 @@
     return p.phone + '|' + (p.name || '').trim().toLowerCase();
   }
 
+  // ---- مطابقة مرنة: الرقم بصيغته الموحّدة + الاسم بعد توحيد الحروف والمسافات ----
+  function pfNormPhone(ph){
+    var d = String(ph || '').replace(/[٠-٩]/g, function(c){ return String(c.charCodeAt(0) - 1632); }).replace(/\D/g, '');
+    if(d.indexOf('0020') === 0) d = d.slice(4);
+    else if(d.indexOf('20') === 0 && d.length >= 12) d = d.slice(2);
+    if(d.length === 10 && d.charAt(0) === '1') d = '0' + d;
+    return d;
+  }
+  function pfNormName(n){
+    return String(n || '').toLowerCase()
+      .replace(/[\u064B-\u0652\u0640]/g, '')
+      .replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه')
+      .replace(/[^a-z0-9\u0600-\u06FF]+/g, ' ').trim();
+  }
+  function pfSplitKey(k){
+    var i = String(k || '').indexOf('|');
+    return i === -1 ? { phone: k, name: '' } : { phone: k.slice(0, i), name: k.slice(i + 1) };
+  }
+  function pfKeysMatch(storedKey, currentKey){
+    if(storedKey === currentKey) return true;
+    var a = pfSplitKey(storedKey), b = pfSplitKey(currentKey);
+    return pfNormPhone(a.phone) === pfNormPhone(b.phone) && pfNormName(a.name) === pfNormName(b.name);
+  }
+  function pfNameTokens(n){
+    return pfNormName(n).split(' ').filter(function(t){ return t.length >= 3; });
+  }
+  // ملفات مش مربوطة بالمريض ده لكن شبهه (نفس الرقم أو اسم فيه كلمات مشتركة)
+  function pfFindCandidateSheets(p){
+    var key = pfPatientKey(p);
+    var myPhone = pfNormPhone(p.phone);
+    var myTokens = pfNameTokens(p.name);
+    var seenKeys = {};
+    var out = [];
+    patientFilesCache.forEach(function(s){
+      if(!s.patientKey || pfKeysMatch(s.patientKey, key) || seenKeys[s.patientKey]) return;
+      var sp = pfSplitKey(s.patientKey);
+      var samePhone = myPhone && pfNormPhone(sp.phone) === myPhone;
+      var shared = pfNameTokens(sp.name).filter(function(t){ return myTokens.indexOf(t) !== -1; }).length;
+      if(samePhone || shared >= 1){
+        seenKeys[s.patientKey] = true;
+        out.push({ storedKey: s.patientKey, name: s.name || sp.name, phone: sp.phone, samePhone: samePhone, shared: shared });
+      }
+    });
+    out.sort(function(a, b){ return (b.samePhone - a.samePhone) || (b.shared - a.shared); });
+    return out.slice(0, 8);
+  }
+  function pfLinkStoredKeyToCurrent(storedKey, currentKey){
+    var batch = firestoreDb.batch();
+    [['patientFiles', patientFilesCache], ['patientXrays', patientXraysCache], ['prescriptions', prescriptionsCache]].forEach(function(pair){
+      pair[1].forEach(function(d){
+        if(d.patientKey === storedKey){ batch.update(firestoreDb.collection(pair[0]).doc(d.id), { patientKey: currentKey }); }
+      });
+    });
+    return batch.commit();
+  }
+
   function renderPatientFilesList(){
     document.getElementById('pfFormView').style.display = 'none';
     document.getElementById('pfListView').style.display = 'block';
 
     var p = pendingPatientFile;
     var key = pfPatientKey(p);
-    var sheets = patientFilesCache.filter(function(s){ return s.patientKey === key; })
+    var sheets = patientFilesCache.filter(function(s){ return pfKeysMatch(s.patientKey, key); })
       .sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
 
     var listEl = document.getElementById('pfSheetsList');
     var emptyEl = document.getElementById('pfSheetsEmpty');
     listEl.innerHTML = '';
+    renderPfCandidates(p, key);
     if(sheets.length === 0){
       emptyEl.style.display = 'block';
       return;
@@ -3255,6 +3316,42 @@
       openBtn.addEventListener('click', function(){ openPatientFileForm(s); });
       item.appendChild(openBtn);
       listEl.appendChild(item);
+    });
+  }
+
+  function renderPfCandidates(p, key){
+    var box = document.getElementById('pfCandidates');
+    if(!box) return;
+    box.innerHTML = '';
+    var cands = pfFindCandidateSheets(p);
+    if(!cands.length){ box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    var title = document.createElement('div');
+    title.className = 'pf-cand-title';
+    title.textContent = '🔎 ملفات ممكن تكون لنفس المريض (مش مربوطة بيه دلوقتي)';
+    box.appendChild(title);
+    cands.forEach(function(c){
+      var row = document.createElement('div');
+      row.className = 'pf-sheet-item';
+      var info = document.createElement('div');
+      info.className = 'pfs-info';
+      info.innerHTML = '<b></b><span></span>';
+      info.querySelector('b').textContent = c.name;
+      info.querySelector('span').textContent = 'الرقم المسجّل: ' + c.phone + (c.samePhone ? ' — نفس الرقم' : '');
+      var btn = document.createElement('button');
+      btn.className = 'pfs-open-btn';
+      btn.textContent = 'ربط بالمريض ده';
+      btn.addEventListener('click', function(){
+        if(!confirm('تربط ملفات «' + c.name + '» (وروشتاتها وأشعتها) بالمريض «' + p.name + '»؟')) return;
+        btn.disabled = true;
+        pfLinkStoredKeyToCurrent(c.storedKey, key).then(function(){
+          logActivity('edit', 'ربط ملف مريض «' + c.name + '» بالمريض «' + p.name + '»');
+          setTimeout(renderPatientFilesList, 400);
+        }).catch(function(err){ btn.disabled = false; alert('حصل خطأ: ' + err.message); });
+      });
+      row.appendChild(info);
+      row.appendChild(btn);
+      box.appendChild(row);
     });
   }
 
@@ -3570,7 +3667,7 @@
 
     var p = pendingPrescriptionPatient;
     var key = pfPatientKey(p);
-    var sheets = prescriptionsCache.filter(function(s){ return s.patientKey === key; })
+    var sheets = prescriptionsCache.filter(function(s){ return pfKeysMatch(s.patientKey, key); })
       .sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
 
     var listEl = document.getElementById('rxSheetsList');
@@ -4066,7 +4163,7 @@
     var logoSrc = document.querySelector('.topbar-brand img').src;
     var patientKey = pfPatientKey(pendingPatientFile);
     var xrayImgsHtml = patientXraysCache
-      .filter(function(x){ return x.patientKey === patientKey; })
+      .filter(function(x){ return pfKeysMatch(x.patientKey, patientKey); })
       .map(function(x){ return '<img src="' + x.imageData + '">'; })
       .join('');
     var name = document.getElementById('pfNameInput').value || '';
