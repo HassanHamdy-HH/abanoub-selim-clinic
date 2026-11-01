@@ -791,6 +791,17 @@
   table.tr-sched td.name{text-align:right;font-weight:800;color:var(--deep-teal);white-space:nowrap;}
   table.tr-sched td.off{color:#b5c2c5;}
   table.tr-sched td.on{background:#E7F6EE;font-weight:700;color:#1E7A48;}
+  .tr-today{border:1px solid var(--line);border-radius:12px;background:var(--pale-aqua);padding:2px 10px;}
+  .tr-today > summary{cursor:pointer;font-weight:800;font-size:.84rem;color:var(--deep-teal);padding:8px 0;list-style:none;display:flex;justify-content:space-between;gap:8px;}
+  .tr-today > summary::-webkit-details-marker{display:none;}
+  .tr-today-row{border-top:1px dashed var(--line);padding:8px 0;}
+  .tr-today-line{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+  .tr-today-line b{color:var(--deep-teal);font-size:.84rem;overflow-wrap:anywhere;}
+  .tr-today-acts{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+  .tr-ed{margin-top:8px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px;}
+  .tr-ed input[type=text]{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:.85rem;margin-bottom:8px;min-width:0;}
+  .tr-ed .btns{display:flex;gap:6px;}
+  .tr-ed .btns button{flex:1;}
   .tr-form-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
   .tr-form-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .tr-case-builder{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;margin-bottom:10px;}
@@ -2786,6 +2797,7 @@
       renderPatients();
       renderAccounts();
       renderDailySummary();
+      if(typeof renderTrainees === 'function'){ try{ renderTrainees(); }catch(e){} }
     }, function(err){
       console.warn('Firestore listener error on admin dashboard.', err);
       document.getElementById('loadingState').textContent = 'حصل خطأ في تحميل الحجوزات.';
@@ -6520,6 +6532,7 @@
       var todaySlot = t.schedule && t.schedule[String(new Date().getDay())];
       if(todaySlot) card.appendChild(trEl('div', 'tr-sub', '📅 ميعاده النهاردة: ' + trSlotText(todaySlot)));
       if(last) card.appendChild(trEl('div', 'tr-sub', 'آخر حضور: ' + formatDateLabel(last.date)));
+      if(t.status !== 'ended') card.appendChild(buildTodayCases(t));
 
       var act = trEl('div', 'tr-actions');
       if(t.status !== 'ended'){
@@ -6558,6 +6571,106 @@
     if(v === pin){ trUnlocked[t.id] = true; return true; }
     alert('الباسورد غلط.');
     return false;
+  }
+
+  // ---- ربط مباشر بين جدول اليوم وكارت المتدرب ----
+  var trEditor = null;          // { tid, bid, acts:[], proc:'' } — المحرر المفتوح (بيفضل مفتوح مع التحديث اللحظي)
+  var trCasesOpen = {};         // حالة فتح/قفل قسم "حالات النهارده" لكل متدرب
+  function trTodaySession(tid){
+    var today = todayIso();
+    var list = traineeSessionsCache.filter(function(x){ return x.traineeId === tid && x.date === today; })
+      .sort(function(a, b){ return (b.timeIn || '').localeCompare(a.timeIn || ''); });
+    return list.filter(function(x){ return !x.timeOut; })[0] || list[0] || null;
+  }
+  function buildTodayCases(t){
+    var today = todayIso();
+    var bks = allBookings.filter(function(b){ return b.dayIso === today && b.status !== 'no_show'; })
+      .sort(function(a, b){ return a.slotValue < b.slotValue ? -1 : 1; });
+    var se = trTodaySession(t.id);
+    var det = document.createElement('details');
+    det.className = 'tr-today';
+    det.open = !!trCasesOpen[t.id] || (trEditor && trEditor.tid === t.id);
+    det.addEventListener('toggle', function(){ trCasesOpen[t.id] = det.open; });
+    var sum = document.createElement('summary');
+    var assigned = se ? (se.cases || []).length : 0;
+    sum.appendChild(trEl('span', '', '📋 حالات النهارده (' + bks.length.toLocaleString('ar-EG') + ')'));
+    sum.appendChild(trEl('span', 'tr-sub', assigned ? 'اتحدد له ' + assigned.toLocaleString('ar-EG') : (se ? '' : 'سجّل حضوره الأول')));
+    det.appendChild(sum);
+    if(!bks.length){ det.appendChild(trEl('div', 'tr-sub', 'مفيش حجوزات النهارده.')); return det; }
+
+    bks.forEach(function(b){
+      var mine = se ? (se.cases || []).filter(function(c){ return c.bookingId === b.id; })[0] : null;
+      var row = trEl('div', 'tr-today-row');
+      var line = trEl('div', 'tr-today-line');
+      line.appendChild(trEl('b', '', (SLOT_LABELS[b.slotValue] || b.slotValue) + ' — ' + b.name));
+      var btn = trEl('button', 'tr-mini-btn', mine ? '✏️ تعديل المهمة' : '➕ تحديد المهمة'); btn.type = 'button';
+      btn.addEventListener('click', function(){
+        if(!trCheckPin(t)) return;
+        if(!trTodaySession(t.id)){ alert('سجّل حضور ' + t.name + ' الأول، وبعدها حدد مهمته في الحالة.'); return; }
+        if(trEditor && trEditor.tid === t.id && trEditor.bid === b.id){ trEditor = null; }
+        else {
+          var vd = (b.visitDetails || []).map(function(x){ return x.stage; }).filter(Boolean).join(' + ');
+          trEditor = { tid: t.id, bid: b.id, acts: mine ? trActsOf(mine).slice() : [], proc: mine ? (mine.procedure || '') : vd };
+        }
+        trCasesOpen[t.id] = true;
+        renderTrainees();
+      });
+      line.appendChild(btn);
+      row.appendChild(line);
+      if(mine){
+        var acts = trEl('div', 'tr-today-acts'); acts.appendChild(trActChips(trActsOf(mine)));
+        if(mine.procedure) acts.appendChild(trEl('span', 'tr-sub', mine.procedure));
+        row.appendChild(acts);
+      }
+      if(trEditor && trEditor.tid === t.id && trEditor.bid === b.id){ row.appendChild(buildCaseEditor(t, b, mine)); }
+      det.appendChild(row);
+    });
+    return det;
+  }
+  function buildCaseEditor(t, b, mine){
+    var ed = trEl('div', 'tr-ed');
+    var checks = trEl('div', 'as-checks');
+    TR_ACT_KEYS.forEach(function(k){
+      var l = document.createElement('label'); var c = document.createElement('input'); c.type = 'checkbox'; c.value = k;
+      c.checked = trEditor.acts.indexOf(k) !== -1;
+      c.addEventListener('change', function(){
+        var i = trEditor.acts.indexOf(k);
+        if(c.checked && i === -1) trEditor.acts.push(k);
+        if(!c.checked && i !== -1) trEditor.acts.splice(i, 1);
+      });
+      l.appendChild(c); l.appendChild(document.createTextNode(TR_ACTS[k])); checks.appendChild(l);
+    });
+    ed.appendChild(checks);
+    var pi = document.createElement('input'); pi.type = 'text'; pi.setAttribute('dir', 'auto'); pi.placeholder = 'الإجراء (اختياري)'; pi.value = trEditor.proc;
+    pi.addEventListener('input', function(){ trEditor.proc = pi.value; });
+    ed.appendChild(pi);
+    var btns = trEl('div', 'btns');
+    var save = trEl('button', 'cta-btn gold', 'حفظ'); save.type = 'button';
+    save.addEventListener('click', function(){ trSaveCaseFromEditor(t, b); });
+    var rm = trEl('button', 'btn btn-outline', mine ? 'إزالة' : 'إلغاء'); rm.type = 'button';
+    rm.addEventListener('click', function(){
+      if(mine){ trApplyCase(t, b, [], ''); } else { trEditor = null; renderTrainees(); }
+    });
+    btns.appendChild(save); btns.appendChild(rm); ed.appendChild(btns);
+    return ed;
+  }
+  function trSaveCaseFromEditor(t, b){
+    if(!trEditor || !trEditor.acts.length){ alert('اختار مهمة واحدة على الأقل، أو دوس إزالة.'); return; }
+    trApplyCase(t, b, trEditor.acts.slice(), trEditor.proc.trim());
+  }
+  function trApplyCase(t, b, acts, proc){
+    var se = trTodaySession(t.id);
+    if(!se){ alert('سجّل حضور ' + t.name + ' الأول.'); return; }
+    var cases = (se.cases || []).filter(function(c){ return c.bookingId !== b.id; });
+    if(acts.length){
+      cases.push({ id: 'c' + Date.now(), patientName: b.name, bookingId: b.id, procedure: proc, acts: acts,
+        role: acts.indexOf('do') !== -1 ? 'do' : acts.indexOf('help') !== -1 ? 'help' : 'watch', note: '' });
+    }
+    firestoreDb.collection('traineeSessions').doc(se.id).update({ cases: cases, ts: Date.now() }).then(function(){
+      logActivity('edit', (acts.length ? 'مهمة المتدرب ' + t.name + ' في حالة ' + b.name + ': ' + trActsText(acts) : 'إزالة مهمة المتدرب ' + t.name + ' من حالة ' + b.name));
+      trEditor = null;
+      renderTrainees();
+    }).catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
   function trQuickToggle(t, open){
