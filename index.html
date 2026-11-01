@@ -1536,7 +1536,6 @@
     // clicking around), not real security — anyone who reads the page's
     // source code can see it. For real access control, Firebase Auth
     // (a proper staff login) would be needed.
-    var STAFF_PIN = '2026';
     var pendingUnlock = null; // {day, slot, entry} — set while the PIN modal is open
 
     if(!dayTabsEl || !chairsGridEl) return;
@@ -1624,7 +1623,7 @@
 
     function watchBookings(onChange){
       if(firebaseReady && firestoreDb){
-        firestoreDb.collection('bookings').onSnapshot(function(snap){
+        firestoreDb.collection('publicSlots').onSnapshot(function(snap){
           var all = {};
           snap.forEach(function(doc){ all[doc.id] = doc.data(); });
           bookingsCache = all;
@@ -1642,7 +1641,10 @@
 
     function setBooking(key, data){
       if(firebaseReady && firestoreDb){
-        return firestoreDb.collection('bookings').doc(key).set(data, { merge: true });
+        var batch = firestoreDb.batch();
+        batch.set(firestoreDb.collection('bookings').doc(key), data);
+        batch.set(firestoreDb.collection('publicSlots').doc(key), { status: data.status || 'pending' });
+        return batch.commit();
       }
       var all = localGetAll();
       all[key] = data;
@@ -1751,12 +1753,12 @@
           btn.disabled = true;
           btn.setAttribute('aria-label', slot.l + ' — الميعاد ده فات معاده');
         } else if(status === 'confirmed'){
-          btn.setAttribute('aria-label', slot.l + ' — تم التأكيد (اضغط لإلغائه)');
+          btn.setAttribute('aria-label', slot.l + ' — محجوز');
           btn.addEventListener('click', function(){
             openPinGate(day, slot, entry, si, key);
           });
         } else if(status === 'awaiting'){
-          btn.setAttribute('aria-label', slot.l + ' — لسه المريض ما أكدش (اضغط للإدارة)');
+          btn.setAttribute('aria-label', slot.l + ' — محجوز');
           btn.addEventListener('click', function(){
             openPinGate(day, slot, entry, si, key);
           });
@@ -1846,12 +1848,8 @@
     });
 
     // ---- Staff PIN gate (manage pending/confirmed/awaiting bookings) ----
-    function openPinGate(day, slot, entry, si, key){
-      pendingUnlock = { day: day, slot: slot, entry: entry, si: si, key: key };
-      staffPinInput.value = '';
-      staffPinError.textContent = '';
-      staffPinOverlay.classList.add('open');
-      setTimeout(function(){ staffPinInput.focus(); }, 50);
+    function openPinGate(){
+      // إدارة الحجوزات بقت من لوحة التحكم بحساب مسجّل بس — مفيش حاجة بتتفتح للزوار هنا
     }
     function closePinGate(){
       staffPinOverlay.classList.remove('open');
@@ -1866,18 +1864,7 @@
     });
 
     staffPinSubmit.addEventListener('click', function(){
-      if(staffPinInput.value.trim() !== STAFF_PIN){
-        staffPinError.textContent = 'الكود غير صحيح.';
-        staffPinInput.value = '';
-        staffPinInput.focus();
-        return;
-      }
-
-      if(!pendingUnlock) return;
-      var p = pendingUnlock;
       closePinGate();
-      confirmSelection = { dayIndex: selectedDayIndex, slotIndex: p.si, key: p.key };
-      openConfirmModal(p.day, p.slot, p.entry);
     });
 
     // ---- Confirm modal (pending -> confirmed, or cancel any time) ----
