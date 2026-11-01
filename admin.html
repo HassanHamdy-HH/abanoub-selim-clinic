@@ -8818,18 +8818,23 @@
 
     var rowsHtml = '';
     if(dayBookings.length === 0){
-      rowsHtml = '<tr><td colspan="5" class="empty-row">مفيش أي حجوزات في اليوم ده.</td></tr>';
+      rowsHtml = '<tr><td colspan="6" class="empty-row">مفيش أي حجوزات في اليوم ده.</td></tr>';
     } else {
       dayBookings.forEach(function(b, i){
         var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
         var statusClass = b.status === 'confirmed' ? 'st-confirmed' : 'st-pending';
         var statusText = b.status === 'confirmed' ? 'مؤكد' : 'في الانتظار';
+        var vdHtml = (b.visitDetails || []).map(function(st){
+          return '<div class="vd-line">• ' + escapeHtml(st.stage || '') + (st.teeth ? ' <span class="vd-teeth">(' + escapeHtml(st.teeth) + ')</span>' : '') +
+            (st.note ? ' <span class="vd-note">— ' + escapeHtml(st.note) + '</span>' : '') + '</div>';
+        }).join('') || '—';
         rowsHtml +=
           '<tr class="' + (i % 2 === 0 ? 'row-a' : 'row-b') + '">' +
             '<td class="cell-time">' + slotLabel + '</td>' +
             '<td class="cell-name">' + escapeHtml(b.name) + '</td>' +
             '<td class="cell-phone">' + escapeHtml(b.phone) + '</td>' +
             '<td><span class="st-badge ' + statusClass + '">' + statusText + '</span></td>' +
+            '<td class="cell-vd">' + vdHtml + '</td>' +
             '<td class="cell-notes">' + escapeHtml(b.notes || '—') + '</td>' +
           '</tr>';
       });
@@ -8861,6 +8866,8 @@
         '.st-confirmed{background:#E7F6EE;color:#2E9E6B;}' +
         '.st-pending{background:#FBF3E3;color:#E0A945;}' +
         '.cell-notes{color:#4A6067;font-size:.82rem;}' +
+        '.cell-vd{font-size:.8rem;color:#0E2B30;line-height:1.6;}' +
+        '.vd-line{margin-bottom:2px;} .vd-teeth{color:#0B3B47;font-weight:700;} .vd-note{color:#4A6067;}' +
         '.empty-row{text-align:center;padding:40px;color:#4A6067;}' +
         '.ps-footer{margin-top:30px;text-align:center;font-size:.76rem;color:#4A6067;border-top:1px solid #DCE8E8;padding-top:14px;}' +
         '@media print{ body{padding:14px 18px;} }' +
@@ -8878,7 +8885,7 @@
         '</div>' +
         (isBlocked ? '<div class="ps-closed">⚠ العيادة مقفولة في اليوم ده' + (blockedDays[targetIso].reason ? ' — ' + escapeHtml(blockedDays[targetIso].reason) : '') + '</div>' : '') +
         '<table><thead><tr>' +
-          '<th>الساعة</th><th>اسم المريض</th><th>رقم الموبايل</th><th>الحالة</th><th>ملاحظات</th>' +
+          '<th>الساعة</th><th>اسم المريض</th><th>رقم الموبايل</th><th>الحالة</th><th>تفاصيل الزيارة</th><th>ملاحظات</th>' +
         '</tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
         '<p class="ps-footer">عيادة د. أبانوب سليم لطب الأسنان — طُبع بتاريخ ' + stamp + '</p>' +
       '</body></html>';
