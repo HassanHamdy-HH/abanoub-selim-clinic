@@ -802,6 +802,18 @@
   .tr-ed input[type=text]{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:.85rem;margin-bottom:8px;min-width:0;}
   .tr-ed .btns{display:flex;gap:6px;}
   .tr-ed .btns button{flex:1;}
+  .ord-row{display:grid;grid-template-columns:24px 1fr 90px;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;background:#fff;}
+  .ord-row.off{opacity:.5;}
+  .ord-sug{border:1px solid var(--line);border-radius:10px;background:#fff;margin:4px 0 10px;overflow:hidden;}
+  .ord-sug button{display:block;width:100%;text-align:right;padding:8px 12px;border:none;border-bottom:1px solid var(--line);background:#fff;font:inherit;font-size:.85rem;cursor:pointer;color:var(--ink);}
+  .ord-sug button:last-child{border-bottom:none;}
+  .ord-sug button:hover{background:var(--pale-aqua);}
+  .ord-sug small{color:var(--ink-soft);font-size:.72rem;margin-right:6px;}
+  .ord-sug .new{color:#1E7A48;font-weight:800;}
+  .ord-row input[type=checkbox]{width:18px;height:18px;}
+  .ord-row b{font-size:.86rem;color:var(--deep-teal);overflow-wrap:anywhere;}
+  .ord-row small{display:block;font-size:.72rem;color:var(--ink-soft);}
+  .ord-row input[type=number]{width:100%;padding:6px;border:1px solid var(--line);border-radius:8px;font:inherit;text-align:center;min-width:0;}
   .tr-form-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
   .tr-form-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .tr-case-builder{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;margin-bottom:10px;}
@@ -1611,6 +1623,7 @@
         </select>
         <button class="btn btn-gold cta-btn gold" id="matAddBtn">➕ خامة جديدة</button>
         <button class="btn btn-outline" id="matStocktakeBtn">📋 جرد سريع</button>
+        <button class="btn btn-outline" id="matOrderBtn">🧾 طلبية النواقص</button>
         <button class="btn btn-outline" id="matImportBtn" style="display:none;">📥 استيراد قايمة العيادة</button>
       </div>
       <div class="materials-grid" id="materialsList"></div>
@@ -2217,6 +2230,27 @@
       <button class="cta-btn gold" id="trdAchSave" style="width:100%;justify-content:center;">حفظ الإنجاز</button>
     </div>
     <div id="trdAchievements"></div>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="orderOverlay">
+  <div class="booking-modal patient-file-modal" style="max-width:560px;">
+    <div class="pf-modal-head">
+      <h3>🧾 طلبية النواقص</h3>
+      <button class="modal-close" id="ordClose" aria-label="إغلاق">✕</button>
+    </div>
+    <p class="modal-slot-info" id="ordInfo"></p>
+    <div class="modal-field"><label>اسم المورد / الشركة (اختياري)</label><input type="text" id="ordSupplier" dir="auto"></div>
+    <div class="modal-field"><label>ملاحظات على الطلبية (اختياري)</label><input type="text" id="ordNote" dir="auto"></div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;margin:6px 0 10px;"><input type="checkbox" id="ordUncounted" style="width:auto;"> ضيف الأصناف اللي محتاجة جرد</label>
+    <div class="modal-field" style="margin-bottom:0;"><label>🔍 ضيف أي صنف تاني للطلبية (دوّر في المخزون أو اكتب صنف جديد)</label><input type="text" id="ordSearch" dir="auto" placeholder="اكتب اسم الصنف..." autocomplete="off"></div>
+    <div class="ord-sug" id="ordSug" style="display:none;"></div>
+    <div id="ordList" style="max-height:46vh;overflow:auto;"></div>
+    <div class="ds-btn-row" style="margin-top:12px;">
+      <button class="cta-btn gold" id="ordPrint" style="width:100%;justify-content:center;">🖨️ طباعة / حفظ PDF</button>
+      <button class="btn btn-outline" id="ordCopy" style="width:100%;justify-content:center;">📋 نسخ كنص (واتساب)</button>
+    </div>
+    <p class="modal-error" id="ordError"></p>
   </div>
 </div>
 
@@ -3195,6 +3229,13 @@
     document.getElementById('matStatusFilter').addEventListener('change', renderMaterials);
     document.getElementById('matAddBtn').addEventListener('click', function(){ openMaterialModal(null); });
     document.getElementById('matStocktakeBtn').addEventListener('click', openStocktake);
+    document.getElementById('matOrderBtn').addEventListener('click', openOrderModal);
+    document.getElementById('ordClose').addEventListener('click', function(){ document.getElementById('orderOverlay').classList.remove('open'); });
+    document.getElementById('orderOverlay').addEventListener('click', function(e){ if(e.target.id === 'orderOverlay'){ e.target.classList.remove('open'); } });
+    document.getElementById('ordUncounted').addEventListener('change', renderOrderList);
+    document.getElementById('ordSearch').addEventListener('input', renderOrderSuggest);
+    document.getElementById('ordPrint').addEventListener('click', printOrder);
+    document.getElementById('ordCopy').addEventListener('click', copyOrder);
     document.getElementById('matImportBtn').addEventListener('click', importMaterialSeed);
     document.getElementById('stkClose').addEventListener('click', closeStocktake);
     document.getElementById('stocktakeOverlay').addEventListener('click', function(e){ if(e.target.id === 'stocktakeOverlay'){ closeStocktake(); } });
@@ -7305,6 +7346,149 @@
         logActivity('edit', (sign < 0 ? 'استهلاك ' : 'توريد ') + matFmt(amount) + ' ' + unit + ' من ' + m.name + ' — المتبقي ' + matFmt(after));
       })
       .catch(function(err){ alert('حصل خطأ: ' + err.message); });
+  }
+
+  // ---- طلبية النواقص ----
+  var ordQty = {};   // { materialId: كمية مطلوبة معدّلة }
+  var ordOff = {};   // { materialId: true } لو اتشال من الطلبية
+  var ordExtra = {}; // { materialId: true } أصناف من المخزون اتضافت يدويًا للطلبية
+  var ordCustom = []; // [{ id, name, unit }] أصناف مش في المخزون
+  function ordSuggest(m){
+    if(m.custom) return 1;
+    if(m.fullQty > 0) return Math.max(1, Math.ceil(m.fullQty - m.currentQty));
+    return 1;
+  }
+  function ordItems(){
+    var withUncounted = document.getElementById('ordUncounted').checked;
+    var list = materialsCache.filter(function(m){ return matIsLow(m) || (withUncounted && matIsUncounted(m)) || ordExtra[m.id]; });
+    ordCustom.forEach(function(c){ list.push({ id: c.id, name: c.name, unit: c.unit || '', category: 'أصناف إضافية', custom: true, currentQty: 0, fullQty: 0 }); });
+    return list.sort(function(a, b){
+      var ca = a.custom ? 'ي' : (a.category || ''), cb = b.custom ? 'ي' : (b.category || '');
+      return ca.localeCompare(cb, 'ar') || (a.name || '').localeCompare(b.name || '', 'ar');
+    });
+  }
+  function ordWanted(m){ return ordQty[m.id] != null ? ordQty[m.id] : ordSuggest(m); }
+  function openOrderModal(){
+    ordQty = {}; ordOff = {}; ordExtra = {}; ordCustom = [];
+    document.getElementById('ordSearch').value = '';
+    document.getElementById('ordSug').style.display = 'none';
+    document.getElementById('ordUncounted').checked = false;
+    document.getElementById('ordError').textContent = '';
+    document.getElementById('orderOverlay').classList.add('open');
+    renderOrderList();
+  }
+  function renderOrderList(){
+    var box = document.getElementById('ordList'); box.innerHTML = '';
+    var items = ordItems();
+    document.getElementById('ordInfo').textContent = items.length ? 'الأصناف الناقصة (٢٥٪ أو أقل) — الكمية المقترحة = الكمية الكاملة − الموجود. عدّل أو شيل أي صنف.' : 'مفيش أصناف ناقصة دلوقتي.';
+    items.forEach(function(m){
+      var row = document.createElement('div'); row.className = 'ord-row' + (ordOff[m.id] ? ' off' : '');
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !ordOff[m.id];
+      cb.addEventListener('change', function(){
+        if(!cb.checked && (m.custom || ordExtra[m.id])){
+          delete ordExtra[m.id]; delete ordOff[m.id]; delete ordQty[m.id];
+          ordCustom = ordCustom.filter(function(c){ return c.id !== m.id; });
+          renderOrderList(); return;
+        }
+        if(cb.checked) delete ordOff[m.id]; else ordOff[m.id] = true; row.classList.toggle('off', !cb.checked);
+      });
+      var info = document.createElement('div');
+      var b = document.createElement('b'); b.textContent = m.name; info.appendChild(b);
+      var sm = document.createElement('small');
+      if(m.custom){ sm.textContent = 'صنف إضافي (مش في المخزون)' + (m.unit ? ' — ' + m.unit : ''); }
+      else sm.textContent = (ordExtra[m.id] && !matIsLow(m) ? '➕ إضافة يدوي — ' : '') + (m.category ? m.category + ' — ' : '') + 'الموجود ' + matFmt(m.currentQty) + (m.fullQty ? ' من ' + matFmt(m.fullQty) : '') + (m.unit ? ' ' + m.unit : '') + (matIsUncounted(m) ? ' (محتاج جرد)' : '');
+      info.appendChild(sm);
+      var q = document.createElement('input'); q.type = 'number'; q.min = '1'; q.value = ordWanted(m); q.inputMode = 'numeric';
+      q.addEventListener('input', function(){ var v = parseFloat(q.value); ordQty[m.id] = isNaN(v) || v < 0 ? 0 : v; });
+      row.appendChild(cb); row.appendChild(info); row.appendChild(q);
+      box.appendChild(row);
+    });
+  }
+  function renderOrderSuggest(){
+    var sug = document.getElementById('ordSug');
+    var q = document.getElementById('ordSearch').value.trim();
+    sug.innerHTML = '';
+    if(!q){ sug.style.display = 'none'; return; }
+    var ql = q.toLowerCase();
+    var shown = {};
+    ordItems().forEach(function(m){ shown[m.id] = true; });
+    var found = materialsCache.filter(function(m){ return !shown[m.id] && (m.name || '').toLowerCase().indexOf(ql) !== -1; }).slice(0, 8);
+    found.forEach(function(m){
+      var b = document.createElement('button'); b.type = 'button';
+      b.appendChild(document.createTextNode(m.name));
+      var sm = document.createElement('small'); sm.textContent = (m.category ? m.category + ' — ' : '') + 'الموجود ' + matFmt(m.currentQty) + (m.fullQty ? ' من ' + matFmt(m.fullQty) : '') + (m.unit ? ' ' + m.unit : ''); b.appendChild(sm);
+      b.addEventListener('click', function(){
+        ordExtra[m.id] = true; delete ordOff[m.id];
+        document.getElementById('ordSearch').value = ''; sug.style.display = 'none'; renderOrderList();
+      });
+      sug.appendChild(b);
+    });
+    var exact = materialsCache.some(function(m){ return (m.name || '').trim().toLowerCase() === ql; }) || ordCustom.some(function(c){ return c.name.toLowerCase() === ql; });
+    if(!exact){
+      var nb = document.createElement('button'); nb.type = 'button'; nb.className = 'new';
+      nb.textContent = '➕ إضافة «' + q + '» كصنف جديد في الطلبية';
+      nb.addEventListener('click', function(){
+        ordCustom.push({ id: 'x' + Date.now(), name: q, unit: '' });
+        document.getElementById('ordSearch').value = ''; sug.style.display = 'none'; renderOrderList();
+      });
+      sug.appendChild(nb);
+    }
+    sug.style.display = sug.children.length ? 'block' : 'none';
+  }
+  function ordChosen(){
+    return ordItems().filter(function(m){ return !ordOff[m.id] && ordWanted(m) > 0; });
+  }
+  function copyOrder(){
+    var err = document.getElementById('ordError');
+    var items = ordChosen();
+    if(!items.length){ err.style.color = '#D64545'; err.textContent = 'مفيش أصناف في الطلبية.'; return; }
+    var sup = document.getElementById('ordSupplier').value.trim();
+    var txt = '🧾 طلبية — عيادة د. أبانوب سليم\nالتاريخ: ' + formatDateLabel(todayIso()) + (sup ? '\nالمورد: ' + sup : '') + '\n';
+    var lastCat = null;
+    items.forEach(function(m, i){
+      if((m.category || 'أخرى') !== lastCat){ lastCat = m.category || 'أخرى'; txt += '\n*' + lastCat + '*\n'; }
+      txt += (i + 1) + '. ' + m.name + ' — ' + matFmt(ordWanted(m)) + (m.unit ? ' ' + m.unit : '') + '\n';
+    });
+    var note = document.getElementById('ordNote').value.trim();
+    if(note) txt += '\nملاحظة: ' + note;
+    var done = function(){ err.style.color = '#1E9E5A'; err.textContent = 'اتنسخت. الصقها في واتساب.'; };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(function(){ prompt('انسخ النص:', txt); }); }
+    else { prompt('انسخ النص:', txt); }
+  }
+  function printOrder(){
+    var err = document.getElementById('ordError');
+    var items = ordChosen();
+    if(!items.length){ err.style.color = '#D64545'; err.textContent = 'مفيش أصناف في الطلبية.'; return; }
+    var sup = document.getElementById('ordSupplier').value.trim();
+    var note = document.getElementById('ordNote').value.trim();
+    var logoSrc = document.querySelector('.topbar-brand img').src;
+    var rows = '', lastCat = null, n = 0;
+    items.forEach(function(m){
+      var cat = m.category || 'أخرى';
+      if(cat !== lastCat){ lastCat = cat; rows += '<tr class="cat"><td colspan="6">' + escapeHtml(cat) + '</td></tr>'; }
+      n++;
+      rows += '<tr><td class="c">' + n + '</td><td class="nm">' + escapeHtml(m.name) + '</td><td class="c">' + escapeHtml(m.unit || '—') + '</td>' +
+        '<td class="c">' + (m.custom ? '—' : matFmt(m.currentQty) + (m.fullQty ? ' / ' + matFmt(m.fullQty) : '')) + '</td><td class="c q">' + matFmt(ordWanted(m)) + '</td><td class="c"><span class="box"></span></td></tr>';
+    });
+    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>طلبية نواقص — ' + formatDateLabel(todayIso()) + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">' +
+      '<style>*{box-sizing:border-box;margin:0;padding:0;}@page{size:A4;margin:12mm;}body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#132A30;font-size:13px;line-height:1.6;padding:24px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}@media print{body{padding:0;}}' +
+      '.head{display:flex;align-items:center;gap:16px;border-bottom:4px solid #0B3B47;padding-bottom:12px;margin-bottom:14px;}.head img{width:60px;height:60px;border-radius:50%;}.head h1{font-family:"Tajawal",sans-serif;font-size:1.25rem;color:#0B3B47;}.head span{color:#6B7F84;font-size:.85rem;}' +
+      '.meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#F4F9F9;border:1px solid #DCE8E8;border-radius:10px;padding:8px 14px;margin-bottom:12px;font-size:.88rem;}' +
+      'table{width:100%;border-collapse:collapse;}th{background:#0B3B47;color:#fff;padding:7px 8px;text-align:right;font-size:.82rem;}td{border-bottom:1px solid #E1ECEC;padding:7px 8px;}td.c{text-align:center;}td.nm{font-weight:700;}td.q{font-weight:800;color:#0B3B47;font-size:1rem;}' +
+      'tr.cat td{background:#E7F2F3;font-family:"Tajawal",sans-serif;font-weight:800;color:#0B3B47;border-bottom:none;}tr{page-break-inside:avoid;}.box{display:inline-block;width:16px;height:16px;border:1.6px solid #0B3B47;border-radius:4px;}' +
+      '.note{margin-top:12px;font-size:.88rem;border:1px dashed #B5C7C9;border-radius:10px;padding:8px 12px;}.sign{display:flex;justify-content:space-between;margin-top:30px;font-size:.85rem;color:#6B7F84;}.foot{margin-top:18px;text-align:center;font-size:.78rem;color:#82969b;border-top:1px solid #E7EFEF;padding-top:8px;}</style></head><body>' +
+      '<div class="head"><img src="' + logoSrc + '"><div><h1>طلبية نواقص — عيادة د. أبانوب سليم لطب الأسنان</h1><span>' + formatDateLabel(todayIso()) + '</span></div></div>' +
+      '<div class="meta"><span>المورد: <b>' + (sup ? escapeHtml(sup) : '........................') + '</b></span><span>عدد الأصناف: <b>' + n.toLocaleString('ar-EG') + '</b></span><span>أعدّها: <b>' + escapeHtml(getStaffName()) + '</b></span></div>' +
+      '<table><thead><tr><th style="width:34px;">#</th><th>الصنف</th><th style="width:70px;">الوحدة</th><th style="width:100px;">الموجود / الكامل</th><th style="width:80px;">المطلوب</th><th style="width:50px;">استلام</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      (note ? '<div class="note">ملاحظات: ' + escapeHtml(note) + '</div>' : '') +
+      '<div class="sign"><span>توقيع المستلم: ..................</span><span>توقيع المورد: ..................</span></div>' +
+      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p></body></html>';
+    var w = window.open('', '_blank');
+    if(!w){ err.style.color = '#D64545'; err.textContent = 'المتصفح منع نافذة الطباعة. اسمح بالنوافذ المنبثقة وجرّب تاني.'; return; }
+    w.document.open(); w.document.write(html); w.document.close();
+    w.onload = function(){ setTimeout(function(){ w.focus(); w.print(); }, 300); };
+    logActivity('edit', 'طباعة طلبية نواقص — ' + n + ' صنف');
   }
 
   function openMaterialModal(m){
