@@ -7465,10 +7465,10 @@
     var rows = '', lastCat = null, n = 0;
     items.forEach(function(m){
       var cat = m.category || 'أخرى';
-      if(cat !== lastCat){ lastCat = cat; rows += '<tr class="cat"><td colspan="6">' + escapeHtml(cat) + '</td></tr>'; }
+      if(cat !== lastCat){ lastCat = cat; rows += '<tr class="cat"><td colspan="5">' + escapeHtml(cat) + '</td></tr>'; }
       n++;
       rows += '<tr><td class="c">' + n + '</td><td class="nm">' + escapeHtml(m.name) + '</td><td class="c">' + escapeHtml(m.unit || '—') + '</td>' +
-        '<td class="c">' + (m.custom ? '—' : matFmt(m.currentQty) + (m.fullQty ? ' / ' + matFmt(m.fullQty) : '')) + '</td><td class="c q">' + matFmt(ordWanted(m)) + '</td><td class="c"><span class="box"></span></td></tr>';
+        '<td class="c q">' + matFmt(ordWanted(m)) + '</td><td class="c"><span class="box"></span></td></tr>';
     });
     var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>طلبية نواقص — ' + formatDateLabel(todayIso()) + '</title>' +
       '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">' +
@@ -7480,7 +7480,7 @@
       '.note{margin-top:12px;font-size:.88rem;border:1px dashed #B5C7C9;border-radius:10px;padding:8px 12px;}.sign{display:flex;justify-content:space-between;margin-top:30px;font-size:.85rem;color:#6B7F84;}.foot{margin-top:18px;text-align:center;font-size:.78rem;color:#82969b;border-top:1px solid #E7EFEF;padding-top:8px;}</style></head><body>' +
       '<div class="head"><img src="' + logoSrc + '"><div><h1>طلبية نواقص — عيادة د. أبانوب سليم لطب الأسنان</h1><span>' + formatDateLabel(todayIso()) + '</span></div></div>' +
       '<div class="meta"><span>المورد: <b>' + (sup ? escapeHtml(sup) : '........................') + '</b></span><span>عدد الأصناف: <b>' + n.toLocaleString('ar-EG') + '</b></span><span>أعدّها: <b>' + escapeHtml(getStaffName()) + '</b></span></div>' +
-      '<table><thead><tr><th style="width:34px;">#</th><th>الصنف</th><th style="width:70px;">الوحدة</th><th style="width:100px;">الموجود / الكامل</th><th style="width:80px;">المطلوب</th><th style="width:50px;">استلام</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<table><thead><tr><th style="width:34px;">#</th><th>الصنف</th><th style="width:70px;">الوحدة</th><th style="width:80px;">المطلوب</th><th style="width:50px;">استلام</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       (note ? '<div class="note">ملاحظات: ' + escapeHtml(note) + '</div>' : '') +
       '<div class="sign"><span>توقيع المستلم: ..................</span><span>توقيع المورد: ..................</span></div>' +
       '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p></body></html>';
