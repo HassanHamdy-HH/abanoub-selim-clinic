@@ -2868,6 +2868,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           phone: data.phone || '',
           age: typeof data.age === 'number' ? data.age : null,
           gender: data.gender || '',
+          birthDate: data.birthDate || '',
+          address: data.address || '',
+          visitType: data.visitType || '',
           status: data.status || 'pending',
           bookedBy: data.bookedBy || 'patient',
           bookedByName: data.bookedByName || '',
@@ -3700,8 +3703,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       'المصدر: ' + (b.bookedBy === 'staff' ? (normalizeStaffName(b.bookedByName) || 'الفريق') : 'الموقع')
     ];
     if(b.notes) lines.push('ملاحظات: ' + b.notes);
-    if(b.birthDate) lines.push('تاريخ الميلاد: ' + b.birthDate);
+    if(b.birthDate) lines.push('تاريخ الميلاد: ' + b.birthDate + ' (' + ciAgeText(b.birthDate) + ')');
     if(b.address) lines.push('العنوان: ' + b.address);
+    if(b.visitType) lines.push('سبب الزيارة: ' + (CI_VISIT[b.visitType] || b.visitType));
+    if(bookingPrivateCache[b.id]) lines.push('الرقم القومي: ' + bookingPrivateCache[b.id]);
     var msg = lines.join('\n') + '\n\nاختر إجراء:\n- اكتب "تأكيد" للتأكيد\n- اكتب "إلغاء" للإلغاء\n- سيب فاضي وألغِ للخروج';
     var action = prompt(msg, '');
     if(action === null) return;
@@ -4825,7 +4830,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         '<div class="rx-symbol-row"><span class="rx-symbol">℞</span><span class="rx-symbol-line"></span></div>' +
         '<ul class="rx-list">' + drugsHtml + '</ul>' +
         xraysHtml +
-        '<p class="rx-footer">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p>' +
+        '<p class="rx-footer">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01022642266 — 01094696497</p>' +
       '</body></html>';
 
     var printWin = window.open('', '_blank');
@@ -5089,6 +5094,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   // ====== استقبال المرضى بالـ QR ======
   var CHECKUP_FEE = (SERVICE_BY_ID.checkup && SERVICE_BY_ID.checkup.price) || 150;
+  var bookingPrivateCache = {};
   var checkinsCache = [], checkinsFirst = true, checkinsPendingPrev = 0, nbCheckin = null;
   var CI_VISIT = { checkup: 'كشف', followup: 'متابعة علاج', other: 'أخرى' };
   var CI_URL_KEY = 'clinicCheckinUrl';
@@ -5128,6 +5134,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function watchCheckins(){
     if(!firestoreDb) return;
     if(currentRole() !== 'admin' && currentRole() !== 'team') return;
+    firestoreDb.collection('bookingPrivate').onSnapshot(function(snap){
+      bookingPrivateCache = {};
+      snap.forEach(function(doc){ bookingPrivateCache[doc.id] = doc.data().nationalId || ''; });
+    }, function(err){ console.warn('Firestore listener error for bookingPrivate.', err); });
     firestoreDb.collection('checkins').onSnapshot(function(snap){
       checkinsCache = [];
       snap.forEach(function(doc){ var d = doc.data(); d.id = doc.id; checkinsCache.push(d); });
@@ -5263,7 +5273,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       '<img class="logo" src="' + logoSrc + '"><h1>عيادة د. أبانوب سليم لطب الأسنان</h1>' +
       '<h2>سجّل بياناتك بنفسك</h2><div class="qr">' + qrSvg(url) + '</div>' +
       '<ol><li>افتح كاميرا الموبايل وصوّب على الكود</li><li>املا بياناتك واضغط «إرسال»</li><li>فريق العيادة هيأكد ويحدد لك الميعاد</li></ol>' +
-      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p></body></html>';
+      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01022642266 — 01094696497</p></body></html>';
     var w = window.open('', '_blank');
     if(!w){ alert('المتصفح منع نافذة الطباعة. اسمح بالنوافذ المنبثقة وجرّب تاني.'); return; }
     w.document.open(); w.document.write(html); w.document.close();
@@ -6496,7 +6506,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       '<div class="metrics"><div class="m"><strong>' + st.days.toLocaleString('ar-EG') + '</strong><span>أيام حضور</span></div><div class="m"><strong>' + trFmtH(st.hours) + '</strong><span>ساعات</span></div><div class="m"><strong>' + st.late.toLocaleString('ar-EG') + '</strong><span>تأخير</span></div><div class="m"><strong>' + st.absent.toLocaleString('ar-EG') + '</strong><span>غياب</span></div><div class="m"><strong>' + st.taskPct.toLocaleString('ar-EG') + '٪</strong><span>إنجاز المهام</span></div></div>' +
       '<h2>الحضور والانصراف</h2><table><thead><tr><th>اليوم</th><th>الحضور</th><th>الانصراف</th><th>الساعات</th><th>الحالة</th><th>المهام</th></tr></thead><tbody>' + drows + '</tbody></table>' +
       (brows ? '<h2>المكافآت والخصومات</h2><table><thead><tr><th>التاريخ</th><th>النوع</th><th>السبب</th><th>المبلغ</th></tr></thead><tbody>' + brows + '</tbody></table><div class="net">الصافي: ' + (st.net >= 0 ? '+' : '−') + asMoney(Math.abs(st.net)) + ' جنيه</div>' : '') +
-      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p></body></html>';
+      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01022642266 — 01094696497</p></body></html>';
     var w = window.open('', '_blank');
     if(!w){ alert('المتصفح منع فتح نافذة الطباعة. اسمح بالنوافذ المنبثقة وجرّب تاني.'); return; }
     w.document.open(); w.document.write(html); w.document.close();
@@ -6735,7 +6745,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       '.foot{margin-top:20px;text-align:center;font-size:.8rem;color:#82969b;border-top:1px solid #E7EFEF;padding-top:10px;}</style></head><body>' +
       '<div class="head"><img src="' + logoSrc + '"><div><h1>جدول المتدربين الأسبوعي — عيادة د. أبانوب سليم لطب الأسنان</h1><span>آخر تحديث: ' + formatDateLabel(todayIso()) + '</span></div></div>' +
       trSchedTableHtml(true) +
-      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p></body></html>';
+      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01022642266 — 01094696497</p></body></html>';
   }
   function printSched(){
     var w = window.open('', '_blank');
@@ -7372,7 +7382,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         '<div class="m"><strong>' + all.roles.watch.toLocaleString('ar-EG') + '</strong><span>مشاهدة</span></div><div class="m"><strong>' + all.roles.help.toLocaleString('ar-EG') + '</strong><span>مساعدة</span></div><div class="m"><strong>' + all.roles.do.toLocaleString('ar-EG') + '</strong><span>تنفيذ</span></div><div class="m"><strong>' + all.roles.rx.toLocaleString('ar-EG') + '</strong><span>روشتات</span></div><div class="m"><strong>' + all.roles.file.toLocaleString('ar-EG') + '</strong><span>ملفات مرضية</span></div></div>' +
       '<h2>سجل الحضور والحالات</h2><table><thead><tr><th>اليوم</th><th>الحضور</th><th>الانصراف</th><th>الساعات</th><th>الحالات</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
       (achHtml ? '<h2>الإنجازات</h2><ul>' + achHtml + '</ul>' : '') +
-      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p></body></html>';
+      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01022642266 — 01094696497</p></body></html>';
     var w = window.open('', '_blank');
     if(!w){ alert('المتصفح منع فتح نافذة الطباعة. اسمح بالنوافذ المنبثقة وجرّب تاني.'); return; }
     w.document.open(); w.document.write(html); w.document.close();
@@ -7770,7 +7780,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       '<table><thead><tr><th style="width:34px;">#</th><th>الصنف</th><th style="width:70px;">الوحدة</th><th style="width:80px;">المطلوب</th><th style="width:50px;">استلام</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       (note ? '<div class="note">ملاحظات: ' + escapeHtml(note) + '</div>' : '') +
       '<div class="sign"><span>توقيع المستلم: ..................</span><span>توقيع المورد: ..................</span></div>' +
-      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01026422660 — 01094696497</p></body></html>';
+      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01022642266 — 01094696497</p></body></html>';
     var w = window.open('', '_blank');
     if(!w){ err.style.color = '#D64545'; err.textContent = 'المتصفح منع نافذة الطباعة. اسمح بالنوافذ المنبثقة وجرّب تاني.'; return; }
     w.document.open(); w.document.write(html); w.document.close();
@@ -8584,6 +8594,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var b = allBookings.filter(function(x){ return x.id === id; })[0];
 
     var updates = { status: status };
+    // حجز من الموقع نوعه «كشف» واتأكد: ينزل سعر الكشف تلقائي في حسابات يوم الحجز
+    var autoFee = 0;
+    if(status === 'confirmed' && b && b.visitType === 'checkup' && !(b.totalAmount > 0)){
+      autoFee = CHECKUP_FEE;
+      updates.services = ['checkup']; updates.totalAmount = autoFee; updates.paidAmount = autoFee;
+    }
     if(status === 'no_show'){
       // A no-show never actually happened — any billed/paid amount for it
       // shouldn't stay in the accounts or the daily financial summary.
@@ -8594,6 +8610,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
     firestoreDb.collection('bookings').doc(id).update(updates)
       .then(function(){
+        if(autoFee && b){ logPaymentReceived({ id: id, name: b.name }, autoFee, 'cash', b.dayIso); }
         if(b){
           if(status === 'confirmed'){
             logActivity('confirm', 'تأكيد حجز ' + b.name + ' — ' + formatDateLabel(b.dayIso) + ' ' + (SLOT_LABELS[b.slotValue] || b.slotValue));
