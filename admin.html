@@ -1115,7 +1115,8 @@
     .view-tab{padding:7px 12px;font-size:.78rem;white-space:nowrap;}
     .topbar-actions-group{justify-content:stretch;flex-wrap:wrap;}
     .topbar-actions-group .btn{flex:1 1 auto;font-size:.78rem;padding:9px 12px;}
-    .more-menu{left:0;right:auto;min-width:180px;}
+    .more-menu{position:fixed;left:12px;right:12px;top:auto;bottom:12px;min-width:0;max-height:70vh;overflow-y:auto;z-index:300;padding:8px;gap:4px;box-shadow:0 -8px 30px rgba(9,46,56,.28);border-radius:16px;}
+    .more-menu button{padding:14px 14px;font-size:.92rem;}
 
     .day-chip{min-width:64px;padding:8px 10px;}
     .ds-expenses-grid{grid-template-columns:1fr;}
