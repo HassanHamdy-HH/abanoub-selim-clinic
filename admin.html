@@ -701,6 +701,28 @@
   /* ---------- MATERIALS (المخزون) ---------- */
   .tab-badge{display:none;min-width:18px;height:18px;padding:0 5px;margin-right:6px;border-radius:999px;background:#D64545;color:#fff;font-size:.68rem;font-weight:800;align-items:center;justify-content:center;line-height:1;}
   .tab-badge.show{display:inline-flex;}
+  .period-modal{max-width:780px !important;}
+  .pr-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px;}
+  .pr-tabs button{flex:1;min-width:84px;font:inherit;font-weight:700;font-size:.86rem;padding:9px 8px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;}
+  .pr-tabs button.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .pr-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0;}
+  .pr-kpi{background:var(--pale-aqua);border-radius:12px;padding:10px 12px;}
+  .pr-kpi span{display:block;font-size:.76rem;color:var(--ink-soft);font-weight:600;}
+  .pr-kpi b{display:block;font-family:'Tajawal',sans-serif;font-size:1.2rem;color:var(--deep-teal);margin-top:2px;}
+  .pr-kpi em{display:block;font-style:normal;font-size:.74rem;font-weight:700;margin-top:2px;color:var(--ink-soft);}
+  .pr-kpi em.up{color:#1E9E5A;} .pr-kpi em.down{color:#D64545;}
+  .pr-sec{font-family:'Tajawal',sans-serif;font-weight:800;color:var(--teal);margin:16px 0 8px;font-size:.95rem;}
+  .pr-table{width:100%;border-collapse:collapse;font-size:.84rem;}
+  .pr-table th{background:var(--deep-teal);color:#fff;padding:7px 8px;text-align:center;font-weight:700;}
+  .pr-table td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--line);}
+  .pr-table td:first-child{text-align:right;font-weight:700;}
+  .pr-table tr.tot td{background:var(--pale-aqua);font-weight:800;}
+  .pr-fin{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .pr-fin div{display:flex;justify-content:space-between;background:#F6FBFB;border-radius:10px;padding:9px 12px;font-size:.86rem;}
+  .pr-fin div b{font-family:'Tajawal',sans-serif;}
+  .pr-fin .wide{grid-column:1 / -1;background:var(--deep-teal);color:#fff;}
+  .pr-tablewrap{overflow-x:auto;}
+  @media (max-width:520px){.pr-fin{grid-template-columns:1fr;}}
   .ci-card{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:#fff;}
   .ci-card.done{opacity:.72;background:#F4F9F9;}
   .ci-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
@@ -1650,6 +1672,9 @@
     </div>
 
     <div class="analytics-view" id="analyticsView" style="display:none;">
+      <div style="display:flex;margin-bottom:14px;">
+        <button class="btn btn-gold" id="periodReportBtn">📊 تقارير الشهور والفترات</button>
+      </div>
       <div class="stats-grid analytics-stats">
         <div class="stat-card today">
           <div class="stat-ic">🔥</div>
@@ -2474,6 +2499,25 @@
   </div>
 </div>
 
+<div class="booking-modal-overlay" id="periodOverlay">
+  <div class="booking-modal period-modal">
+    <button class="modal-close" id="periodClose" aria-label="إغلاق">✕</button>
+    <h3>📊 تقارير الشهور والفترات</h3>
+    <div class="pr-tabs" id="prTabs">
+      <button type="button" data-type="month" class="on">شهري</button>
+      <button type="button" data-type="quarter">ربع سنوي</button>
+      <button type="button" data-type="half">نصف سنوي</button>
+      <button type="button" data-type="year">سنوي</button>
+    </div>
+    <div class="modal-field-row">
+      <div class="modal-field"><label>السنة</label><select id="prYear"></select></div>
+      <div class="modal-field" id="prIdxWrap"><label id="prIdxLabel">الشهر</label><select id="prIdx"></select></div>
+    </div>
+    <div id="prBody"></div>
+    <button class="cta-btn gold" id="prPrintBtn" style="width:100%;justify-content:center;margin-top:14px;">🖨️ طباعة / حفظ PDF</button>
+  </div>
+</div>
+
 <button class="theme-fab" id="themeFabBtn" aria-label="تغيير سمة اللوحة" title="تغيير السمة">🎨</button>
 <span class="theme-fab-label" id="themeFabLabel"></span>
 
@@ -3142,6 +3186,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
 
     document.getElementById('newBookingBtn').addEventListener('click', openNewBookingModal);
+    document.getElementById('periodReportBtn').addEventListener('click', openPeriodModal);
+    document.getElementById('periodClose').addEventListener('click', function(){ document.getElementById('periodOverlay').classList.remove('open'); });
+    document.getElementById('periodOverlay').addEventListener('click', function(e){ if(e.target.id === 'periodOverlay') e.target.classList.remove('open'); });
+    document.getElementById('prTabs').addEventListener('click', function(e){
+      var b = e.target.closest('button[data-type]'); if(!b) return;
+      prType = b.getAttribute('data-type');
+      Array.prototype.forEach.call(this.children, function(x){ x.classList.toggle('on', x === b); });
+      prFillIdx(true); renderPeriodReport();
+    });
+    document.getElementById('prYear').addEventListener('change', renderPeriodReport);
+    document.getElementById('prIdx').addEventListener('change', renderPeriodReport);
+    document.getElementById('prPrintBtn').addEventListener('click', printPeriodReport);
     document.getElementById('checkinBtn').addEventListener('click', openCheckinModal);
     document.getElementById('checkinClose').addEventListener('click', closeCheckinModal);
     document.getElementById('checkinOverlay').addEventListener('click', function(e){ if(e.target.id === 'checkinOverlay') closeCheckinModal(); });
@@ -8269,6 +8325,232 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
       listEl.appendChild(card);
     });
+  }
+
+
+  // ====== تقارير الفترات: شهري / ربع سنوي / نصف سنوي / سنوي ======
+  var prType = 'month';
+  var PR_LEN = { month: 1, quarter: 3, half: 6, year: 12 };
+  var PR_Q = ['الربع الأول (يناير – مارس)', 'الربع الثاني (أبريل – يونيو)', 'الربع الثالث (يوليو – سبتمبر)', 'الربع الرابع (أكتوبر – ديسمبر)'];
+  var PR_H = ['النصف الأول (يناير – يونيو)', 'النصف الثاني (يوليو – ديسمبر)'];
+  var prLast = null;
+
+  function prYm(y, m0){ return y + '-' + String(m0 + 1).padStart(2, '0'); }
+  function prRange(type, year, idx){
+    var len = PR_LEN[type];
+    var m0 = type === 'month' ? idx : type === 'quarter' ? idx * 3 : type === 'half' ? idx * 6 : 0;
+    var months = [];
+    for(var i = 0; i < len; i++) months.push(prYm(year + Math.floor((m0 + i) / 12), (m0 + i) % 12));
+    return months;
+  }
+  function prPrevRange(months){
+    var first = months[0].split('-'), n = months.length;
+    var tot = (+first[0]) * 12 + (+first[1] - 1) - n, out = [];
+    for(var i = 0; i < n; i++){ var t = tot + i; out.push(prYm(Math.floor(t / 12), t % 12)); }
+    return out;
+  }
+  function prLabel(type, year, idx){
+    if(type === 'month') return ARABIC_MONTHS[idx] + ' ' + year;
+    if(type === 'quarter') return PR_Q[idx] + ' ' + year;
+    if(type === 'half') return PR_H[idx] + ' ' + year;
+    return 'سنة ' + year;
+  }
+  function prMonthName(ym){ var p = ym.split('-'); return ARABIC_MONTHS[+p[1] - 1] + ' ' + p[0]; }
+
+  function prYears(){
+    var ys = {}; var cy = new Date().getFullYear(); ys[cy] = 1;
+    allBookings.forEach(function(b){ if(b.dayIso) ys[+b.dayIso.slice(0, 4)] = 1; });
+    paymentsCache.forEach(function(x){ if(x.dayIso) ys[+x.dayIso.slice(0, 4)] = 1; });
+    return Object.keys(ys).map(Number).sort(function(a, b){ return b - a; });
+  }
+  function prFillIdx(reset){
+    var sel = document.getElementById('prIdx'), wrap = document.getElementById('prIdxWrap'), lab = document.getElementById('prIdxLabel');
+    var prev = sel.value;
+    sel.innerHTML = '';
+    var items = prType === 'month' ? ARABIC_MONTHS.slice(0, 12) : prType === 'quarter' ? PR_Q : prType === 'half' ? PR_H : [];
+    wrap.style.display = prType === 'year' ? 'none' : '';
+    lab.textContent = prType === 'month' ? 'الشهر' : prType === 'quarter' ? 'الربع' : 'النصف';
+    items.forEach(function(t, i){ var o = document.createElement('option'); o.value = i; o.textContent = t; sel.appendChild(o); });
+    var now = new Date();
+    var def = prType === 'month' ? now.getMonth() : prType === 'quarter' ? Math.floor(now.getMonth() / 3) : prType === 'half' ? Math.floor(now.getMonth() / 6) : 0;
+    sel.value = (!reset && prev !== '') ? prev : String(def);
+  }
+  function openPeriodModal(){
+    var ysel = document.getElementById('prYear');
+    var cur = ysel.value;
+    ysel.innerHTML = '';
+    prYears().forEach(function(y){ var o = document.createElement('option'); o.value = y; o.textContent = y; ysel.appendChild(o); });
+    ysel.value = cur || String(new Date().getFullYear());
+    if(!ysel.value) ysel.selectedIndex = 0;
+    prFillIdx(false);
+    document.getElementById('periodOverlay').classList.add('open');
+    renderPeriodReport();
+  }
+
+  // تجميع كل الأرقام لمجموعة شهور
+  function prAggregate(months){
+    var set = {}; months.forEach(function(m){ set[m] = 1; });
+    var per = {}; months.forEach(function(m){ per[m] = { ym: m, bookings: 0, confirmed: 0, noShow: 0, collected: 0, expenses: 0 }; });
+    var t = { bookings: 0, confirmed: 0, noShow: 0, pending: 0, collected: 0, cash: 0, vodafone: 0, team: 0, doctor: 0, pool: 0, material: 0, lab: 0, other: 0, newPatients: 0 };
+    var weekdays = [0, 0, 0, 0, 0, 0, 0], services = {};
+
+    allBookings.forEach(function(b){
+      var ym = (b.dayIso || '').slice(0, 7);
+      if(!set[ym]) return;
+      per[ym].bookings++; t.bookings++;
+      if(b.status === 'confirmed'){ per[ym].confirmed++; t.confirmed++; }
+      else if(b.status === 'no_show'){ per[ym].noShow++; t.noShow++; }
+      else t.pending++;
+      var pp = b.dayIso.split('-').map(Number);
+      weekdays[new Date(pp[0], pp[1] - 1, pp[2]).getDay()]++;
+      if(b.status === 'confirmed' && b.services){
+        var q = b.serviceQuantities || {};
+        b.services.forEach(function(id){ if(SERVICE_BY_ID[id]) services[id] = (services[id] || 0) + (q[id] || 1); });
+      }
+    });
+
+    var dayTot = {};
+    paymentsCache.forEach(function(x){
+      var ym = (x.dayIso || '').slice(0, 7);
+      if(!set[ym]) return;
+      var a = x.amount || 0;
+      per[ym].collected += a; t.collected += a;
+      if(x.method === 'vodafone_cash') t.vodafone += a; else t.cash += a;
+      dayTot[x.dayIso] = (dayTot[x.dayIso] || 0) + a;
+    });
+    Object.keys(dayTot).forEach(function(d){
+      var tot = dayTot[d], team = computeTeamShare(tot), doc = tot * 0.4;
+      t.team += team; t.doctor += doc; t.pool += tot - team - doc;
+    });
+    Object.keys(dailyExpensesCache).forEach(function(d){
+      var ym = d.slice(0, 7); if(!set[ym]) return;
+      var e = dailyExpensesCache[d] || {};
+      var sum = (e.material || 0) + (e.lab || 0) + (e.other || 0);
+      t.material += e.material || 0; t.lab += e.lab || 0; t.other += e.other || 0;
+      per[ym].expenses += sum;
+    });
+    t.expenses = t.material + t.lab + t.other;
+    t.remaining = t.pool - t.expenses;
+
+    // مرضى جداد: أول حجز ليهم (مش «لم يحضر») وقع في الفترة دي
+    var first = {};
+    allBookings.forEach(function(b){
+      if(!b.phone || b.status === 'no_show') return;
+      var k = b.phone + '|' + (b.name || '').trim().toLowerCase();
+      if(!first[k] || b.dayIso < first[k]) first[k] = b.dayIso;
+    });
+    Object.keys(first).forEach(function(k){ if(set[first[k].slice(0, 7)]) t.newPatients++; });
+
+    return { t: t, per: months.map(function(m){ return per[m]; }), weekdays: weekdays, services: services };
+  }
+
+  function prDelta(cur, prev){
+    if(!prev) return { txt: prev === 0 && cur > 0 ? 'جديد' : '—', cls: '' };
+    var d = Math.round(((cur - prev) / prev) * 100);
+    return { txt: (d > 0 ? '▲ ' : d < 0 ? '▼ ' : '') + Math.abs(d) + '% عن الفترة اللي قبلها', cls: d > 0 ? 'up' : d < 0 ? 'down' : '' };
+  }
+  function prMoney(n){ return Math.round(n).toLocaleString('ar-EG') + ' جنيه'; }
+
+  function renderPeriodReport(){
+    var year = +document.getElementById('prYear').value;
+    var idx = +document.getElementById('prIdx').value || 0;
+    var months = prRange(prType, year, idx);
+    var agg = prAggregate(months), prev = prAggregate(prPrevRange(months));
+    var t = agg.t, pv = prev.t;
+    var label = prLabel(prType, year, idx);
+    prLast = { label: label, agg: agg, prev: prev, type: prType };
+    var body = document.getElementById('prBody');
+    body.innerHTML = '';
+
+    function kpi(name, val, d){ return '<div class="pr-kpi"><span>' + name + '</span><b>' + val + '</b>' + (d ? '<em class="' + d.cls + '">' + d.txt + '</em>' : '') + '</div>'; }
+    var maxWd = 0, wdIdx = -1;
+    agg.weekdays.forEach(function(c, i){ if(c > maxWd){ maxWd = c; wdIdx = i; } });
+    var topSvc = Object.keys(agg.services).sort(function(a, b){ return agg.services[b] - agg.services[a]; }).slice(0, 6);
+    var rate = t.bookings ? Math.round(t.confirmed / t.bookings * 100) + '%' : '—';
+
+    var html = '<div class="pr-sec" style="margin-top:4px;">' + escapeHtml(label) + '</div>' +
+      '<div class="pr-kpis">' +
+        kpi('💰 الإيراد المحصّل', prMoney(t.collected), prDelta(t.collected, pv.collected)) +
+        kpi('📅 الحجوزات', t.bookings.toLocaleString('ar-EG'), prDelta(t.bookings, pv.bookings)) +
+        kpi('✅ المؤكدة', t.confirmed.toLocaleString('ar-EG') + ' (' + rate + ')', prDelta(t.confirmed, pv.confirmed)) +
+        kpi('🚫 لم يحضر', t.noShow.toLocaleString('ar-EG'), null) +
+        kpi('🆕 مرضى جداد', t.newPatients.toLocaleString('ar-EG'), prDelta(t.newPatients, pv.newPatients)) +
+        kpi('🔥 أكتر يوم زحمة', wdIdx >= 0 ? WEEKDAY_NAMES[wdIdx] : '—', null) +
+      '</div>';
+
+    html += '<div class="pr-sec">التفصيل المالي</div><div class="pr-fin">' +
+      '<div><span>كاش</span><b>' + prMoney(t.cash) + '</b></div>' +
+      '<div><span>فودافون كاش</span><b>' + prMoney(t.vodafone) + '</b></div>' +
+      '<div><span>نصيب الفريق</span><b>' + prMoney(t.team) + '</b></div>' +
+      '<div><span>نصيب الدكتور (٤٠٪)</span><b>' + prMoney(t.doctor) + '</b></div>' +
+      '<div><span>رصيد المصاريف</span><b>' + prMoney(t.pool) + '</b></div>' +
+      '<div><span>المصاريف (ماتريال ' + Math.round(t.material).toLocaleString('ar-EG') + ' · معمل ' + Math.round(t.lab).toLocaleString('ar-EG') + ' · أخرى ' + Math.round(t.other).toLocaleString('ar-EG') + ')</span><b>' + prMoney(t.expenses) + '</b></div>' +
+      '<div class="wide"><span>المتبقي بعد المصاريف</span><b>' + prMoney(t.remaining) + '</b></div></div>';
+
+    html += '<div class="pr-sec">' + (months.length > 1 ? 'التفصيل شهر بشهر' : 'الشهر') + '</div><div class="pr-tablewrap"><table class="pr-table"><thead><tr><th>الشهر</th><th>الحجوزات</th><th>المؤكدة</th><th>لم يحضر</th><th>الإيراد</th><th>المصاريف</th></tr></thead><tbody>';
+    agg.per.forEach(function(r){
+      html += '<tr><td>' + prMonthName(r.ym) + '</td><td>' + r.bookings + '</td><td>' + r.confirmed + '</td><td>' + r.noShow + '</td><td>' + Math.round(r.collected).toLocaleString('ar-EG') + '</td><td>' + Math.round(r.expenses).toLocaleString('ar-EG') + '</td></tr>';
+    });
+    if(agg.per.length > 1){
+      html += '<tr class="tot"><td>الإجمالي</td><td>' + t.bookings + '</td><td>' + t.confirmed + '</td><td>' + t.noShow + '</td><td>' + Math.round(t.collected).toLocaleString('ar-EG') + '</td><td>' + Math.round(t.expenses).toLocaleString('ar-EG') + '</td></tr>';
+    }
+    html += '</tbody></table></div>';
+    body.innerHTML = html;
+
+    if(agg.per.length > 1){
+      var h = document.createElement('div'); h.className = 'pr-sec'; h.textContent = 'الإيراد شهر بشهر'; body.appendChild(h);
+      var chart = document.createElement('div'); chart.className = 'bar-chart';
+      var mx = Math.max.apply(null, agg.per.map(function(r){ return r.collected; }).concat([1]));
+      agg.per.forEach(function(r){ chart.appendChild(buildBarRow(prMonthName(r.ym), Math.round(r.collected), mx)); });
+      body.appendChild(chart);
+    }
+    if(topSvc.length){
+      var h2 = document.createElement('div'); h2.className = 'pr-sec'; h2.textContent = 'أكتر الإجراءات (الحجوزات المؤكدة)'; body.appendChild(h2);
+      var chart2 = document.createElement('div'); chart2.className = 'bar-chart';
+      var mx2 = agg.services[topSvc[0]];
+      topSvc.forEach(function(id){ chart2.appendChild(buildBarRow(SERVICE_BY_ID[id].name, agg.services[id], mx2)); });
+      body.appendChild(chart2);
+    }
+  }
+
+  function printPeriodReport(){
+    if(!prLast) return;
+    var L = prLast, t = L.agg.t, pv = L.prev.t;
+    var logoSrc = document.querySelector('.topbar-brand img').src;
+    function M(n){ return Math.round(n).toLocaleString('ar-EG'); }
+    function d(c, p){ if(!p) return '—'; var x = Math.round((c - p) / p * 100); return (x > 0 ? '▲ ' : x < 0 ? '▼ ' : '') + Math.abs(x) + '%'; }
+    var rows = L.agg.per.map(function(r, i){
+      return '<tr><td class="nm">' + prMonthName(r.ym) + '</td><td>' + r.bookings + '</td><td>' + r.confirmed + '</td><td>' + r.noShow + '</td><td>' + M(r.collected) + '</td><td>' + M(r.expenses) + '</td></tr>';
+    }).join('');
+    if(L.agg.per.length > 1) rows += '<tr class="tot"><td class="nm">الإجمالي</td><td>' + t.bookings + '</td><td>' + t.confirmed + '</td><td>' + t.noShow + '</td><td>' + M(t.collected) + '</td><td>' + M(t.expenses) + '</td></tr>';
+    var svcs = Object.keys(L.agg.services).sort(function(a, b){ return L.agg.services[b] - L.agg.services[a]; }).slice(0, 8)
+      .map(function(id){ return '<tr><td class="nm">' + escapeHtml(SERVICE_BY_ID[id].name) + '</td><td>' + L.agg.services[id] + '</td></tr>'; }).join('');
+    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>تقرير ' + escapeHtml(L.label) + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">' +
+      '<style>*{box-sizing:border-box;margin:0;padding:0;}@page{size:A4;margin:12mm;}body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#132A30;font-size:13px;line-height:1.6;padding:24px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}@media print{body{padding:0;}}' +
+      '.head{display:flex;align-items:center;gap:16px;border-bottom:4px solid #0B3B47;padding-bottom:12px;margin-bottom:14px;}.head img{width:60px;height:60px;border-radius:50%;}.head h1{font-family:"Tajawal",sans-serif;font-size:1.25rem;color:#0B3B47;}.head span{color:#6B7F84;font-size:.85rem;}' +
+      'h2{font-family:"Tajawal",sans-serif;font-size:1rem;color:#0B3B47;margin:16px 0 8px;}' +
+      '.k{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}.k div{background:#F4F9F9;border:1px solid #DCE8E8;border-radius:10px;padding:8px 12px;}.k span{display:block;font-size:.76rem;color:#6B7F84;}.k b{font-family:"Tajawal",sans-serif;font-size:1.1rem;color:#0B3B47;}.k em{font-style:normal;font-size:.72rem;color:#4A6067;}' +
+      'table{width:100%;border-collapse:collapse;}th{background:#0B3B47;color:#fff;padding:6px 8px;font-size:.82rem;}td{border-bottom:1px solid #E1ECEC;padding:6px 8px;text-align:center;}td.nm{text-align:right;font-weight:700;}tr.tot td{background:#E7F2F3;font-weight:800;}tr{page-break-inside:avoid;}' +
+      '.foot{margin-top:18px;text-align:center;font-size:.78rem;color:#82969b;border-top:1px solid #E7EFEF;padding-top:8px;}</style></head><body>' +
+      '<div class="head"><img src="' + logoSrc + '"><div><h1>تقرير ' + escapeHtml(L.label) + ' — عيادة د. أبانوب سليم</h1><span>طُبع ' + formatDateLabel(todayIso()) + '</span></div></div>' +
+      '<div class="k">' +
+        '<div><span>الإيراد المحصّل</span><b>' + M(t.collected) + ' جنيه</b><br><em>' + d(t.collected, pv.collected) + ' عن الفترة السابقة</em></div>' +
+        '<div><span>الحجوزات</span><b>' + t.bookings + '</b><br><em>' + d(t.bookings, pv.bookings) + ' عن الفترة السابقة</em></div>' +
+        '<div><span>المؤكدة / لم يحضر</span><b>' + t.confirmed + ' / ' + t.noShow + '</b></div>' +
+        '<div><span>مرضى جداد</span><b>' + t.newPatients + '</b><br><em>' + d(t.newPatients, pv.newPatients) + '</em></div>' +
+        '<div><span>نصيب الفريق</span><b>' + M(t.team) + '</b></div>' +
+        '<div><span>نصيب الدكتور</span><b>' + M(t.doctor) + '</b></div>' +
+        '<div><span>المصاريف</span><b>' + M(t.expenses) + '</b></div>' +
+        '<div><span>رصيد المصاريف</span><b>' + M(t.pool) + '</b></div>' +
+        '<div><span>المتبقي بعد المصاريف</span><b>' + M(t.remaining) + '</b></div></div>' +
+      '<h2>التفصيل شهر بشهر</h2><table><thead><tr><th>الشهر</th><th>الحجوزات</th><th>المؤكدة</th><th>لم يحضر</th><th>الإيراد</th><th>المصاريف</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      (svcs ? '<h2>أكتر الإجراءات</h2><table><thead><tr><th>الإجراء</th><th>العدد</th></tr></thead><tbody>' + svcs + '</tbody></table>' : '') +
+      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01022642266 — 01094696497</p></body></html>';
+    var w = window.open('', '_blank');
+    if(!w){ alert('المتصفح منع نافذة الطباعة. اسمح بالنوافذ المنبثقة وجرّب تاني.'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+    w.onload = function(){ setTimeout(function(){ w.focus(); w.print(); }, 300); };
   }
 
   function renderAnalytics(){
