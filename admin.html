@@ -701,6 +701,14 @@
   /* ---------- MATERIALS (المخزون) ---------- */
   .tab-badge{display:none;min-width:18px;height:18px;padding:0 5px;margin-right:6px;border-radius:999px;background:#D64545;color:#fff;font-size:.68rem;font-weight:800;align-items:center;justify-content:center;line-height:1;}
   .tab-badge.show{display:inline-flex;}
+  /* المتدربين: عرض مواعيد الحالات بس */
+  body.role-trainee #newBookingBtn, body.role-trainee #remindBtn, body.role-trainee .more-menu-wrap, body.role-trainee #blockedDaysCard{display:none !important;}
+  body.role-trainee table.bookings thead th:nth-child(4), body.role-trainee table.bookings thead th:nth-child(6), body.role-trainee table.bookings thead th:nth-child(7), body.role-trainee table.bookings thead th:nth-child(9){display:none;}
+  body.role-trainee #trAddBtn{display:none !important;}
+  .tr-issue{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:.84rem;background:#fff;}
+  .tr-issue.absent{background:#FDEBEE;border-color:#F3C9C9;}
+  .tr-issue.late{background:#FFF4DE;border-color:#F1D9A2;}
+  .tr-issue b{font-family:'Tajawal',sans-serif;}
   .period-modal{max-width:780px !important;}
   .pr-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px;}
   .pr-tabs button{flex:1;min-width:84px;font:inherit;font-weight:700;font-size:.86rem;padding:9px 8px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;}
@@ -1557,6 +1565,39 @@
         </div>
       </div>
 
+      <div class="chart-card" id="installEnvelopeCard">
+        <h3 class="accordion-head"><span>🧾 ظرف أقساط العيادة</span><span class="accordion-chevron">▾</span></h3>
+        <div class="accordion-body">
+        <span class="chart-hint">ظرف مستقل لأقساط العيادة — مبلغه بيتحرك بإيدك بس (إضافة / سحب لدفع قسط)، ومش بيتأثر بمصاريف اليوم ولا بظرف العيادة. تقدر تنقل مبلغ بينه وبين ظرف العيادة.</span>
+
+        <div class="envelope-balance-box">
+          <span class="envelope-balance-label">رصيد الأقساط</span>
+          <strong id="instBalance">0 جنيه</strong>
+          <div class="envelope-wallets">
+            <div class="envelope-wallet"><span>💵 كاش</span><strong id="instCashBalance">0 جنيه</strong></div>
+            <div class="envelope-wallet"><span>📱 فودافون كاش</span><strong id="instVfBalance">0 جنيه</strong></div>
+          </div>
+        </div>
+
+        <div class="envelope-wallet-pick" id="instWalletPick">
+          <label class="on"><input type="radio" name="instWallet" value="cash" checked> 💵 كاش</label>
+          <label><input type="radio" name="instWallet" value="vodafone_cash"> 📱 فودافون كاش</label>
+        </div>
+
+        <div class="ds-btn-row">
+          <button class="cta-btn gold" id="instDepositBtn" style="width:100%;justify-content:center;">➕ إضافة لظرف الأقساط</button>
+          <button class="btn btn-outline" id="instWithdrawBtn" style="width:100%;justify-content:center;">➖ دفع قسط / سحب</button>
+          <button class="btn btn-outline" id="instTransferBtn" style="width:100%;justify-content:center;">🔁 تحويل بين كاش وفودافون كاش</button>
+          <button class="btn btn-outline" id="instFromMainBtn" style="width:100%;justify-content:center;">⬇️ نقل من ظرف العيادة للأقساط</button>
+          <button class="btn btn-outline" id="instToMainBtn" style="width:100%;justify-content:center;">⬆️ نقل من الأقساط لظرف العيادة</button>
+        </div>
+
+        <h4 class="envelope-history-title">آخر الحركات</h4>
+        <div class="envelope-history-list" id="instHistoryList"></div>
+        <div class="empty-mini" id="instHistoryEmpty" style="display:none;">لسه مفيش حركات على ظرف الأقساط.</div>
+        </div>
+      </div>
+
       <div class="chart-card collapsed" id="monthlyReportCard">
         <h3 class="accordion-head"><span>📅 التقرير الشهري</span><span class="accordion-chevron">▾</span></h3>
         <div class="accordion-body">
@@ -2263,6 +2304,8 @@
     <div class="tr-worked" id="trdWorked"></div>
     <div class="tr-sec-title"><span>📅 الحضور والحالات</span><button type="button" class="tr-mini-btn" id="trdAddSessionBtn">➕ تسجيل حضور</button></div>
     <div class="tr-form" id="trdSessionForm"></div>
+    <div class="tr-sec-title"><span>🚫 الغياب والتأخير</span></div>
+    <div id="trdIssues"></div>
     <div id="trdSessions"></div>
 
     <div class="tr-sec-title"><span>🏆 الإنجازات</span><button type="button" class="tr-mini-btn" id="trdAddAchBtn">➕ إنجاز</button></div>
@@ -2556,6 +2599,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   };
   var currentStaff = null; // { uid, name, role, pin }
   function currentRole(){ return currentStaff ? currentStaff.role : ''; }
+  function isTraineeRole(){ return currentRole() === 'trainee'; }
+  function denyTrainee(){
+    if(!isTraineeRole()) return false;
+    alert('الصلاحية دي مش متاحة لحسابات المتدربين.');
+    return true;
+  }
   function allowedViews(){ return currentStaff ? (ROLE_TABS[currentStaff.role] || ['table']) : ['table']; }
   // تأكيد المسح: كود شخصي محفوظ في مستند الحساب (مش في الملف). حسابات المتدربين مفيش عندها مسح.
   function canDeletePin(pin){
@@ -2569,6 +2618,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var el = document.getElementById(ids[v]);
       if(el) el.style.display = ok.indexOf(v) !== -1 ? '' : 'none';
     });
+    document.body.classList.toggle('role-trainee', isTraineeRole());
     var canCi = (currentRole() === 'admin' || currentRole() === 'team');
     var cb = document.getElementById('checkinBtn'); if(cb) cb.style.display = canCi ? '' : 'none';
     var qb = document.getElementById('qrBtn'); if(qb) qb.style.display = canCi ? '' : 'none';
@@ -2844,7 +2894,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var publicSlotsReconciled = false;
   var publicSlotStatus = {};
   function syncPublicSlots(snap){
-    if(!firestoreDb || !currentStaff) return;
+    if(!firestoreDb || !currentStaff || currentStaff.role === 'trainee') return;
     var col = firestoreDb.collection('publicSlots');
     if(!publicSlotsReconciled){
       publicSlotsReconciled = true;
@@ -3471,6 +3521,59 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if(amount > fromBalance && !confirm('المبلغ أكبر من رصيد ' + ENVELOPE_WALLET_LABELS[from] + ' الحالي. تكمل برضو؟')) return;
       transferEnvelopeWallets(amount, from, to);
     });
+    // ---- ظرف أقساط العيادة ----
+    document.querySelectorAll('#instWalletPick input').forEach(function(r){
+      r.addEventListener('change', function(){
+        document.querySelectorAll('#instWalletPick label').forEach(function(l){ l.classList.toggle('on', l.querySelector('input').checked); });
+      });
+    });
+    function selectedInstWallet(){
+      var r = document.querySelector('#instWalletPick input:checked');
+      return r ? r.value : 'cash';
+    }
+    function askAmount(msg){
+      var v = prompt(msg, '');
+      if(v === null) return null;
+      var a = parseFloat(latinNum(v));
+      if(isNaN(a) || a <= 0){ alert('اكتب مبلغ صحيح أكبر من صفر.'); return null; }
+      return a;
+    }
+    function latinNum(v){
+      return String(v).replace(/[\u0660-\u0669]/g, function(d){ return d.charCodeAt(0) - 0x0660; }).replace(/[\u06F0-\u06F9]/g, function(d){ return d.charCodeAt(0) - 0x06F0; });
+    }
+    document.getElementById('instDepositBtn').addEventListener('click', function(){
+      var w = selectedInstWallet();
+      var a = askAmount('قد إيه عايز تضيف لظرف الأقساط (' + ENVELOPE_WALLET_LABELS[w] + ')؟'); if(a === null) return;
+      var reason = prompt('سبب الإضافة (اختياري):', '') || '';
+      addEnvelopeTransaction(a, reason, w, 'installments');
+    });
+    document.getElementById('instWithdrawBtn').addEventListener('click', function(){
+      var w = selectedInstWallet(), bal = getEnvelopeBalance(w, 'installments');
+      var a = askAmount('قد إيه القسط / المبلغ اللي هتسحبه من ' + ENVELOPE_WALLET_LABELS[w] + '؟ (الرصيد: ' + bal.toLocaleString('ar-EG') + ' جنيه)'); if(a === null) return;
+      if(a > bal && !confirm('المبلغ أكبر من رصيد ' + ENVELOPE_WALLET_LABELS[w] + ' في ظرف الأقساط. تكمل برضو؟')) return;
+      var reason = prompt('القسط ده لإيه؟ (مثال: قسط جهاز / إيجار — اختياري):', '') || '';
+      addEnvelopeTransaction(-a, reason, w, 'installments');
+    });
+    document.getElementById('instTransferBtn').addEventListener('click', function(){
+      var from = selectedInstWallet(), to = from === 'cash' ? 'vodafone_cash' : 'cash', bal = getEnvelopeBalance(from, 'installments');
+      var a = askAmount('قد إيه عايز تحوّل من ' + ENVELOPE_WALLET_LABELS[from] + ' إلى ' + ENVELOPE_WALLET_LABELS[to] + '؟ (رصيد ' + ENVELOPE_WALLET_LABELS[from] + ': ' + bal.toLocaleString('ar-EG') + ' جنيه)'); if(a === null) return;
+      if(a > bal && !confirm('المبلغ أكبر من رصيد ' + ENVELOPE_WALLET_LABELS[from] + ' الحالي. تكمل برضو؟')) return;
+      transferEnvelopeWallets(a, from, to, 'installments');
+    });
+    function moveBetweenEnvelopes(fromEnv, toEnv){
+      var w = selectedInstWallet(), bal = getEnvelopeBalance(w, fromEnv);
+      var fromName = fromEnv === 'main' ? 'ظرف العيادة' : 'ظرف الأقساط', toName = toEnv === 'main' ? 'ظرف العيادة' : 'ظرف الأقساط';
+      var a = askAmount('قد إيه عايز تنقل من ' + fromName + ' إلى ' + toName + ' (' + ENVELOPE_WALLET_LABELS[w] + ')؟ (رصيد ' + fromName + ': ' + bal.toLocaleString('ar-EG') + ' جنيه)'); if(a === null) return;
+      if(a > bal && !confirm('المبلغ أكبر من رصيد ' + ENVELOPE_WALLET_LABELS[w] + ' في ' + fromName + '. تكمل برضو؟')) return;
+      var reason = 'نقل من ' + fromName + ' إلى ' + toName;
+      var col = firestoreDb.collection('envelopeTransactions'), now = Date.now(), day = todayIso();
+      function doc(env, amt, t){ var d = { amount: amt, reason: reason, wallet: w, transfer: true, dayIso: day, ts: t }; if(env === 'installments') d.envelope = 'installments'; return d; }
+      Promise.all([ col.add(doc(fromEnv, -a, now)), col.add(doc(toEnv, a, now + 1)) ]).then(function(){
+        logActivity('daily_expenses', reason + ' — ' + a.toLocaleString('ar-EG') + ' جنيه (' + ENVELOPE_WALLET_LABELS[w] + ')');
+      }).catch(function(err){ alert('حصل خطأ: ' + err.message); });
+    }
+    document.getElementById('instFromMainBtn').addEventListener('click', function(){ moveBetweenEnvelopes('main', 'installments'); });
+    document.getElementById('instToMainBtn').addEventListener('click', function(){ moveBetweenEnvelopes('installments', 'main'); });
     document.getElementById('wipeFinancialBtn').addEventListener('click', wipeFinancialData);
     document.getElementById('dailySummaryDate').addEventListener('change', renderDailySummary);
     document.getElementById('dsMaterial').addEventListener('input', updateDailyRemaining);
@@ -3631,6 +3734,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var pendingBlockDay = null;
 
   function toggleBlockDay(day, isCurrentlyBlocked){
+    if(denyTrainee()) return;
     if(isCurrentlyBlocked){
       if(!confirm('تأكيد فتح يوم ' + day.weekday + ' ' + day.dateLabel + ' تاني للحجز؟')) return;
       firestoreDb.collection('blockedDays').doc(day.iso).delete()
@@ -3642,6 +3746,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   function openBlockDayModal(day){
+    if(denyTrainee()) return;
     pendingBlockDay = day;
     document.getElementById('blockDayLabel').textContent = day.weekday + ' ' + day.dateLabel;
     document.getElementById('blockReasonInput').value = '';
@@ -3738,8 +3843,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           if(b){
             cell.className = 'cal-cell ' + (b.status === 'no_show' ? 'noshow-cell' : b.status === 'awaiting' ? 'awaiting-cell' : b.status);
             var statusLabel = b.status === 'confirmed' ? 'مؤكد' : b.status === 'no_show' ? 'لم يحضر' : b.status === 'awaiting' ? 'لسه ما أكدش' : 'في الانتظار';
-            cell.title = b.name + ' — ' + b.phone + ' — ' + statusLabel + (b.notes ? '\nملاحظات: ' + b.notes : '');
-            cell.addEventListener('click', function(){ openCellDetails(b); });
+            cell.title = isTraineeRole() ? (b.name + ' — ' + statusLabel) : (b.name + ' — ' + b.phone + ' — ' + statusLabel + (b.notes ? '\nملاحظات: ' + b.notes : ''));
+            if(!isTraineeRole()) cell.addEventListener('click', function(){ openCellDetails(b); });
           } else {
             cell.className = 'cal-cell';
             cell.title = day.weekday + ' ' + day.dateLabel + ' — ' + SLOT_LABELS[slotValue] + ' — متاح';
@@ -3751,6 +3856,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   function openCellDetails(b){
+    if(isTraineeRole()) return;
     var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
     var lines = [
       'المريض: ' + b.name,
@@ -5339,6 +5445,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   // ---- New booking (staff, from inside the dashboard) ----
   function openNewBookingModal(){
+    if(denyTrainee()) return;
     var daySel = document.getElementById('nbDaySelect');
     daySel.value = todayIso();
     updateNbWeekdayLabel(daySel.value);
@@ -5646,41 +5753,50 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var ENVELOPE_WALLET_LABELS = { cash: 'كاش', vodafone_cash: 'فودافون كاش' };
 
   // الحركات القديمة (من غير wallet) بتتحسب كاش
-  function getEnvelopeBalance(wallet){
+  // ظرف الأقساط محفوظ في نفس المجموعة بعلامة envelope:'installments'، وأي حركة قديمة من غير علامة = ظرف العيادة
+  function envOf(t){ return t.envelope === 'installments' ? 'installments' : 'main'; }
+  function getEnvelopeBalance(wallet, env){
+    env = env === 'installments' ? 'installments' : 'main';
     return envelopeCache.reduce(function(sum, t){
+      if(envOf(t) !== env) return sum;
       if(wallet && (t.wallet === 'vodafone_cash' ? 'vodafone_cash' : 'cash') !== wallet) return sum;
       return sum + (t.amount || 0);
     }, 0);
   }
 
-  function transferEnvelopeWallets(amount, from, to){
+  function transferEnvelopeWallets(amount, from, to, env){
     var now = Date.now(), day = todayIso();
     var reason = 'تحويل من ' + ENVELOPE_WALLET_LABELS[from] + ' إلى ' + ENVELOPE_WALLET_LABELS[to];
     var col = firestoreDb.collection('envelopeTransactions');
-    Promise.all([
-      col.add({ amount: -amount, reason: reason, wallet: from, transfer: true, dayIso: day, ts: now }),
-      col.add({ amount: amount, reason: reason, wallet: to, transfer: true, dayIso: day, ts: now + 1 })
-    ]).then(function(){
-      logActivity('daily_expenses', reason + ' — ' + amount.toLocaleString('ar-EG') + ' جنيه');
+    var d1 = { amount: -amount, reason: reason, wallet: from, transfer: true, dayIso: day, ts: now };
+    var d2 = { amount: amount, reason: reason, wallet: to, transfer: true, dayIso: day, ts: now + 1 };
+    if(env === 'installments'){ d1.envelope = 'installments'; d2.envelope = 'installments'; }
+    Promise.all([ col.add(d1), col.add(d2) ]).then(function(){
+      logActivity('daily_expenses', reason + (env === 'installments' ? ' (ظرف الأقساط)' : '') + ' — ' + amount.toLocaleString('ar-EG') + ' جنيه');
     }).catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
   function renderEnvelope(){
-    var balanceEl = document.getElementById('envelopeBalance');
+    renderEnvelopeBox('main', 'envelopeBalance', 'envelopeCashBalance', 'envelopeVfBalance', 'envelopeHistoryList', 'envelopeHistoryEmpty');
+    renderEnvelopeBox('installments', 'instBalance', 'instCashBalance', 'instVfBalance', 'instHistoryList', 'instHistoryEmpty');
+  }
+
+  function renderEnvelopeBox(env, balId, cashId, vfId, listId, emptyId){
+    var balanceEl = document.getElementById(balId);
     if(!balanceEl) return;
 
-    var balance = getEnvelopeBalance();
-    balanceEl.textContent = balance.toLocaleString('ar-EG') + ' جنيه';
-    var cashEl = document.getElementById('envelopeCashBalance');
-    var vfEl = document.getElementById('envelopeVfBalance');
-    if(cashEl) cashEl.textContent = getEnvelopeBalance('cash').toLocaleString('ar-EG') + ' جنيه';
-    if(vfEl) vfEl.textContent = getEnvelopeBalance('vodafone_cash').toLocaleString('ar-EG') + ' جنيه';
+    balanceEl.textContent = getEnvelopeBalance(null, env).toLocaleString('ar-EG') + ' جنيه';
+    var cashEl = document.getElementById(cashId);
+    var vfEl = document.getElementById(vfId);
+    if(cashEl) cashEl.textContent = getEnvelopeBalance('cash', env).toLocaleString('ar-EG') + ' جنيه';
+    if(vfEl) vfEl.textContent = getEnvelopeBalance('vodafone_cash', env).toLocaleString('ar-EG') + ' جنيه';
 
-    var listEl = document.getElementById('envelopeHistoryList');
-    var emptyEl = document.getElementById('envelopeHistoryEmpty');
+    var listEl = document.getElementById(listId);
+    var emptyEl = document.getElementById(emptyId);
     listEl.innerHTML = '';
 
-    var sorted = envelopeCache.slice().sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); }).slice(0, 30);
+    var sorted = envelopeCache.filter(function(t){ return envOf(t) === env; })
+      .sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); }).slice(0, 30);
     if(sorted.length === 0){
       emptyEl.style.display = 'block';
       return;
@@ -5704,16 +5820,19 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
   }
 
-  function addEnvelopeTransaction(amount, reason, wallet){
+  function addEnvelopeTransaction(amount, reason, wallet, env){
     wallet = wallet === 'vodafone_cash' ? 'vodafone_cash' : 'cash';
-    firestoreDb.collection('envelopeTransactions').add({
+    var doc = {
       amount: amount,
       reason: reason || '',
       wallet: wallet,
       dayIso: todayIso(),
       ts: Date.now()
-    }).then(function(){
-      logActivity('daily_expenses', (amount > 0 ? 'إضافة ' + amount.toLocaleString('ar-EG') + ' جنيه للظرف' : 'سحب ' + Math.abs(amount).toLocaleString('ar-EG') + ' جنيه من الظرف') + ' (' + ENVELOPE_WALLET_LABELS[wallet] + ')' + (reason ? ' — ' + reason : ''));
+    };
+    if(env === 'installments') doc.envelope = 'installments';
+    firestoreDb.collection('envelopeTransactions').add(doc).then(function(){
+      var envName = env === 'installments' ? 'ظرف الأقساط' : 'الظرف';
+      logActivity('daily_expenses', (amount > 0 ? 'إضافة ' + amount.toLocaleString('ar-EG') + ' جنيه ل' + envName : 'سحب ' + Math.abs(amount).toLocaleString('ar-EG') + ' جنيه من ' + envName) + ' (' + ENVELOPE_WALLET_LABELS[wallet] + ')' + (reason ? ' — ' + reason : ''));
     }).catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
@@ -6427,7 +6546,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if(!confirm('تحذف يوم ' + formatDateLabel(r.date) + '؟')) return;
         firestoreDb.collection('assistantDays').doc(r.id).delete().then(function(){ logActivity('edit', 'حذف يوم حضور ' + a.name + ' — ' + formatDateLabel(r.date)); });
       });
-      acts.appendChild(eb); acts.appendChild(db); box.appendChild(acts);
+      acts.appendChild(eb); acts.appendChild(db); if(!isTraineeRole()) box.appendChild(acts);
       dl.appendChild(box);
     });
 
@@ -6916,6 +7035,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if(isInside) pills.appendChild(trEl('span', 'tr-pill in', '🟢 موجود من ' + trTimeLabel(open.timeIn)));
       else if(forgot) pills.appendChild(trEl('span', 'tr-pill warn', '⚠️ انصراف ناقص ' + formatDateLabel(open.date)));
       if(t.status === 'ended') pills.appendChild(trEl('span', 'tr-pill', 'منتهي'));
+      var iss = trIssues(t).filter(function(x){ return x.date.indexOf(monthPrefix) === 0; });
+      var nAbs = iss.filter(function(x){ return x.type === 'absent'; }).length, nLate = iss.length - nAbs;
+      if(nAbs) pills.appendChild(trEl('span', 'tr-pill warn', '🚫 غياب ' + nAbs.toLocaleString('ar-EG')));
+      if(nLate) pills.appendChild(trEl('span', 'tr-pill warn', '⏰ تأخير ' + nLate.toLocaleString('ar-EG')));
       head.appendChild(pills);
       card.appendChild(head);
 
@@ -6939,7 +7062,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var d1 = trEl('button', 'btn btn-outline', '📋 التفاصيل'); d1.type = 'button';
       d1.addEventListener('click', function(){ openTraineeDetail(t.id); });
       var e1 = trEl('button', 'btn btn-outline', '✏️'); e1.type = 'button'; e1.title = 'تعديل بيانات المتدرب';
-      e1.addEventListener('click', function(){ if(trCheckPin(t)) openTraineeModal(t); });
+      e1.addEventListener('click', function(){ if(isTraineeRole() && myTraineeId() !== t.id){ alert('تقدر تعدّل بيانات كارتك أنت بس.'); return; } if(trCheckPin(t)) openTraineeModal(t); });
       act.appendChild(d1); act.appendChild(e1);
       card.appendChild(act);
       listEl.appendChild(card);
@@ -6956,6 +7079,27 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var found = '';
     Object.keys(TR_DEFAULT_PINS).forEach(function(k){ if(trNormName(k) === trNormName(t.name)) found = TR_DEFAULT_PINS[k]; });
     return found;
+  }
+  // كارت المتدرب المربوط بحساب الدخول الحالي (بالاسم، أو بحقل traineeId في مستند staff لو موجود)
+  function myTraineeId(){
+    if(!isTraineeRole() || !currentStaff) return null;
+    if(currentStaff.traineeId) return currentStaff.traineeId;
+    var me = trNormName(currentStaff.name), hit = null;
+    traineesCache.forEach(function(t){
+      var n = trNormName(t.name);
+      if(!n || !me) return;
+      if(n === me) hit = t.id;
+      else if(!hit && (n.indexOf(me) !== -1 || me.indexOf(n) !== -1)) hit = t.id;
+    });
+    return hit;
+  }
+  // حساب المتدرب يقدر يسجّل حضور/انصراف لكارته هو بس
+  function trCanRecordFor(t){
+    if(!isTraineeRole()) return true;
+    var mine = myTraineeId();
+    if(!mine){ alert('حسابك مش مربوط بكارت متدرب. كلّم الأدمن عشان يربطه.'); return false; }
+    if(mine !== t.id){ alert('تقدر تسجّل حضورك أنت بس — مش لمتدرب تاني.'); return false; }
+    return true;
   }
   function trCheckPin(t){
     var pin = trPinOf(t);
@@ -7068,7 +7212,49 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }).catch(function(err){ alert('حصل خطأ: ' + err.message); });
   }
 
+  // ====== الغياب والتأخير (بيتحسب من جدول المتدرب والحجوزات المسجلة) ======
+  var TR_TRACK_FROM = '2026-11-10';   // أول يوم بيتحسب فيه الغياب والتأخير
+  var TR_ABSENT_AFTER_MIN = 22 * 60;  // بعد 10 مساءً بيتحسب غياب
+  var TR_LATE_AFTER_MIN = 30;         // بعد نص ساعة من أول حالة بيتحسب تأخير
+  function trDayBaseline(iso, slot){
+    var first = null;
+    allBookings.forEach(function(b){
+      if(b.dayIso !== iso || b.status === 'no_show') return;
+      var m = trToMin(b.slotValue);
+      if(m != null && (first === null || m < first)) first = m;
+    });
+    // التأخير بيتحسب من أول حالة في اليوم؛ لو مفيش حالات اليوم ده مفيش تأخير (الغياب بس هو اللي بيتحسب)
+    return first !== null ? { min: first, src: 'case' } : null;
+  }
+  function trIssues(t){
+    var out = [], today = todayIso(), now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
+    if(!t.schedule) return out;
+    var from = TR_TRACK_FROM;
+    if(t.startDate && t.startDate > from) from = t.startDate;
+    var p = from.split('-').map(Number), d = new Date(p[0], p[1] - 1, p[2]);
+    for(; ; d.setDate(d.getDate() + 1)){
+      var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      if(iso > today) break;
+      var slot = t.schedule[String(d.getDay())];
+      if(!slot) continue;
+      var bd = blockedDays[iso];
+      if(bd && bd.fullDay !== false) continue; // العيادة مقفولة اليوم ده
+      var sess = traineeSessionsCache.filter(function(x){ return x.traineeId === t.id && x.date === iso && x.timeIn; })
+        .sort(function(a, b){ return a.timeIn < b.timeIn ? -1 : 1; });
+      if(!sess.length){
+        if(iso < today || nowMin >= TR_ABSENT_AFTER_MIN) out.push({ date: iso, type: 'absent' });
+        continue;
+      }
+      var base = trDayBaseline(iso, slot), inMin = trToMin(sess[0].timeIn);
+      if(base && inMin != null && inMin > base.min + TR_LATE_AFTER_MIN){
+        out.push({ date: iso, type: 'late', late: inMin - base.min, base: base.min, timeIn: sess[0].timeIn, src: base.src });
+      }
+    }
+    return out.reverse();
+  }
+
   function trQuickToggle(t, open){
+    if(!trCanRecordFor(t)) return;
     if(!trCheckPin(t)) return;
     if(open){
       var out = trNowHM();
@@ -7154,6 +7340,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   function deleteTrainee(){
+    if(denyTrainee()) return;
     var t = traineesCache.filter(function(x){ return x.id === trEditingId; })[0];
     if(!t) return;
     var pin = prompt('اكتب الكود السري عشان تحذف المتدرب «' + t.name + '» وكل سجلاته:', '');
@@ -7233,6 +7420,21 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       wk.appendChild(r);
     });
 
+    // الغياب والتأخير
+    var il = document.getElementById('trdIssues'); il.innerHTML = '';
+    var issues = trIssues(t);
+    if(!issues.length){
+      il.appendChild(trEl('div', 'empty-mini', t.schedule ? 'مفيش غياب أو تأخير مسجّل (من ' + formatDateLabel(TR_TRACK_FROM) + ').' : 'مفيش جدول أسبوعي للمتدرب — حدّد جدوله عشان يتحسب الغياب والتأخير.'));
+    }
+    issues.forEach(function(x){
+      var r = trEl('div', 'tr-issue ' + x.type);
+      r.appendChild(trEl('b', '', (x.type === 'absent' ? '🚫 غياب — ' : '⏰ تأخير — ') + formatDateLabel(x.date)));
+      r.appendChild(trEl('span', '', x.type === 'absent'
+        ? 'ما سجّلش حضور'
+        : 'حضر ' + trTimeLabel(x.timeIn) + ' — اتأخر ' + x.late.toLocaleString('ar-EG') + ' دقيقة عن ' + (x.src === 'case' ? 'أول حالة' : 'ميعاده') + ' (' + trTimeLabel(String(Math.floor(x.base / 60)).padStart(2, '0') + ':' + String(x.base % 60).padStart(2, '0')) + ')'));
+      il.appendChild(r);
+    });
+
     // الحضور
     var sl = document.getElementById('trdSessions'); sl.innerHTML = '';
     var sessions = trSessionsOf(t.id);
@@ -7261,7 +7463,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if(!confirm('تحذف حضور ' + formatDateLabel(se.date) + '؟')) return;
         firestoreDb.collection('traineeSessions').doc(se.id).delete().then(function(){ logActivity('edit', 'حذف حضور متدرب ' + t.name + ' — ' + formatDateLabel(se.date)); });
       });
-      acts.appendChild(eb); acts.appendChild(db); box.appendChild(acts);
+      acts.appendChild(eb); acts.appendChild(db); if(!isTraineeRole()) box.appendChild(acts);
       sl.appendChild(box);
     });
 
@@ -7297,6 +7499,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   // ---- نموذج الحضور والحالات ----
   function openSessionForm(se){
+    if(isTraineeRole()){ alert('تسجيل أو تعديل الحضور اليدوي للأدمن بس. سجّل حضورك من زرار «تسجيل حضور الآن» في كارتك.'); return; }
     var t = traineesCache.filter(function(x){ return x.id === trDetailId; })[0];
     if(!t) return;
     trEditingSessionId = se ? se.id : null;
@@ -8801,7 +9004,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       vdBtn.className = 'notes-btn vd-cell-btn' + (vdSteps.length ? ' has-notes' : '');
       vdBtn.textContent = vdSteps.length ? '🦷 عرض / تعديل' : '🦷 إضافة تفاصيل';
       vdBtn.addEventListener('click', function(){ openVisitDetails({ phone: b.phone, name: b.name }, b.id); });
-      vdCell.appendChild(vdBtn);
+      if(!isTraineeRole()) vdCell.appendChild(vdBtn);
 
       var notesCell = tr.querySelector('.notes-cell');
       var notesBtn = document.createElement('button');
@@ -8869,11 +9072,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       waBtn.rel = 'noopener';
       actions.appendChild(waBtn);
 
+      if(isTraineeRole()){
+        // المتدرب بيشوف مواعيد الحالات بس: من غير موبايل / مصدر / ملاحظات / إجراءات
+        [8, 6, 5, 3].forEach(function(i){ if(tr.children[i]) tr.removeChild(tr.children[i]); });
+      }
       body.appendChild(tr);
     });
   }
 
   function updateStatus(id, status){
+    if(denyTrainee()) return;
     var b = allBookings.filter(function(x){ return x.id === id; })[0];
 
     var updates = { status: status };
@@ -8911,6 +9119,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       .catch(function(err){ alert('حصل خطأ أثناء التحديث: ' + err.message); });
   }
   function deleteBooking(id){
+    if(denyTrainee()) return;
     var b = allBookings.filter(function(x){ return x.id === id; })[0];
     firestoreDb.collection('bookings').doc(id).delete()
       .then(function(){
@@ -8921,6 +9130,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       .catch(function(err){ alert('حصل خطأ أثناء الحذف: ' + err.message); });
   }
   function editNotes(b){
+    if(denyTrainee()) return;
     var note = prompt('ملاحظات على حجز ' + b.name + ':', b.notes || '');
     if(note === null) return;
     firestoreDb.collection('bookings').doc(b.id).update({ notes: note })
@@ -8934,6 +9144,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var pendingReferenceBooking = null; // الحجز القديم اللي بيستمر عليه العلاج — أي دفعة جديدة بتتضاف على المدفوع بتاعه هو
 
   function openEditBookingModal(b){
+    if(denyTrainee()) return;
     pendingEditBooking = b;
     var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
     document.getElementById('editBookingSlotInfo').textContent = formatDateLabel(b.dayIso) + ' — ' + slotLabel;
