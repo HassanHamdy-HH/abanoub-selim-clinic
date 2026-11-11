@@ -285,6 +285,8 @@
   }
   .cal-cell.pending{background:var(--pending);border-color:var(--pending);cursor:pointer;}
   .cal-cell.confirmed{background:var(--confirmed);border-color:var(--confirmed);cursor:pointer;}
+  .cal-cell.arrived{box-shadow:inset 0 0 0 3px #fff,0 0 0 2px #1E9E5A;}
+  .badge-arr{display:inline-block;margin-right:6px;font-size:.72rem;font-weight:800;color:#1E7A4A;background:#E7F6EE;border-radius:999px;padding:1px 8px;}
   .cal-cell.awaiting-cell{background:#4F85C7;border-color:#4F85C7;cursor:pointer;}
   .cal-cell.noshow-cell{background:#B0B0B0;border-color:#B0B0B0;cursor:pointer;}
   .cal-cell.blocked{background:repeating-linear-gradient(45deg,#F3C9C9,#F3C9C9 4px,#FBEAEA 4px,#FBEAEA 8px);}
@@ -710,6 +712,13 @@
   .tr-issue.late{background:#FFF4DE;border-color:#F1D9A2;}
   .tr-issue b{font-family:'Tajawal',sans-serif;}
   .period-modal{max-width:780px !important;}
+  .sv-sec{margin:16px 0 6px;font-family:'Tajawal',sans-serif;font-weight:800;color:var(--deep-teal);}
+  .sv-q{margin:10px 0 4px;font-weight:700;font-size:.9rem;}
+  .sv-n{font-size:.78rem;color:var(--ink-soft);font-weight:500;}
+  .sv-cm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;font-size:.88rem;background:#fff;}
+  .sv-cm small{display:block;color:var(--ink-soft);margin-top:3px;}
+  .sv-link{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0;}
+  .sv-link input{flex:1;min-width:200px;}
   .pr-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px;}
   .pr-tabs button{flex:1;min-width:84px;font:inherit;font-weight:700;font-size:.86rem;padding:9px 8px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;}
   .pr-tabs button.on{background:var(--teal);border-color:var(--teal);color:#fff;}
@@ -1219,6 +1228,129 @@
     table.bookings.cards-mobile td.name-cell{white-space:normal;}
   }
   html,body{max-width:100%;overflow-x:clip;}
+  /* ================= PRO UI LAYER ================= */
+  :root{
+    --pro-ease:cubic-bezier(.22,.9,.3,1);
+    --pro-spring:cubic-bezier(.2,1.1,.3,1.15);
+    --shadow:0 1px 2px rgba(6,26,32,.06), 0 10px 28px -14px rgba(6,26,32,.30);
+    --shadow-lg:0 2px 4px rgba(6,26,32,.06), 0 22px 44px -18px rgba(6,26,32,.40);
+  }
+  ::selection{background:var(--aqua);color:var(--deep-teal-2);}
+  /* ambient background */
+  body{background:var(--pale-aqua);position:relative;}
+  body::before,body::after{content:'';position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(70px);opacity:.55;}
+  body::before{width:46vw;height:46vw;top:-14vw;right:-10vw;background:radial-gradient(circle,var(--aqua) 0%,transparent 70%);animation:proDrift1 22s ease-in-out infinite alternate;}
+  body::after{width:40vw;height:40vw;bottom:-14vw;left:-10vw;background:radial-gradient(circle,rgba(217,164,65,.55) 0%,transparent 70%);animation:proDrift2 26s ease-in-out infinite alternate;}
+  .app,.pin-gate{position:relative;z-index:1;}
+  .pin-gate{z-index:100;}
+  @keyframes proDrift1{to{transform:translate(-8vw,10vw) scale(1.15);}}
+  @keyframes proDrift2{to{transform:translate(9vw,-8vw) scale(1.2);}}
+  /* scrollbar */
+  *{scrollbar-width:thin;scrollbar-color:var(--aqua) transparent;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--aqua);border-radius:9px;border:2px solid transparent;background-clip:content-box;}
+  /* focus */
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px;}
+  /* login gate */
+  .pin-gate{overflow:hidden;}
+  .pin-gate::before,.pin-gate::after{content:'';position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;animation:proDrift1 18s ease-in-out infinite alternate;}
+  .pin-gate::before{width:420px;height:420px;background:var(--aqua);top:-120px;right:-80px;}
+  .pin-gate::after{width:360px;height:360px;background:rgba(217,164,65,.7);bottom:-120px;left:-80px;animation-name:proDrift2;}
+  .pin-card{position:relative;z-index:1;backdrop-filter:blur(14px);animation:proRise .7s var(--pro-spring) both;box-shadow:0 40px 80px -30px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.25) inset;}
+  .pin-card img{animation:proFloat 4.5s ease-in-out infinite;box-shadow:0 0 0 4px rgba(217,164,65,.25),0 10px 26px -8px rgba(11,59,71,.5);}
+  @keyframes proFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+  @keyframes proRise{from{opacity:0;transform:translateY(26px) scale(.96);}to{opacity:1;transform:none;}}
+  .pin-card.shake{animation:proShake .45s;}
+  @keyframes proShake{20%,60%{transform:translateX(-9px);}40%,80%{transform:translateX(9px);}}
+  /* topbar glass */
+  header.topbar{background:rgba(255,255,255,.78);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px);transition:box-shadow .3s ease,background .3s ease;}
+  header.topbar.scrolled{box-shadow:0 10px 30px -18px rgba(6,26,32,.5);background:rgba(255,255,255,.92);}
+  .topbar-brand img{transition:transform .6s var(--pro-spring);}
+  .topbar-brand:hover img{transform:rotate(360deg) scale(1.06);}
+  .today-chip{position:relative;overflow:hidden;}
+  .today-chip::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.7) 50%,transparent 70%);transform:translateX(-120%);animation:proShine 5s ease-in-out infinite;}
+  @keyframes proShine{0%,70%{transform:translateX(-120%);}100%{transform:translateX(120%);}}
+  /* stat cards */
+  .stats-grid .stat-card{animation:proRise .6s var(--pro-ease) both;transition:transform .35s var(--pro-ease),box-shadow .35s ease,border-color .3s;}
+  .stats-grid .stat-card:nth-child(1){animation-delay:.05s;}.stats-grid .stat-card:nth-child(2){animation-delay:.12s;}
+  .stats-grid .stat-card:nth-child(3){animation-delay:.19s;}.stats-grid .stat-card:nth-child(4){animation-delay:.26s;}
+  .stats-grid .stat-card:nth-child(5){animation-delay:.33s;}
+  .stat-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:var(--aqua);}
+  .stat-card::before{background:linear-gradient(90deg,var(--teal),var(--aqua),var(--gold),var(--aqua),var(--teal));background-size:300% 100%;animation:proFlow 6s linear infinite;}
+  @keyframes proFlow{to{background-position:-300% 0;}}
+  .stat-card .stat-ic{transition:transform .5s var(--pro-spring);}
+  .stat-card:hover .stat-ic{transform:scale(1.18) rotate(-8deg);}
+  .stat-card::after{content:'';position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--aqua),transparent 70%);opacity:0;right:-30px;bottom:-50px;transition:opacity .4s;pointer-events:none;}
+  .stat-card:hover::after{opacity:.22;}
+  /* cards / panels reveal */
+  .pro-pre{opacity:0;transform:translateY(18px);}
+  .pro-in{opacity:1;transform:none;transition:opacity .6s var(--pro-ease),transform .6s var(--pro-ease);}
+  .chart-card,.table-card{box-shadow:var(--shadow);transition:box-shadow .3s ease,transform .3s ease;}
+  .chart-card:hover{box-shadow:var(--shadow-lg);}
+  /* views */
+  main.content > div[id$="View"]{animation:proView .45s var(--pro-ease) both;}
+  @keyframes proView{from{opacity:0;transform:translateY(16px) scale(.995);}to{opacity:1;transform:none;}}
+  /* buttons */
+  .btn,.cta-btn,.view-tab,.icon-btn,.day-chip{position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;}
+  .btn:active,.cta-btn:active,.icon-btn:active{transform:scale(.96);}
+  .btn:hover,.cta-btn:hover{transform:translateY(-2px);}
+  .btn-gold,.cta-btn.gold{background-size:200% 100%;}
+  .btn-gold::after,.cta-btn.gold::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-130%);transition:transform .7s ease;pointer-events:none;}
+  .btn-gold:hover::after,.cta-btn.gold:hover::after{transform:translateX(130%);}
+  .btn-outline{transition:transform .2s,background .2s,border-color .2s,box-shadow .2s;}
+  .btn-outline:hover{border-color:var(--aqua);box-shadow:0 8px 18px -12px rgba(6,26,32,.5);}
+  .pro-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:proRipple .6s ease-out forwards;pointer-events:none;}
+  .btn-outline .pro-ripple,.view-tab .pro-ripple,.icon-btn .pro-ripple,.day-chip .pro-ripple{background:rgba(14,127,145,.25);}
+  @keyframes proRipple{to{transform:scale(1);opacity:0;}}
+  /* tabs */
+  .view-tab{transition:background .3s,color .3s,box-shadow .3s,transform .2s;}
+  .view-tab:hover:not(.active){color:var(--teal);background:rgba(255,255,255,.6);}
+  .view-tab.active{animation:proPop .35s var(--pro-spring);}
+  @keyframes proPop{from{transform:scale(.9);}to{transform:scale(1);}}
+  /* badges */
+  .tab-badge.show{animation:proBadge 1.8s ease-in-out infinite;}
+  @keyframes proBadge{0%,100%{box-shadow:0 0 0 0 rgba(214,69,69,.55);}50%{box-shadow:0 0 0 7px rgba(214,69,69,0);}}
+  .badge{transition:transform .2s;}
+  .badge:hover{transform:scale(1.06);}
+  /* tables / rows / cards */
+  table tbody tr{transition:background-color .2s ease,transform .2s ease,box-shadow .2s ease;}
+  table tbody tr:hover{background:rgba(53,191,209,.09);}
+  .patient-card,.mat-card,.ci-card,.reminder-row{transition:transform .3s var(--pro-ease),box-shadow .3s ease,border-color .3s ease;}
+  .patient-card:hover,.mat-card:hover,.ci-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--aqua);}
+  /* calendar */
+  .cal-cell{transition:transform .2s var(--pro-spring),background-color .25s,box-shadow .25s;}
+  .cal-cell.confirmed:hover,.cal-cell.pending:hover{transform:scale(1.12);box-shadow:0 8px 18px -8px rgba(6,26,32,.5);z-index:2;position:relative;}
+  .cal-cell.arrived{animation:proArrived 2.2s ease-in-out infinite;}
+  @keyframes proArrived{0%,100%{box-shadow:inset 0 0 0 3px #fff,0 0 0 2px #1E9E5A;}50%{box-shadow:inset 0 0 0 3px #fff,0 0 0 5px rgba(30,158,90,.35);}}
+  /* bars */
+  .bar-fill{transform-origin:right center;animation:proBar .9s var(--pro-ease) both;}
+  @keyframes proBar{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  .pr-kpi{transition:transform .3s var(--pro-ease),box-shadow .3s;}
+  .pr-kpi:hover{transform:translateY(-3px);box-shadow:0 10px 22px -14px rgba(6,26,32,.5);}
+  /* modals */
+  .booking-modal-overlay.open{animation:proFade .25s ease both;}
+  .booking-modal-overlay.open .booking-modal{animation:proModal .45s var(--pro-spring) both;}
+  .booking-modal{box-shadow:0 2px 6px rgba(0,0,0,.08),0 40px 90px -24px rgba(0,0,0,.55);}
+  @keyframes proFade{from{opacity:0;}to{opacity:1;}}
+  @keyframes proModal{from{opacity:0;transform:translateY(30px) scale(.93);}to{opacity:1;transform:none;}}
+  .modal-close{transition:transform .3s var(--pro-spring),background .2s;}
+  .modal-close:hover{transform:rotate(90deg) scale(1.1);background:#DCEEEE;}
+  /* inputs */
+  input:not([type=checkbox]):not([type=radio]),select,textarea{transition:border-color .25s,box-shadow .25s,background .25s;}
+  input:focus,select:focus,textarea:focus{box-shadow:0 0 0 4px rgba(53,191,209,.22);}
+  /* theme fab */
+  .theme-fab{transition:transform .4s var(--pro-spring),box-shadow .3s;}
+  .theme-fab:hover{transform:scale(1.12) rotate(20deg);}
+  @media (max-width:760px){
+    body::before,body::after{display:none;}
+    .stat-card:hover,.patient-card:hover,.mat-card:hover{transform:none;}
+    .btn:hover,.cta-btn:hover{transform:none;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+    .pro-pre{opacity:1;transform:none;}
+  }
+  /* ================= /PRO UI LAYER ================= */
 </style>
 <script>
   // تطبيق السمة المحفوظة فورًا قبل ما الصفحة تتحمّل، عشان محدش يشوف ومضة اللون الافتراضي
@@ -1300,6 +1432,7 @@
       </div>
       <div class="topbar-actions-group">
         <button class="btn btn-gold" id="newBookingBtn">➕ حجز جديد</button>
+        <button class="btn btn-outline" id="backupBtn" style="display:none;">💾 نسخة احتياطية<span class="tab-badge" id="backupBadge">!</span></button>
         <button class="btn btn-outline" id="checkinBtn" style="display:none;">📥 الواصلين<span class="tab-badge" id="checkinBadge">0</span></button>
         <button class="btn btn-gold" id="remindBtn">📨 تذكير حجوزات بكرة</button>
         <div class="more-menu-wrap">
@@ -1716,6 +1849,7 @@
     <div class="analytics-view" id="analyticsView" style="display:none;">
       <div style="display:flex;margin-bottom:14px;">
         <button class="btn btn-gold" id="periodReportBtn">📊 تقارير الشهور والفترات</button>
+        <button class="btn" id="surveyBtn" style="margin-right:8px;display:none;">📝 استبيان المرضى</button>
       </div>
       <div class="stats-grid analytics-stats">
         <div class="stat-card today">
@@ -2562,6 +2696,33 @@
   </div>
 </div>
 
+<div class="booking-modal-overlay" id="surveyOverlay">
+  <div class="booking-modal period-modal">
+    <button class="modal-close" id="surveyClose" aria-label="إغلاق">✕</button>
+    <h3>📝 استبيان المرضى</h3>
+    <div class="sv-link">
+      <input id="svUrl" type="text" dir="ltr" readonly>
+      <button class="cta-btn" id="svCopy">نسخ الرابط</button>
+      <button class="cta-btn gold" id="svQr">QR</button>
+      <button class="cta-btn" id="svPrintQ">🖨️ طباعة الأسئلة</button>
+    </div>
+    <div id="svQrBox" style="display:none;text-align:center;margin:8px 0;"><div id="svQrImg" style="width:200px;margin:0 auto;"></div></div>
+    <div id="svBody"></div>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="backupOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="backupClose" aria-label="إغلاق">✕</button>
+    <h3>💾 النسخة الاحتياطية</h3>
+    <p class="chart-hint" id="bkLast" style="margin:6px 0 12px;"></p>
+    <button class="cta-btn gold" id="bkNow" style="width:100%;justify-content:center;">⬇️ نزّل نسخة دلوقتي</button>
+    <label style="display:flex;gap:8px;align-items:center;margin:14px 0 4px;font-weight:600;"><input type="checkbox" id="bkAuto"> نسخة تلقائية كل 24 ساعة (تتنزّل لما تفتح اللوحة)</label>
+    <p class="chart-hint" id="bkStatus" style="margin-top:10px;"></p>
+    <p class="chart-hint" style="margin-top:10px;">الملف بيتحفظ في فولدر التنزيلات على الجهاز ده. احتفظ بيه في مكان تاني كمان (درايف أو فلاشة). بيشمل كل الحجوزات والمرضى والحسابات والمخزون والمتدربين والاستبيانات، من غير أكواد الدخول.</p>
+  </div>
+</div>
+
 <button class="theme-fab" id="themeFabBtn" aria-label="تغيير سمة اللوحة" title="تغيير السمة">🎨</button>
 <span class="theme-fab-label" id="themeFabLabel"></span>
 
@@ -2986,6 +3147,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         var kb = b.dayIso + ' ' + b.slotValue;
         return ka < kb ? -1 : ka > kb ? 1 : 0;
       });
+      if(typeof ciUpdateBadge === 'function') ciUpdateBadge();
       renderStats();
       renderTable();
       renderCalendar();
@@ -3592,6 +3754,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     watchPrescriptions();
     watchPayments();
     watchCheckins();
+    watchSurveys();
+    initBackup();
   }
 
   function renderStats(){
@@ -3844,6 +4008,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             cell.className = 'cal-cell ' + (b.status === 'no_show' ? 'noshow-cell' : b.status === 'awaiting' ? 'awaiting-cell' : b.status);
             var statusLabel = b.status === 'confirmed' ? 'مؤكد' : b.status === 'no_show' ? 'لم يحضر' : b.status === 'awaiting' ? 'لسه ما أكدش' : 'في الانتظار';
             cell.title = isTraineeRole() ? (b.name + ' — ' + statusLabel) : (b.name + ' — ' + b.phone + ' — ' + statusLabel + (b.notes ? '\nملاحظات: ' + b.notes : ''));
+            if(ciArrivedBooking(b)){ cell.classList.add('arrived'); cell.title += '\n🟢 وصل العيادة'; }
             if(!isTraineeRole()) cell.addEventListener('click', function(){ openCellDetails(b); });
           } else {
             cell.className = 'cal-cell';
@@ -5294,6 +5459,27 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       o.start(); o.stop(ctx.currentTime + 0.18);
     }catch(e){}
   }
+  // مريض ملأ الـ QR وعنده حجز مؤكد في نفس اليوم = حاضر في العيادة
+  function ciDayIso(ts){ var d = new Date(ts || 0); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function ciMatchBooking(c){
+    if(!c || !c.phone) return null;
+    var day = ciDayIso(c.ts);
+    for(var i = 0; i < allBookings.length; i++){
+      var b = allBookings[i];
+      if(b.dayIso === day && b.status === 'confirmed' && b.phone === c.phone) return b;
+    }
+    return null;
+  }
+  function ciArrivedBooking(b){
+    if(!b || b.status !== 'confirmed') return false;
+    return checkinsCache.some(function(c){ return c.phone === b.phone && ciDayIso(c.ts) === b.dayIso; });
+  }
+  function ciUpdateBadge(){
+    var n = checkinsCache.filter(function(c){ return c.status === 'pending' && !ciMatchBooking(c); }).length;
+    var badge = document.getElementById('checkinBadge'); if(!badge) return;
+    badge.textContent = n; badge.classList.toggle('show', n > 0);
+    return n;
+  }
   function watchCheckins(){
     if(!firestoreDb) return;
     if(currentRole() !== 'admin' && currentRole() !== 'team') return;
@@ -5305,9 +5491,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       checkinsCache = [];
       snap.forEach(function(doc){ var d = doc.data(); d.id = doc.id; checkinsCache.push(d); });
       checkinsCache.sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
-      var n = checkinsCache.filter(function(c){ return c.status === 'pending'; }).length;
-      var badge = document.getElementById('checkinBadge');
-      badge.textContent = n; badge.classList.toggle('show', n > 0);
+      var n = ciUpdateBadge();
+      try{ renderTable(); renderCalendar(); }catch(e){}
       if(!checkinsFirst && n > checkinsPendingPrev) ciBeep();
       checkinsFirst = false; checkinsPendingPrev = n;
       if(document.getElementById('checkinOverlay').classList.contains('open')) renderCheckins();
@@ -5321,13 +5506,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function renderCheckins(){
     var el = document.getElementById('checkinList');
     el.innerHTML = '';
-    var pend = checkinsCache.filter(function(c){ return c.status === 'pending'; });
+    var pend = checkinsCache.filter(function(c){ return c.status === 'pending' && !ciMatchBooking(c); });
+    var arrived = checkinsCache.filter(function(c){ return c.status === 'pending' && ciMatchBooking(c) && ciDayIso(c.ts) === todayIso(); });
     var done = checkinsCache.filter(function(c){ return c.status === 'confirmed'; }).slice(0, 10);
     if(!pend.length){
       var e = document.createElement('p'); e.className = 'chart-hint'; e.style.textAlign = 'center'; e.style.padding = '18px 0';
       e.textContent = 'مفيش مرضى مستنيين تأكيد دلوقتي.'; el.appendChild(e);
     }
     pend.forEach(function(c){ el.appendChild(ciCard(c, false)); });
+    if(arrived.length){
+      var ha = document.createElement('div'); ha.className = 'ci-sec'; ha.textContent = '🟢 وصلوا وعندهم ميعاد مؤكد النهاردة'; el.appendChild(ha);
+      arrived.forEach(function(c){ el.appendChild(ciCard(c, true)); });
+    }
     if(done.length){
       var h = document.createElement('div'); h.className = 'ci-sec'; h.textContent = 'اتأكدوا مؤخرًا'; el.appendChild(h);
       done.forEach(function(c){ el.appendChild(ciCard(c, true)); });
@@ -5337,7 +5527,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var d = document.createElement('div');
     d.className = 'ci-card' + (isDone ? ' done' : '');
     var g = c.gender === 'male' ? 'ذكر' : c.gender === 'female' ? 'أنثى' : '—';
-    var when = isDone && c.bookingDay ? ('اتحجز ' + formatDateLabel(c.bookingDay) + ' — ' + (SLOT_LABELS[c.bookingSlot] || c.bookingSlot || '')) : '';
+    var mb = (!c.status || c.status === 'pending') ? ciMatchBooking(c) : null;
+    var when = mb ? ('حاضر — ميعاده ' + (SLOT_LABELS[mb.slotValue] || mb.slotValue || '')) : isDone && c.bookingDay ? ('اتحجز ' + formatDateLabel(c.bookingDay) + ' — ' + (SLOT_LABELS[c.bookingSlot] || c.bookingSlot || '')) : '';
     d.innerHTML =
       '<div class="ci-head"><strong>' + escapeHtml(c.name) + '</strong><span class="ci-time">' + (isDone ? escapeHtml(when) : ciAgo(c.ts || 0)) + '</span></div>' +
       '<div class="ci-grid">' +
@@ -8903,6 +9094,194 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
   }
 
+  // ---- استبيان المرضى ----
+  var SV_SECTIONS = [{"id": "A", "title": "نبذة سريعة عنك", "icon": "👋", "hint": "عشان نفهم مين بيزورنا — كله اختياري ومن غير اسم.", "qs": [{"id": "age", "t": "single", "no_other": true, "q": "سنّك كام؟", "o": ["أقل من 12 (بيجاوب ولي الأمر)", "12 – 17", "18 – 30", "31 – 45", "46 – 60", "أكتر من 60"]}, {"id": "visits", "t": "single", "q": "إنت عندنا…", "o": ["أول زيارة", "زرتنا مرة أو اتنين قبل كده", "بتابع علاج مستمر", "من عملاء العيادة من زمان"]}, {"id": "source", "t": "single", "no_other": true, "oi": 5, "q": "عرفت العيادة منين؟", "o": ["صديق أو قريب", "فيسبوك أو إنستجرام", "جوجل (بحث أو خرائط)", "عدّيت قدام العيادة", "اتحوّلت من دكتور تاني", "مصدر تاني"]}]}, {"id": "B", "title": "تقييمك لزيارتك", "icon": "⭐", "hint": "اضغط على الوجه اللي يعبّر عن رأيك في كل نقطة.", "qs": [{"id": "r_reception", "t": "rating", "q": "الاستقبال وحسن التعامل"}, {"id": "r_clean", "t": "rating", "q": "نظافة العيادة والتعقيم"}, {"id": "r_explain", "t": "rating", "q": "شرح الدكتور لحالتك وخطة العلاج"}, {"id": "r_comfort", "t": "rating", "q": "الراحة وقلة الألم أثناء العلاج"}, {"id": "r_wait", "t": "rating", "q": "الالتزام بالمواعيد وقلة الانتظار"}, {"id": "r_price", "t": "rating", "q": "الأسعار مقابل الخدمة"}, {"id": "r_booking", "t": "rating", "q": "سهولة الحجز"}]}, {"id": "C", "title": "الخوف من دكتور الأسنان", "icon": "😬", "hint": "مفيش إجابة غلط، وإجابتك بتساعدنا نخلّي الزيارة أهدى.", "qs": [{"id": "fear", "t": "single", "q": "قد إيه بتخاف من الذهاب لدكتور الأسنان؟", "o": ["مش بخاف خالص", "خوف بسيط", "خوف متوسط", "خوف شديد", "بأجّل العلاج بسبب الخوف"]}, {"id": "fear_why", "t": "multi", "q": "إيه أكتر حاجة بتخوّفك؟ (اختار أكتر من حاجة)", "o": ["الألم", "الحقنة والبنج", "صوت الأجهزة", "منظر الدم والأدوات", "تجربة وحشة قبل كده", "إني مش عارف هيحصل إيه", "الخوف من التكلفة والمفاجآت", "إحساسي إني مش متحكم", "ريحة العيادة"]}, {"id": "calm", "t": "multi", "q": "إيه اللي يخليك أهدى في الكرسي؟", "o": ["الدكتور يشرح كل خطوة قبل ما يعملها", "إشارة بإيدي أوقّف بيها لو تعبت", "بنج موضعي قبل الحقنة", "موسيقى أو حاجة تشغلني", "جلسات قصيرة", "تطمين بعد كل خطوة", "أشوف الأدوات الأول", "مرافق يقعد معايا"]}]}, {"id": "D", "title": "الحجز والإلغاء", "icon": "📅", "hint": "عايزين نفهم ليه بعض المواعيد بتتلغي عشان نحلّها.", "qs": [{"id": "cancel", "t": "single", "no_other": true, "q": "هل حجزت كشف قبل كده وبعدين ألغيته؟", "o": ["أيوه، مرة واحدة", "أيوه، أكتر من مرة", "لا، عمري ما ألغيت"]}, {"id": "cancel_why", "t": "multi", "q": "لو ألغيت أو فكرت تلغي، إيه السبب؟", "o": ["الخوف", "التكلفة", "تعارض مع الشغل أو الدراسة", "بُعد المكان والمواصلات", "ظرف مرضي أو طارئ", "نسيت الميعاد", "الألم راح فمحتجتش", "لقيت دكتور تاني", "الميعاد كان بعيد أوي", "مش واثق إن العلاج هيفيدني", "الانتظار في العيادة طويل"]}, {"id": "remind", "t": "multi", "q": "إيه اللي يخليك تلتزم بميعادك؟", "o": ["رسالة واتساب قبلها بيوم", "تذكير قبلها بساعات", "مكالمة تأكيد", "أعدّل الميعاد بسهولة", "عربون بسيط يتخصم من الحساب", "مواعيد أقرب", "مش محتاج تذكير"]}, {"id": "time", "t": "single", "no_other": true, "q": "أنسب وقت ليك للزيارة؟", "o": ["صباحًا", "ظهرًا", "عصرًا", "مساءً", "أي وقت"]}]}, {"id": "T", "title": "المتدربين مع الدكتور", "icon": "🎓", "hint": "العيادة بتدرّب طلبة بإشراف الدكتور — رأيك بيساعدنا نظبط التجربة.", "qs": [{"id": "tr_seen", "t": "single", "no_other": true, "q": "هل كان في متدربين (طلبة) معاك في الجلسة؟", "o": ["أيوه", "لا", "مش متأكد"]}, {"id": "tr_comfort", "t": "single", "no_other": true, "q": "إحساسك بوجود المتدرب في علاجك كان…", "o": ["مرتاح جدًا", "مرتاح", "محايد", "متضايق شوية", "متضايق جدًا"]}, {"id": "tr_r_manner", "t": "rating", "q": "أسلوب المتدرب وأدبه معاك"}, {"id": "tr_r_skill", "t": "rating", "q": "اطمئنانك لمهارة المتدرب"}, {"id": "tr_r_super", "t": "rating", "q": "إشراف الدكتور ومتابعته للمتدرب"}, {"id": "tr_prefer", "t": "single", "no_other": true, "q": "لو الخيار ليك، تفضّل…", "o": ["الدكتور يعمل الحالة بنفسه", "المتدرب بإشراف الدكتور", "مفيش فرق عندي"]}, {"id": "tr_improve", "t": "multi", "q": "إيه اللي يخليك مرتاح مع المتدربين؟", "o": ["الدكتور يعرّفني بيهم ودورهم", "يشرحوا لي اللي هيعملوه", "يستأذنوا قبل ما يبدأوا", "الدكتور يراجع شغلهم قدامي", "وقت أقل مع المتدرب", "خصم أو سعر أقل", "مفيش مشكلة"]}]}, {"id": "E", "title": "اقتراحاتك للعيادة", "icon": "💡", "hint": "رأيك هو اللي بنطوّر بيه.", "qs": [{"id": "improve", "t": "multi", "q": "إيه أهم حاجة تتحسّن؟ (اختار حتى 3)", "max": 3, "o": ["تقليل وقت الانتظار", "أسعار أقل أو تقسيط", "الدفع الإلكتروني", "حجز أونلاين أسهل", "غرفة انتظار أريح", "مواعيد أكتر", "شرح أوضح للتكلفة", "تخفيف الألم", "مزيد من التعقيم", "سرعة إنجاز الحالة"]}, {"id": "services", "t": "multi", "q": "خدمات نفسك نضيفها؟", "o": ["تقويم الأسنان", "تجميل وابتسامة", "زراعة الأسنان", "تبييض", "أسنان الأطفال", "أشعة داخل العيادة", "علاج اللثة", "تركيبات"]}, {"id": "nps", "t": "nps", "q": "من 0 لـ 10، احتمال تنصح صحابك وأهلك بالعيادة قد إيه؟"}, {"id": "best", "t": "text", "q": "أكتر حاجة عجبتك؟", "ph": "اكتب بحرية…"}, {"id": "worst", "t": "text", "q": "أكتر حاجة ضايقتك أو محتاجة تتحسّن؟", "ph": "اكتب بحرية…"}, {"id": "idea", "t": "text", "q": "أي اقتراح تاني للعيادة؟", "ph": "اكتب بحرية…"}, {"id": "contact", "t": "phone", "q": "عايز حد من العيادة يرد عليك؟ سيب رقمك (اختياري)"}]}];
+  var surveysCache = [];
+  function watchSurveys(){
+    if(!firestoreDb || currentRole() !== 'admin') return;
+    document.getElementById('surveyBtn').style.display = '';
+    firestoreDb.collection('surveys').onSnapshot(function(snap){
+      surveysCache = [];
+      snap.forEach(function(doc){ var d = doc.data(); d.id = doc.id; surveysCache.push(d); });
+      surveysCache.sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+      if(document.getElementById('surveyOverlay').classList.contains('open')) renderSurvey();
+    }, function(err){ console.warn('Firestore listener error for surveys.', err); });
+  }
+  function svUrl(){ return location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '') + 'survey.html'; }
+  function openSurvey(){
+    document.getElementById('svUrl').value = svUrl();
+    document.getElementById('surveyOverlay').classList.add('open');
+    renderSurvey();
+  }
+  function svAvg(arr){ return arr.length ? (arr.reduce(function(a, b){ return a + b; }, 0) / arr.length) : 0; }
+  function svBar(label, count, max, total){
+    var r = buildBarRow(label, count, max);
+    return r;
+  }
+  function renderSurvey(){
+    var body = document.getElementById('svBody'); body.innerHTML = '';
+    var n = surveysCache.length;
+    if(!n){ body.innerHTML = '<div class="empty-mini">لسه مفيش إجابات. شارك الرابط أو الـ QR مع المرضى.</div>'; return; }
+    // NPS
+    var nps = surveysCache.map(function(s){ return s.a && s.a.nps; }).filter(function(v){ return typeof v === 'number'; });
+    var prom = nps.filter(function(v){ return v >= 9; }).length, det = nps.filter(function(v){ return v <= 6; }).length;
+    var npsVal = nps.length ? Math.round((prom - det) / nps.length * 100) : null;
+    var rAll = [];
+    SV_SECTIONS.forEach(function(s){ s.qs.forEach(function(q){ if(q.t === 'rating') surveysCache.forEach(function(x){ var v = x.a && x.a[q.id]; if(typeof v === 'number') rAll.push(v); }); }); });
+    var kp = document.createElement('div'); kp.className = 'pr-kpis';
+    kp.innerHTML =
+      '<div class="pr-kpi"><span>عدد الإجابات</span><b>' + n + '</b></div>' +
+      '<div class="pr-kpi"><span>متوسط التقييم (من 5)</span><b>' + (rAll.length ? svAvg(rAll).toFixed(1) : '—') + '</b></div>' +
+      '<div class="pr-kpi"><span>NPS (ترشيح العيادة)</span><b>' + (npsVal === null ? '—' : npsVal) + '</b></div>';
+    body.appendChild(kp);
+    SV_SECTIONS.forEach(function(s){
+      var sec = document.createElement('div');
+      sec.appendChild(Object.assign(document.createElement('div'), { className: 'sv-sec', textContent: s.icon + ' ' + s.title }));
+      var any = false;
+      s.qs.forEach(function(q){
+        var vals = surveysCache.map(function(x){ return x.a ? x.a[q.id] : undefined; }).filter(function(v){ return v != null && v !== '' && !(Array.isArray(v) && !v.length); });
+        if(!vals.length || q.t === 'phone') return;
+        any = true;
+        var head = document.createElement('div'); head.className = 'sv-q';
+        head.innerHTML = escapeHtml(q.q.replace(/\s*\(.*?\)\s*$/, '')) + ' <span class="sv-n">(' + vals.length + ' إجابة)</span>';
+        sec.appendChild(head);
+        if(q.t === 'single' || q.t === 'multi'){
+          var opts = q.no_other ? q.o.slice() : q.o.concat(['غير ذلك']);
+          var cnt = opts.map(function(){ return 0; });
+          vals.forEach(function(v){ (Array.isArray(v) ? v : [v]).forEach(function(i){ if(cnt[i] != null) cnt[i]++; }); });
+          var mx = Math.max.apply(null, cnt);
+          opts.map(function(o, i){ return { o: o, c: cnt[i] }; }).filter(function(r){ return r.c > 0 || r.o !== 'غير ذلك'; }).sort(function(a, b){ return b.c - a.c; }).forEach(function(r){
+            sec.appendChild(buildBarRow(r.o + ' (' + Math.round(r.c / vals.length * 100) + '%)', r.c, mx));
+          });
+          surveysCache.forEach(function(x){
+            var t = x.a && x.a[q.id + '_o']; if(!t) return;
+            var c = document.createElement('div'); c.className = 'sv-cm'; c.textContent = '✍️ ' + t;
+            var sm = document.createElement('small'); sm.textContent = new Date(x.ts).toLocaleDateString('ar-EG'); c.appendChild(sm); sec.appendChild(c);
+          });
+        } else if(q.t === 'rating'){
+          var nums = vals.filter(function(v){ return typeof v === 'number'; });
+          var c5 = [1, 2, 3, 4, 5].map(function(k){ return nums.filter(function(v){ return v === k; }).length; });
+          sec.appendChild(buildBarRow('متوسط ' + svAvg(nums).toFixed(1) + ' / 5', Math.round(svAvg(nums) * 10) / 10, 5));
+          head.innerHTML += ' — <span class="sv-n">ضعيف:' + c5[0] + ' · مقبول:' + c5[1] + ' · كويس:' + c5[2] + ' · جيد جدًا:' + c5[3] + ' · ممتاز:' + c5[4] + '</span>';
+        } else if(q.t === 'nps'){
+          var d = [0, 0, 0];
+          vals.forEach(function(v){ if(v >= 9) d[0]++; else if(v >= 7) d[1]++; else d[2]++; });
+          var m2 = Math.max.apply(null, d);
+          sec.appendChild(buildBarRow('مروّجين (9–10)', d[0], m2));
+          sec.appendChild(buildBarRow('محايدين (7–8)', d[1], m2));
+          sec.appendChild(buildBarRow('معارضين (0–6)', d[2], m2));
+        } else if(q.t === 'text'){
+          surveysCache.forEach(function(x){
+            var t = x.a && x.a[q.id]; if(!t) return;
+            var c = document.createElement('div'); c.className = 'sv-cm';
+            c.textContent = t;
+            var sm = document.createElement('small');
+            sm.textContent = new Date(x.ts).toLocaleDateString('ar-EG') + (x.a.contact ? ' — للتواصل: ' + x.a.contact : '');
+            c.appendChild(sm); sec.appendChild(c);
+          });
+        }
+      });
+      if(any) body.appendChild(sec);
+    });
+    var w = surveysCache.filter(function(x){ return x.a && x.a.contact; });
+    if(w.length){
+      var cd = document.createElement('div'); cd.className = 'sv-sec'; cd.textContent = '📞 طلبوا رد من العيادة (' + w.length + ')';
+      body.appendChild(cd);
+      w.forEach(function(x){
+        var c = document.createElement('div'); c.className = 'sv-cm'; c.textContent = x.a.contact + ' — ' + new Date(x.ts).toLocaleDateString('ar-EG');
+        body.appendChild(c);
+      });
+    }
+  }
+  function printSurveyQuestions(){
+    var w = window.open('', '_blank'); if(!w) return;
+    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>استبيان المرضى</title><style>body{font-family:Tahoma,Arial,sans-serif;padding:22px;color:#0E2B30;font-size:13px;}h1{font-size:20px;text-align:center;margin:0 0 4px;}p.s{text-align:center;color:#4A6067;margin:0 0 14px;}h2{font-size:15px;background:#E6F4F4;padding:5px 10px;border-radius:6px;margin:14px 0 6px;}.q{margin:7px 0;page-break-inside:avoid;}.q b{display:block;margin-bottom:3px;}.o{display:inline-block;margin:2px 12px 2px 0;}.l{border-bottom:1px solid #999;height:22px;margin:4px 0;}</style></head><body><h1>استبيان رأي المرضى — عيادة د. أبانوب سليم</h1><p class="s">من غير اسم، وكل الأسئلة اختيارية.</p>';
+    var k = 0;
+    SV_SECTIONS.forEach(function(s){
+      html += '<h2>' + s.icon + ' ' + escapeHtml(s.title) + '</h2>';
+      s.qs.forEach(function(q){
+        k++; html += '<div class="q"><b>' + k + '. ' + escapeHtml(q.q) + '</b>';
+        if(q.o){ q.o.forEach(function(o){ html += '<span class="o">☐ ' + escapeHtml(o) + '</span>'; }); if(!q.no_other) html += '<span class="o">☐ غير ذلك: ……………………</span>'; }
+        else if(q.t === 'rating') html += '<span class="o">☐ 1</span><span class="o">☐ 2</span><span class="o">☐ 3</span><span class="o">☐ 4</span><span class="o">☐ 5</span>';
+        else if(q.t === 'nps'){ for(var i = 0; i <= 10; i++) html += '<span class="o">☐ ' + i + '</span>'; }
+        else if(q.t === 'text') html += '<div class="l"></div><div class="l"></div>';
+        else html += '<div class="l"></div>';
+        html += '</div>';
+      });
+    });
+    html += '<script>window.onload=function(){window.print();}<\/script></body></html>';
+    w.document.write(html); w.document.close();
+  }
+  document.getElementById('surveyBtn').addEventListener('click', openSurvey);
+  document.getElementById('surveyClose').addEventListener('click', function(){ document.getElementById('surveyOverlay').classList.remove('open'); });
+  document.getElementById('surveyOverlay').addEventListener('click', function(e){ if(e.target.id === 'surveyOverlay') e.target.classList.remove('open'); });
+  document.getElementById('svCopy').addEventListener('click', function(){
+    var u = document.getElementById('svUrl').value;
+    if(navigator.clipboard) navigator.clipboard.writeText(u).then(function(){ alert('اتنسخ الرابط'); }); else { var i = document.getElementById('svUrl'); i.select(); document.execCommand('copy'); }
+  });
+  document.getElementById('svQr').addEventListener('click', function(){
+    var b = document.getElementById('svQrBox'); b.style.display = b.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('svQrImg').innerHTML = qrSvg(document.getElementById('svUrl').value);
+  });
+  document.getElementById('svPrintQ').addEventListener('click', printSurveyQuestions);
+
+  // ---- نسخة احتياطية ----
+  var BK_COLLS = ['bookings','bookingPrivate','publicSlots','blockedDays','checkins','surveys','patientFiles','patientXrays','prescriptions','payments','dailyExpenses','envelopeTransactions','materials','assistants','assistantDays','assistantBonuses','trainees','traineeSessions','activityLog','staff'];
+  var BK_LAST = 'clinicBackupLast', BK_AUTO = 'clinicBackupAuto', bkBusy = false;
+  function bkGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function bkSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+  function bkAgo(){
+    var t = +bkGet(BK_LAST) || 0;
+    if(!t) return 'لسه ما اتعملتش نسخة من الجهاز ده.';
+    var h2 = Math.round((Date.now() - t) / 3600000);
+    return 'آخر نسخة: ' + new Date(t).toLocaleString('ar-EG') + (h2 < 1 ? ' (من أقل من ساعة)' : h2 < 48 ? ' (من ' + h2 + ' ساعة)' : ' (من ' + Math.round(h2 / 24) + ' يوم)');
+  }
+  function bkRefreshUi(){
+    var t = +bkGet(BK_LAST) || 0, stale = !t || Date.now() - t > 3 * 86400000;
+    var b = document.getElementById('backupBadge'); if(b) b.classList.toggle('show', stale);
+    var l = document.getElementById('bkLast'); if(l) l.textContent = bkAgo();
+  }
+  function runBackup(silent){
+    if(bkBusy || !firestoreDb) return Promise.resolve();
+    bkBusy = true;
+    var st = document.getElementById('bkStatus'); if(st) st.textContent = 'جاري تجميع البيانات…';
+    var out = { app: 'abanoub-clinic', exportedAt: new Date().toISOString(), collections: {} }, failed = [];
+    return Promise.all(BK_COLLS.map(function(name){
+      return firestoreDb.collection(name).get().then(function(snap){
+        var o = {};
+        snap.forEach(function(doc){ var d = doc.data(); if(name === 'staff') delete d.pin; o[doc.id] = d; });
+        out.collections[name] = o;
+      }).catch(function(){ failed.push(name); });
+    })).then(function(){
+      if(failed.length) out.failedCollections = failed;
+      var blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
+      var a = document.createElement('a'), d = new Date();
+      a.href = URL.createObjectURL(blob);
+      a.download = 'clinic-backup-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '.json';
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+      var n = 0; Object.keys(out.collections).forEach(function(k){ n += Object.keys(out.collections[k]).length; });
+      if(!failed.length) bkSet(BK_LAST, String(Date.now()));
+      if(st) st.textContent = failed.length ? ('اتنزلت نسخة ناقصة — مجموعات فشلت: ' + failed.join('، ')) : ('✅ تمت النسخة (' + n + ' سجل).');
+      bkRefreshUi();
+    }).catch(function(e){ if(st) st.textContent = 'حصل خطأ: ' + e.message; }).then(function(){ bkBusy = false; });
+  }
+  function initBackup(){
+    if(currentRole() !== 'admin') return;
+    document.getElementById('backupBtn').style.display = '';
+    document.getElementById('bkAuto').checked = bkGet(BK_AUTO) !== '0';
+    bkRefreshUi();
+    setTimeout(function(){
+      var last = +bkGet(BK_LAST) || 0;
+      if(bkGet(BK_AUTO) !== '0' && Date.now() - last > 86400000) runBackup(true);
+    }, 8000);
+  }
+  document.getElementById('backupBtn').addEventListener('click', function(){ bkRefreshUi(); document.getElementById('bkStatus').textContent = ''; document.getElementById('backupOverlay').classList.add('open'); });
+  document.getElementById('backupClose').addEventListener('click', function(){ document.getElementById('backupOverlay').classList.remove('open'); });
+  document.getElementById('backupOverlay').addEventListener('click', function(e){ if(e.target.id === 'backupOverlay') e.target.classList.remove('open'); });
+  document.getElementById('bkNow').addEventListener('click', function(){ runBackup(false); });
+  document.getElementById('bkAuto').addEventListener('change', function(){ bkSet(BK_AUTO, this.checked ? '1' : '0'); });
+
   function buildBarRow(label, count, max){
     var row = document.createElement('div');
     row.className = 'bar-row';
@@ -8977,7 +9356,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         '<td data-l="الساعة">' + slotLabel + '</td>' +
         '<td data-l="المريض" class="name-cell">' + escapeHtml(b.name) + '</td>' +
         '<td data-l="الموبايل" class="phone-cell">' + escapeHtml(b.phone) + '</td>' +
-        '<td data-l="الحالة"><span class="badge ' + badgeClass + '"><span class="dot"></span>' + badgeText + '</span></td>' +
+        '<td data-l="الحالة"><span class="badge ' + badgeClass + '"><span class="dot"></span>' + badgeText + '</span>' + (ciArrivedBooking(b) ? '<span class="badge-arr">🟢 حاضر</span>' : '') + '</td>' +
         '<td data-l="المصدر">' + sourceText + '</td>' +
         '<td data-l="ملاحظات" class="notes-cell"></td>' +
         '<td data-l="تفاصيل الزيارة" class="vd-cell"></td>' +
@@ -9997,6 +10376,73 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       setTimeout(function(){ printWin.focus(); printWin.print(); }, 300);
     };
   }
+</script>
+<script id="proUiJs">
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // ripple
+  document.addEventListener('pointerdown', function(e){
+    var t = e.target.closest && e.target.closest('.btn,.cta-btn,.view-tab,.icon-btn,.day-chip');
+    if(!t || reduce || t.disabled) return;
+    var r = t.getBoundingClientRect(), s = Math.max(r.width, r.height) * 2;
+    var d = document.createElement('span'); d.className = 'pro-ripple';
+    d.style.cssText = 'width:' + s + 'px;height:' + s + 'px;left:' + (e.clientX - r.left - s / 2) + 'px;top:' + (e.clientY - r.top - s / 2) + 'px;';
+    t.appendChild(d); setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 650);
+  }, { passive: true });
+  // topbar shadow on scroll
+  var tb = document.querySelector('header.topbar');
+  function sc(){ if(tb) tb.classList.toggle('scrolled', window.scrollY > 8); }
+  window.addEventListener('scroll', sc, { passive: true }); sc();
+  // scroll reveal
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('pro-in'); en.target.classList.remove('pro-pre'); io.unobserve(en.target); } });
+    }, { threshold: .08 });
+    var seen = new WeakSet();
+    function scan(){
+      document.querySelectorAll('.chart-card,.table-card,.toolbar,.dashboard-topbar').forEach(function(el){
+        if(seen.has(el)) return; seen.add(el); el.classList.add('pro-pre'); io.observe(el);
+      });
+    }
+    scan(); setInterval(scan, 1500);
+  }
+  // count-up numbers
+  var AR = '٠١٢٣٤٥٦٧٨٩';
+  function toLat(s){ return s.replace(/[٠-٩]/g, function(d){ return AR.indexOf(d); }).replace(/[٬،]/g, ',').replace(/٫/g, '.'); }
+  function toAr(s){ return s.replace(/\d/g, function(d){ return AR[+d]; }); }
+  var RUN = /[\d٠-٩][\d٠-٩,.٬٫]*/;
+  function bind(el){
+    if(el._pro) return; el._pro = { busy: false, last: null, raf: 0 };
+    new MutationObserver(function(){
+      var st = el._pro; if(st.busy) return;
+      var txt = el.textContent, m = RUN.exec(txt);
+      if(!m){ st.last = null; return; }
+      var useAr = /[٠-٩]/.test(m[0]), grp = /[,٬]/.test(m[0]), dec = (toLat(m[0]).split('.')[1] || '').length;
+      var to = parseFloat(toLat(m[0]).replace(/,/g, ''));
+      if(isNaN(to)){ return; }
+      var from = st.last; st.last = to;
+      if(from == null || from === to || reduce || !isFinite(to) || Math.abs(to - from) < 1 && !dec) return;
+      var pre = txt.slice(0, m.index), post = txt.slice(m.index + m[0].length), t0 = performance.now(), dur = 800;
+      cancelAnimationFrame(st.raf);
+      (function step(now){
+        var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3), v = from + (to - from) * e;
+        var s = (k === 1 ? to : v).toFixed(dec);
+        if(grp){ var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); s = p.join('.'); }
+        if(useAr) s = toAr(s);
+        st.busy = true; el.textContent = pre + s + post; st.busy = false;
+        if(k < 1) st.raf = requestAnimationFrame(step);
+      })(t0);
+    }).observe(el, { childList: true, characterData: true, subtree: true });
+  }
+  function bindAll(){ document.querySelectorAll('.stat-num').forEach(bind); }
+  bindAll(); setInterval(bindAll, 2000);
+  // pin gate shake on wrong code
+  var gate = document.querySelector('.pin-card');
+  if(gate){
+    var err = gate.querySelector('[id*="rror"],.pin-error,.err');
+    if(err) new MutationObserver(function(){ if(err.textContent.trim()){ gate.classList.remove('shake'); void gate.offsetWidth; gate.classList.add('shake'); } }).observe(err, { childList: true, characterData: true, subtree: true });
+  }
+})();
 </script>
 </body>
 </html>
