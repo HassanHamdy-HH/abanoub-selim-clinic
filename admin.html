@@ -1238,11 +1238,10 @@
   ::selection{background:var(--aqua);color:var(--deep-teal-2);}
   /* ambient background */
   body{background:var(--pale-aqua);position:relative;}
-  body::before,body::after{content:'';position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(70px);opacity:.55;}
-  body::before{width:46vw;height:46vw;top:-14vw;right:-10vw;background:radial-gradient(circle,var(--aqua) 0%,transparent 70%);animation:proDrift1 22s ease-in-out infinite alternate;}
-  body::after{width:40vw;height:40vw;bottom:-14vw;left:-10vw;background:radial-gradient(circle,rgba(217,164,65,.55) 0%,transparent 70%);animation:proDrift2 26s ease-in-out infinite alternate;}
-  .app,.pin-gate{position:relative;z-index:1;}
-  .pin-gate{z-index:100;}
+  body::before,body::after{content:'';position:fixed;z-index:0;pointer-events:none;border-radius:50%;opacity:.45;}
+  body::before{width:46vw;height:46vw;top:-14vw;right:-10vw;background:radial-gradient(circle,var(--aqua) 0%,transparent 70%);}
+  body::after{width:40vw;height:40vw;bottom:-14vw;left:-10vw;background:radial-gradient(circle,rgba(217,164,65,.55) 0%,transparent 70%);}
+  .app{position:relative;z-index:1;}
   @keyframes proDrift1{to{transform:translate(-8vw,10vw) scale(1.15);}}
   @keyframes proDrift2{to{transform:translate(9vw,-8vw) scale(1.2);}}
   /* scrollbar */
@@ -1253,22 +1252,21 @@
   :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px;}
   /* login gate */
   .pin-gate{overflow:hidden;}
-  .pin-gate::before,.pin-gate::after{content:'';position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;animation:proDrift1 18s ease-in-out infinite alternate;}
-  .pin-gate::before{width:420px;height:420px;background:var(--aqua);top:-120px;right:-80px;}
-  .pin-gate::after{width:360px;height:360px;background:rgba(217,164,65,.7);bottom:-120px;left:-80px;animation-name:proDrift2;}
-  .pin-card{position:relative;z-index:1;backdrop-filter:blur(14px);animation:proRise .7s var(--pro-spring) both;box-shadow:0 40px 80px -30px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.25) inset;}
+  .pin-gate::before,.pin-gate::after{content:'';position:absolute;border-radius:50%;opacity:.4;}
+  .pin-gate::before{width:420px;height:420px;background:radial-gradient(circle,var(--aqua),transparent 70%);top:-120px;right:-80px;}
+  .pin-gate::after{width:360px;height:360px;background:radial-gradient(circle,rgba(217,164,65,.8),transparent 70%);bottom:-120px;left:-80px;}
+  .pin-card{position:relative;z-index:1;animation:proRise .7s var(--pro-spring) both;box-shadow:0 40px 80px -30px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.25) inset;}
   .pin-card img{animation:proFloat 4.5s ease-in-out infinite;box-shadow:0 0 0 4px rgba(217,164,65,.25),0 10px 26px -8px rgba(11,59,71,.5);}
   @keyframes proFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
   @keyframes proRise{from{opacity:0;transform:translateY(26px) scale(.96);}to{opacity:1;transform:none;}}
   .pin-card.shake{animation:proShake .45s;}
   @keyframes proShake{20%,60%{transform:translateX(-9px);}40%,80%{transform:translateX(9px);}}
   /* topbar glass */
-  header.topbar{background:rgba(255,255,255,.78);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px);transition:box-shadow .3s ease,background .3s ease;}
+  header.topbar{background:rgba(255,255,255,.96);transition:box-shadow .3s ease,background .3s ease;}
   header.topbar.scrolled{box-shadow:0 10px 30px -18px rgba(6,26,32,.5);background:rgba(255,255,255,.92);}
   .topbar-brand img{transition:transform .6s var(--pro-spring);}
   .topbar-brand:hover img{transform:rotate(360deg) scale(1.06);}
   .today-chip{position:relative;overflow:hidden;}
-  .today-chip::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.7) 50%,transparent 70%);transform:translateX(-120%);animation:proShine 5s ease-in-out infinite;}
   @keyframes proShine{0%,70%{transform:translateX(-120%);}100%{transform:translateX(120%);}}
   /* stat cards */
   .stats-grid .stat-card{animation:proRise .6s var(--pro-ease) both;transition:transform .35s var(--pro-ease),box-shadow .35s ease,border-color .3s;}
@@ -1276,7 +1274,7 @@
   .stats-grid .stat-card:nth-child(3){animation-delay:.19s;}.stats-grid .stat-card:nth-child(4){animation-delay:.26s;}
   .stats-grid .stat-card:nth-child(5){animation-delay:.33s;}
   .stat-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:var(--aqua);}
-  .stat-card::before{background:linear-gradient(90deg,var(--teal),var(--aqua),var(--gold),var(--aqua),var(--teal));background-size:300% 100%;animation:proFlow 6s linear infinite;}
+  .stat-card::before{background:linear-gradient(90deg,var(--teal),var(--aqua),var(--gold),var(--aqua),var(--teal));}
   @keyframes proFlow{to{background-position:-300% 0;}}
   .stat-card .stat-ic{transition:transform .5s var(--pro-spring);}
   .stat-card:hover .stat-ic{transform:scale(1.18) rotate(-8deg);}
@@ -1308,7 +1306,6 @@
   .view-tab.active{animation:proPop .35s var(--pro-spring);}
   @keyframes proPop{from{transform:scale(.9);}to{transform:scale(1);}}
   /* badges */
-  .tab-badge.show{animation:proBadge 1.8s ease-in-out infinite;}
   @keyframes proBadge{0%,100%{box-shadow:0 0 0 0 rgba(214,69,69,.55);}50%{box-shadow:0 0 0 7px rgba(214,69,69,0);}}
   .badge{transition:transform .2s;}
   .badge:hover{transform:scale(1.06);}
@@ -1320,7 +1317,6 @@
   /* calendar */
   .cal-cell{transition:transform .2s var(--pro-spring),background-color .25s,box-shadow .25s;}
   .cal-cell.confirmed:hover,.cal-cell.pending:hover{transform:scale(1.12);box-shadow:0 8px 18px -8px rgba(6,26,32,.5);z-index:2;position:relative;}
-  .cal-cell.arrived{animation:proArrived 2.2s ease-in-out infinite;}
   @keyframes proArrived{0%,100%{box-shadow:inset 0 0 0 3px #fff,0 0 0 2px #1E9E5A;}50%{box-shadow:inset 0 0 0 3px #fff,0 0 0 5px rgba(30,158,90,.35);}}
   /* bars */
   .bar-fill{transform-origin:right center;animation:proBar .9s var(--pro-ease) both;}
@@ -1432,6 +1428,7 @@
       </div>
       <div class="topbar-actions-group">
         <button class="btn btn-gold" id="newBookingBtn">➕ حجز جديد</button>
+        <button class="btn btn-outline" id="surveyBtn2" style="display:none;">📝 الاستبيان + QR</button>
         <button class="btn btn-outline" id="backupBtn" style="display:none;">💾 نسخة احتياطية<span class="tab-badge" id="backupBadge">!</span></button>
         <button class="btn btn-outline" id="checkinBtn" style="display:none;">📥 الواصلين<span class="tab-badge" id="checkinBadge">0</span></button>
         <button class="btn btn-gold" id="remindBtn">📨 تذكير حجوزات بكرة</button>
@@ -2700,13 +2697,17 @@
   <div class="booking-modal period-modal">
     <button class="modal-close" id="surveyClose" aria-label="إغلاق">✕</button>
     <h3>📝 استبيان المرضى</h3>
-    <div class="sv-link">
-      <input id="svUrl" type="text" dir="ltr" readonly>
-      <button class="cta-btn" id="svCopy">نسخ الرابط</button>
-      <button class="cta-btn gold" id="svQr">QR</button>
-      <button class="cta-btn" id="svPrintQ">🖨️ طباعة الأسئلة</button>
+    <div class="modal-field" style="margin-top:8px;">
+      <label>رابط الاستبيان (الملف survey.html على الموقع)</label>
+      <input id="svUrl" type="text" dir="ltr" style="text-align:left;">
     </div>
-    <div id="svQrBox" style="display:none;text-align:center;margin:8px 0;"><div id="svQrImg" style="width:200px;margin:0 auto;"></div></div>
+    <p class="modal-error" id="svWarn" style="display:none;"></p>
+    <div class="qr-box" id="svQrImg"></div>
+    <div class="sv-link" style="margin-top:6px;">
+      <button class="cta-btn gold" id="svPrintPoster">🖨️ طباعة بوستر QR</button>
+      <button class="cta-btn" id="svCopy">نسخ الرابط</button>
+      <button class="cta-btn" id="svPrintQ">📄 طباعة الأسئلة ورق</button>
+    </div>
     <div id="svBody"></div>
   </div>
 </div>
@@ -9100,6 +9101,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function watchSurveys(){
     if(!firestoreDb || currentRole() !== 'admin') return;
     document.getElementById('surveyBtn').style.display = '';
+    document.getElementById('surveyBtn2').style.display = '';
     firestoreDb.collection('surveys').onSnapshot(function(snap){
       surveysCache = [];
       snap.forEach(function(doc){ var d = doc.data(); d.id = doc.id; surveysCache.push(d); });
@@ -9107,9 +9109,34 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if(document.getElementById('surveyOverlay').classList.contains('open')) renderSurvey();
     }, function(err){ console.warn('Firestore listener error for surveys.', err); });
   }
-  function svUrl(){ return location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '') + 'survey.html'; }
+  var SV_URL_KEY = 'clinicSurveyUrl', SV_DEFAULT = 'https://hassanhamdy-hh.github.io/abanoub-selim-clinic/survey.html';
+  function svUrl(){ try{ var s = localStorage.getItem(SV_URL_KEY); if(s) return s; }catch(e){} return SV_DEFAULT; }
+  function svRenderQr(){
+    var u = document.getElementById('svUrl').value.trim(), box = document.getElementById('svQrImg'), w = document.getElementById('svWarn');
+    try{ localStorage.setItem(SV_URL_KEY, u); }catch(e){}
+    if(!/^https?:\/\//i.test(u)){ box.innerHTML = ''; w.style.display = 'block'; w.textContent = 'الرابط لازم يبدأ بـ https://'; return; }
+    w.style.display = 'none'; box.innerHTML = qrSvg(u);
+  }
+  function svPrintPoster(){
+    var url = document.getElementById('svUrl').value.trim();
+    if(!/^https?:\/\//i.test(url)) return;
+    var logoSrc = document.querySelector('.topbar-brand img').src;
+    var html = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>QR استبيان المرضى</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;800&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">' +
+      '<style>*{box-sizing:border-box;margin:0;padding:0;}@page{size:A4;margin:14mm;}body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#092E38;text-align:center;padding:30px 20px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+      'img.logo{width:100px;height:100px;border-radius:50%;}h1{font-family:"Tajawal",sans-serif;font-size:1.7rem;margin:12px 0 4px;}h2{font-family:"Tajawal",sans-serif;font-size:2.4rem;color:#0E7F91;margin:26px 0 6px;}' +
+      '.qr{width:380px;height:380px;margin:18px auto;border:6px solid #D9A441;border-radius:22px;padding:10px;}.qr svg{width:100%;height:100%;}' +
+      'ol{display:inline-block;text-align:right;font-size:1.15rem;line-height:2.1;margin-top:8px;}.foot{margin-top:26px;font-size:.9rem;color:#6B7F84;}</style></head><body>' +
+      '<img class="logo" src="' + logoSrc + '"><h1>عيادة د. أبانوب سليم لطب الأسنان</h1>' +
+      '<h2>رأيك يهمنا</h2><p style="color:#4A6067;">استبيان سريع (3 دقايق) من غير اسم</p><div class="qr">' + qrSvg(url) + '</div>' +
+      '<ol><li>افتح كاميرا الموبايل وصوّب على الكود</li><li>جاوب على الأسئلة (كلها اختيارية)</li><li>اضغط «إرسال» وشكرًا لوقتك</li></ol>' +
+      '<p class="foot">السلام 1 أمام الجامع الكبير أعلى مطعم العالمية وصيدلية السناري الدور الثاني — م: 01022642266 — 01094696497</p></body></html>';
+    var w = window.open('', '_blank'); if(!w) return;
+    w.document.write(html); w.document.close(); setTimeout(function(){ w.focus(); w.print(); }, 600);
+  }
   function openSurvey(){
     document.getElementById('svUrl').value = svUrl();
+    svRenderQr();
     document.getElementById('surveyOverlay').classList.add('open');
     renderSurvey();
   }
@@ -9213,16 +9240,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     w.document.write(html); w.document.close();
   }
   document.getElementById('surveyBtn').addEventListener('click', openSurvey);
+  document.getElementById('surveyBtn2').addEventListener('click', openSurvey);
   document.getElementById('surveyClose').addEventListener('click', function(){ document.getElementById('surveyOverlay').classList.remove('open'); });
   document.getElementById('surveyOverlay').addEventListener('click', function(e){ if(e.target.id === 'surveyOverlay') e.target.classList.remove('open'); });
   document.getElementById('svCopy').addEventListener('click', function(){
     var u = document.getElementById('svUrl').value;
     if(navigator.clipboard) navigator.clipboard.writeText(u).then(function(){ alert('اتنسخ الرابط'); }); else { var i = document.getElementById('svUrl'); i.select(); document.execCommand('copy'); }
   });
-  document.getElementById('svQr').addEventListener('click', function(){
-    var b = document.getElementById('svQrBox'); b.style.display = b.style.display === 'none' ? 'block' : 'none';
-    document.getElementById('svQrImg').innerHTML = qrSvg(document.getElementById('svUrl').value);
-  });
+  document.getElementById('svUrl').addEventListener('input', svRenderQr);
+  document.getElementById('svPrintPoster').addEventListener('click', svPrintPoster);
   document.getElementById('svPrintQ').addEventListener('click', printSurveyQuestions);
 
   // ---- نسخة احتياطية ----
@@ -10404,7 +10430,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if(seen.has(el)) return; seen.add(el); el.classList.add('pro-pre'); io.observe(el);
       });
     }
-    scan(); setInterval(scan, 1500);
+    scan(); setInterval(scan, 3000);
   }
   // count-up numbers
   var AR = '٠١٢٣٤٥٦٧٨٩';
@@ -10413,7 +10439,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var RUN = /[\d٠-٩][\d٠-٩,.٬٫]*/;
   function bind(el){
     if(el._pro) return; el._pro = { busy: false, last: null, raf: 0 };
-    new MutationObserver(function(){
+    var obs = new MutationObserver(function(){
       var st = el._pro; if(st.busy) return;
       var txt = el.textContent, m = RUN.exec(txt);
       if(!m){ st.last = null; return; }
@@ -10429,10 +10455,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         var s = (k === 1 ? to : v).toFixed(dec);
         if(grp){ var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); s = p.join('.'); }
         if(useAr) s = toAr(s);
-        st.busy = true; el.textContent = pre + s + post; st.busy = false;
+        st.busy = true; el.textContent = pre + s + post; obs.takeRecords(); st.busy = false;
         if(k < 1) st.raf = requestAnimationFrame(step);
       })(t0);
-    }).observe(el, { childList: true, characterData: true, subtree: true });
+    });
+    obs.observe(el, { childList: true, characterData: true, subtree: true });
   }
   function bindAll(){ document.querySelectorAll('.stat-num').forEach(bind); }
   bindAll(); setInterval(bindAll, 2000);
