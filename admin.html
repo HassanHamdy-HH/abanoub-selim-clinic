@@ -707,11 +707,41 @@
   body.role-trainee #newBookingBtn, body.role-trainee #remindBtn, body.role-trainee .more-menu-wrap, body.role-trainee #blockedDaysCard{display:none !important;}
   body.role-trainee table.bookings thead th:nth-child(4), body.role-trainee table.bookings thead th:nth-child(6), body.role-trainee table.bookings thead th:nth-child(7), body.role-trainee table.bookings thead th:nth-child(9){display:none;}
   body.role-trainee #trAddBtn{display:none !important;}
+  body.role-doctor #periodReportBtn, body.role-doctor #surveyBtn, body.role-doctor #surveyBtn2, body.role-doctor #backupBtn{display:none !important;}
   .tr-issue{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:.84rem;background:#fff;}
   .tr-issue.absent{background:#FDEBEE;border-color:#F3C9C9;}
   .tr-issue.late{background:#FFF4DE;border-color:#F1D9A2;}
   .tr-issue b{font-family:'Tajawal',sans-serif;}
   .period-modal{max-width:780px !important;}
+  .dr-weekbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .dr-weeknav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .dr-weeknav .btn{padding:7px 12px;font-size:.8rem;}
+  .dr-gridwrap{overflow-x:auto;padding-bottom:4px;}
+  .dr-grid{display:grid;grid-template-columns:150px repeat(7,minmax(112px,1fr));gap:6px;min-width:940px;}
+  .dr-h{font-weight:800;font-size:.8rem;text-align:center;background:var(--pale-aqua);border-radius:10px;padding:8px 4px;color:var(--deep-teal);}
+  .dr-h small{display:block;font-weight:600;color:var(--ink-soft);}
+  .dr-h.today{background:var(--gold);color:var(--deep-teal);}
+  .dr-who{font-weight:700;font-size:.85rem;padding:8px;border-radius:10px;border:1px solid var(--line);background:#fff;}
+  .dr-who small{display:block;color:var(--ink-soft);font-weight:500;}
+  .dr-cell{min-height:56px;border:1px dashed var(--line);border-radius:10px;padding:4px;display:flex;flex-direction:column;gap:4px;cursor:pointer;background:rgba(255,255,255,.6);}
+  .dr-cell:hover{border-color:var(--aqua);background:var(--pale-aqua);}
+  .dr-chip{font-size:.74rem;font-weight:700;border-radius:8px;padding:4px 6px;text-align:center;cursor:pointer;border:1px solid transparent;}
+  .dr-chip.scheduled{background:var(--pending-bg);color:#8A6212;border-color:#F0D9A4;}
+  .dr-chip.present{background:var(--confirmed-bg);color:#1E7A4A;border-color:#BFE6CF;}
+  .dr-chip.absent{background:#FBE7E7;color:#B33636;border-color:#F0BCBC;}
+  .dr-chip small{display:block;font-weight:500;opacity:.8;}
+  .dr-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
+  .dr-card h5{font-family:'Tajawal',sans-serif;font-size:1.05rem;color:var(--deep-teal);}
+  .dr-card .dr-sp{color:var(--teal);font-weight:700;font-size:.85rem;}
+  .dr-card .dr-meta{font-size:.82rem;color:var(--ink-soft);margin:6px 0;}
+  .dr-card .dr-now{font-size:.82rem;font-weight:700;margin:6px 0;}
+  .dr-card.off{opacity:.65;}
+  .dr-due{font-weight:800;color:#1E7A4A;background:var(--confirmed-bg);border-radius:10px;padding:6px 10px;font-size:.85rem;margin:6px 0;}
+  .dr-stmt{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:10px;}
+  .dr-stmt th,.dr-stmt td{border:1px solid var(--line);padding:6px 8px;text-align:center;}
+  .dr-stmt th{background:var(--pale-aqua);}
+  .dr-stmt-total{margin-top:10px;font-size:1rem;}
+  .dr-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
   .sv-sec{margin:16px 0 6px;font-family:'Tajawal',sans-serif;font-weight:800;color:var(--deep-teal);}
   .sv-q{margin:10px 0 4px;font-weight:700;font-size:.9rem;}
   .sv-n{font-size:.78rem;color:var(--ink-soft);font-weight:500;}
@@ -1423,6 +1453,7 @@
         <button class="view-tab" id="tabAccounts">الحسابات</button>
         <button class="view-tab" id="tabAnalytics">التحليلات</button>
         <button class="view-tab" id="tabAssistants">المساعدين</button>
+        <button class="view-tab" id="tabDoctors">الأطباء</button>
         <button class="view-tab" id="tabTrainees">المتدربين</button>
         <button class="view-tab" id="tabMaterials">المخزون<span class="tab-badge" id="matLowBadge">0</span></button>
       </div>
@@ -1785,6 +1816,40 @@
       <div class="empty-mini" id="assistantsEmpty" style="display:none;"></div>
     </div>
 
+    <div class="trainees-view" id="doctorsView" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card today"><div class="stat-ic">🩺</div><div class="stat-num" id="drStatActive">0</div><div class="stat-label">أطباء نشطين</div></div>
+        <div class="stat-card confirmed"><div class="stat-ic">🟢</div><div class="stat-num" id="drStatInside">0</div><div class="stat-label">موجودين دلوقتي</div></div>
+        <div class="stat-card pending"><div class="stat-ic">📅</div><div class="stat-num" id="drStatToday">0</div><div class="stat-label">شيفتات النهاردة</div></div>
+        <div class="stat-card total"><div class="stat-ic">⏱️</div><div class="stat-num" id="drStatHours">0</div><div class="stat-label">ساعات الأسبوع (فعلي)</div></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="drSearchInput" placeholder="دور باسم الطبيب أو التخصص...">
+        <select id="drStatusFilter" autocomplete="off">
+          <option value="active">النشطين</option>
+          <option value="ended">المتوقفين</option>
+          <option value="all">الكل</option>
+        </select>
+        <button class="btn btn-outline" id="drShiftBtn">📅 شيفت جديد</button>
+        <button class="btn btn-gold cta-btn gold" id="drAddBtn">➕ طبيب جديد</button>
+      </div>
+      <div class="chart-card">
+        <div class="dr-weekbar">
+          <h4>📅 جدول شيفتات الأسبوع</h4>
+          <div class="dr-weeknav">
+            <button class="btn btn-outline" id="drPrevWeek">▶</button>
+            <strong id="drWeekLabel"></strong>
+            <button class="btn btn-outline" id="drNextWeek">◀</button>
+            <button class="btn btn-outline" id="drThisWeek">الأسبوع ده</button>
+          </div>
+        </div>
+        <div class="dr-gridwrap"><div id="drWeekGrid"></div></div>
+        <div class="tr-sub" style="margin-top:8px;">اضغط على خانة فاضية لإضافة شيفت، أو على شيفت للتعديل وتسجيل الحضور. 🟡 مجدول · 🟢 حضر · 🔴 غاب</div>
+      </div>
+      <div class="assistants-grid" id="doctorsList" style="margin-top:16px;"></div>
+      <div class="empty-mini" id="doctorsEmpty" style="display:none;"></div>
+    </div>
+
     <div class="trainees-view" id="traineesView" style="display:none;">
       <div class="stats-grid">
         <div class="stat-card today"><div class="stat-ic">🎓</div><div class="stat-num" id="trStatActive">0</div><div class="stat-label">متدربين نشطين</div></div>
@@ -1997,6 +2062,7 @@
         </select>
       </div>
     </div>
+    <div class="modal-field" id="editDoctorField" style="display:none;"><label>الطبيب</label><select id="editDoctorInput"></select></div>
     <div class="modal-field">
       <label>حالة الحجز</label>
       <select id="editStatusInput">
@@ -2624,6 +2690,7 @@
       </div>
     </div>
 
+    <div class="modal-field" id="nbDoctorField" style="display:none;"><label>الطبيب</label><select id="nbDoctor"></select></div>
     <div class="ci-info" id="nbCheckinInfo" style="display:none;"></div>
     <div class="modal-field">
       <label>نوع الزيارة</label>
@@ -2724,6 +2791,59 @@
   </div>
 </div>
 
+<div class="booking-modal-overlay" id="doctorOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="doctorClose" aria-label="إغلاق">✕</button>
+    <h3 id="doctorModalTitle">طبيب جديد</h3>
+    <div class="modal-field"><label>الاسم</label><input type="text" id="drNameInput"></div>
+    <div class="modal-field"><label>التخصص</label><input type="text" id="drSpecInput" placeholder="جراحة فم، تقويم، أسنان أطفال..."></div>
+    <div class="modal-field"><label>الموبايل</label><input type="tel" id="drPhoneInput" dir="ltr" style="text-align:left;" maxlength="11"></div>
+    <div class="modal-field"><label>نسبة الطبيب من إجمالي شغل اليوم (%)</label><input type="number" id="drPctInput" min="0" max="100" step="1" value="40"></div>
+    <div class="modal-field"><label>الحالة</label><select id="drStatusInput"><option value="active">نشط</option><option value="ended">متوقف</option></select></div>
+    <div class="modal-field"><label>ملاحظات (اتفاق الشيفت، النسبة...)</label><textarea id="drNotesInput" rows="2"></textarea></div>
+    <p class="chart-hint" id="drIdHint" style="display:none;"></p>
+    <p class="modal-error" id="drErr"></p>
+    <div style="display:flex;gap:8px;">
+      <button class="cta-btn gold" id="drSaveBtn" style="flex:1;justify-content:center;">حفظ</button>
+      <button class="btn btn-outline" id="drDeleteBtn" style="display:none;color:#D64545;">🗑️ مسح</button>
+    </div>
+  </div>
+</div>
+<div class="booking-modal-overlay" id="shiftOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="shiftClose" aria-label="إغلاق">✕</button>
+    <h3 id="shiftModalTitle">شيفت جديد</h3>
+    <div class="modal-field"><label>الطبيب</label><select id="shDoctor"></select></div>
+    <div class="modal-field"><label>اليوم</label><input type="date" id="shDate"></div>
+    <div style="display:flex;gap:10px;">
+      <div class="modal-field" style="flex:1;"><label>من</label><input type="time" id="shStart" value="14:00"></div>
+      <div class="modal-field" style="flex:1;"><label>إلى</label><input type="time" id="shEnd" value="18:00"></div>
+    </div>
+    <div class="modal-field"><label>الحالة</label>
+      <select id="shStatus"><option value="scheduled">مجدول</option><option value="present">حضر</option><option value="absent">غاب</option></select></div>
+    <div id="shActual" style="display:none;gap:10px;">
+      <div class="modal-field" style="flex:1;"><label>وقت الحضور الفعلي</label><input type="time" id="shIn"></div>
+      <div class="modal-field" style="flex:1;"><label>وقت الانصراف الفعلي</label><input type="time" id="shOut"></div>
+    </div>
+    <div class="modal-field"><label>ملاحظة</label><input type="text" id="shNote"></div>
+    <p class="modal-error" id="shErr"></p>
+    <div style="display:flex;gap:8px;">
+      <button class="cta-btn gold" id="shSaveBtn" style="flex:1;justify-content:center;">حفظ</button>
+      <button class="btn btn-outline" id="shDeleteBtn" style="display:none;color:#D64545;">🗑️ مسح</button>
+    </div>
+  </div>
+</div>
+
+<div class="booking-modal-overlay" id="drStmtOverlay">
+  <div class="booking-modal period-modal">
+    <button class="modal-close" id="drStmtClose" aria-label="إغلاق">✕</button>
+    <h3 id="drStmtTitle">كشف حساب</h3>
+    <div class="modal-field"><label>الشهر</label><input type="month" id="drStmtMonth"></div>
+    <div id="drStmtBody"></div>
+    <button class="cta-btn gold" id="drStmtPrint" style="width:100%;justify-content:center;margin-top:12px;">🖨️ طباعة الكشف</button>
+  </div>
+</div>
+
 <button class="theme-fab" id="themeFabBtn" aria-label="تغيير سمة اللوحة" title="تغيير السمة">🎨</button>
 <span class="theme-fab-label" id="themeFabLabel"></span>
 
@@ -2755,16 +2875,19 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // ====== Staff accounts (Firebase Authentication + مستند staff/{uid} فيه الاسم والدور) ======
   // الأدوار: admin = كل حاجة | team = جدول/تقويم/حسابات/مساعدين/مخزون | trainee = جدول/تقويم/مرضى/متدربين
   var ROLE_TABS = {
-    admin:   ['table', 'calendar', 'patients', 'accounts', 'analytics', 'assistants', 'trainees', 'materials'],
-    team:    ['table', 'calendar', 'accounts', 'assistants', 'materials'],
-    trainee: ['table', 'calendar', 'patients', 'trainees']
+    admin:   ['table', 'calendar', 'patients', 'accounts', 'analytics', 'assistants', 'doctors', 'trainees', 'materials'],
+    team:    ['table', 'calendar', 'accounts', 'assistants', 'doctors', 'materials'],
+    trainee: ['table', 'calendar', 'patients', 'trainees'],
+    doctor:  ['table', 'calendar', 'patients', 'analytics', 'doctors']
   };
   var currentStaff = null; // { uid, name, role, pin }
   function currentRole(){ return currentStaff ? currentStaff.role : ''; }
   function isTraineeRole(){ return currentRole() === 'trainee'; }
+  function isDoctorRole(){ return currentRole() === 'doctor'; }
+  function isViewerOnly(){ return isTraineeRole() || isDoctorRole(); } // بيشوف الحجوزات من غير موبايل ولا تعديل
   function denyTrainee(){
-    if(!isTraineeRole()) return false;
-    alert('الصلاحية دي مش متاحة لحسابات المتدربين.');
+    if(!isViewerOnly()) return false;
+    alert('الصلاحية دي مش متاحة لحسابك.');
     return true;
   }
   function allowedViews(){ return currentStaff ? (ROLE_TABS[currentStaff.role] || ['table']) : ['table']; }
@@ -2775,12 +2898,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function isViewAllowed(v){ return allowedViews().indexOf(v || 'table') !== -1; }
   function applyTabAccess(){
     var ok = allowedViews();
-    var ids = { table: 'tabTable', calendar: 'tabCalendar', patients: 'tabPatients', accounts: 'tabAccounts', analytics: 'tabAnalytics', assistants: 'tabAssistants', trainees: 'tabTrainees', materials: 'tabMaterials' };
+    var ids = { table: 'tabTable', calendar: 'tabCalendar', patients: 'tabPatients', accounts: 'tabAccounts', analytics: 'tabAnalytics', assistants: 'tabAssistants', doctors: 'tabDoctors', trainees: 'tabTrainees', materials: 'tabMaterials' };
     Object.keys(ids).forEach(function(v){
       var el = document.getElementById(ids[v]);
       if(el) el.style.display = ok.indexOf(v) !== -1 ? '' : 'none';
     });
-    document.body.classList.toggle('role-trainee', isTraineeRole());
+    document.body.classList.toggle('role-trainee', isViewerOnly());
+    document.body.classList.toggle('role-doctor', isDoctorRole());
     var canCi = (currentRole() === 'admin' || currentRole() === 'team');
     var cb = document.getElementById('checkinBtn'); if(cb) cb.style.display = canCi ? '' : 'none';
     var qb = document.getElementById('qrBtn'); if(qb) qb.style.display = canCi ? '' : 'none';
@@ -2975,7 +3099,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if(!d || !ROLE_TABS[d.role]){
           return firebase.auth().signOut().then(function(){ showGate('الحساب ده مش مفعّل في السيستم. كلّم المدير.'); });
         }
-        currentStaff = { uid: user.uid, name: d.name || user.email, role: d.role, pin: d.pin ? String(d.pin) : '' };
+        currentStaff = { uid: user.uid, name: d.name || user.email, role: d.role, doctorId: d.doctorId ? String(d.doctorId) : '', pin: d.pin ? String(d.pin) : '' };
         sessionStorage.setItem('staffName', currentStaff.name);
         gate.style.display = 'none';
         app.classList.add('show');
@@ -3056,7 +3180,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var publicSlotsReconciled = false;
   var publicSlotStatus = {};
   function syncPublicSlots(snap){
-    if(!firestoreDb || !currentStaff || currentStaff.role === 'trainee') return;
+    if(!firestoreDb || !currentStaff || currentStaff.role === 'trainee' || currentStaff.role === 'doctor') return;
     var col = firestoreDb.collection('publicSlots');
     if(!publicSlotsReconciled){
       publicSlotsReconciled = true;
@@ -3111,7 +3235,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       return;
     }
 
-    firestoreDb.collection('bookings').onSnapshot(function(snap){
+    var bookingsRef = isDoctorRole() ? firestoreDb.collection('bookings').where('doctorId', '==', myDoctorIdClient()) : firestoreDb.collection('bookings');
+    bookingsRef.onSnapshot(function(snap){
       syncPublicSlots(snap);
       allBookings = [];
       snap.forEach(function(doc){
@@ -3128,6 +3253,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           birthDate: data.birthDate || '',
           address: data.address || '',
           visitType: data.visitType || '',
+          doctorId: data.doctorId || '',
+          doctorName: data.doctorName || '',
           status: data.status || 'pending',
           bookedBy: data.bookedBy || 'patient',
           bookedByName: data.bookedByName || '',
@@ -3521,6 +3648,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('tabMaterials').addEventListener('click', function(){ switchView('materials'); });
     document.getElementById('tabTrainees').addEventListener('click', function(){ switchView('trainees'); });
     document.getElementById('tabAssistants').addEventListener('click', function(){ switchView('assistants'); });
+    document.getElementById('tabDoctors').addEventListener('click', function(){ switchView('doctors'); });
     document.getElementById('asSearchInput').addEventListener('input', renderAssistants);
     document.getElementById('asStatusFilter').addEventListener('change', renderAssistants);
     document.getElementById('asAddBtn').addEventListener('click', function(){ openAssistantModal(null); });
@@ -3757,6 +3885,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     watchCheckins();
     watchSurveys();
     initBackup();
+    watchDoctors();
   }
 
   function renderStats(){
@@ -3795,6 +3924,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var tabAs = document.getElementById('tabAssistants');
     asEl_.style.display = 'none';
     tabAs.classList.remove('active');
+    document.getElementById('doctorsView').style.display = 'none';
+    document.getElementById('tabDoctors').classList.remove('active');
 
     // فلاتر جدول الحجوزات وإدارة أيام العمل خاصة بتبويبي الجدول والتقويم بس
     var bookingsToolbar = document.getElementById('searchInput').parentElement;
@@ -3835,6 +3966,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       asEl_.style.display = 'block';
       tabAs.classList.add('active');
       renderAssistants();
+    } else if(view === 'doctors'){
+      document.getElementById('doctorsView').style.display = 'block';
+      document.getElementById('tabDoctors').classList.add('active');
+      renderDoctors();
     } else if(view === 'trainees'){
       trEl_.style.display = 'block';
       tabTr.classList.add('active');
@@ -4008,9 +4143,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           if(b){
             cell.className = 'cal-cell ' + (b.status === 'no_show' ? 'noshow-cell' : b.status === 'awaiting' ? 'awaiting-cell' : b.status);
             var statusLabel = b.status === 'confirmed' ? 'مؤكد' : b.status === 'no_show' ? 'لم يحضر' : b.status === 'awaiting' ? 'لسه ما أكدش' : 'في الانتظار';
-            cell.title = isTraineeRole() ? (b.name + ' — ' + statusLabel) : (b.name + ' — ' + b.phone + ' — ' + statusLabel + (b.notes ? '\nملاحظات: ' + b.notes : ''));
+            cell.title = isViewerOnly() ? (b.name + ' — ' + statusLabel) : (b.name + ' — ' + b.phone + ' — ' + statusLabel + (b.notes ? '\nملاحظات: ' + b.notes : ''));
             if(ciArrivedBooking(b)){ cell.classList.add('arrived'); cell.title += '\n🟢 وصل العيادة'; }
-            if(!isTraineeRole()) cell.addEventListener('click', function(){ openCellDetails(b); });
+            if(!isViewerOnly()) cell.addEventListener('click', function(){ openCellDetails(b); });
           } else {
             cell.className = 'cal-cell';
             cell.title = day.weekday + ' ' + day.dateLabel + ' — ' + SLOT_LABELS[slotValue] + ' — متاح';
@@ -4022,7 +4157,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   function openCellDetails(b){
-    if(isTraineeRole()) return;
+    if(isViewerOnly()) return;
     var slotLabel = SLOT_LABELS[b.slotValue] || b.slotValue;
     var lines = [
       'المريض: ' + b.name,
@@ -4234,7 +4369,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   function watchPatientFiles(){
     if(!firestoreDb) return;
-    firestoreDb.collection('patientFiles').onSnapshot(function(snap){
+    var pfRef = isDoctorRole() ? firestoreDb.collection('patientFiles').where('doctorId', '==', myDoctorIdClient()) : firestoreDb.collection('patientFiles');
+    pfRef.onSnapshot(function(snap){
       patientFilesCache = [];
       snap.forEach(function(doc){
         var data = doc.data();
@@ -4250,7 +4386,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var patientXraysCache = [];
 
   function watchPatientXrays(){
-    if(!firestoreDb) return;
+    if(!firestoreDb || isDoctorRole()) return;
     firestoreDb.collection('patientXrays').onSnapshot(function(snap){
       patientXraysCache = [];
       snap.forEach(function(doc){
@@ -4774,7 +4910,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   function watchPrescriptions(){
-    if(!firestoreDb) return;
+    if(!firestoreDb || isDoctorRole()) return;
     firestoreDb.collection('prescriptions').onSnapshot(function(snap){
       prescriptionsCache = [];
       snap.forEach(function(doc){
@@ -5256,6 +5392,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       patientSignature: document.getElementById('pfPatientSigCanvas').toDataURL(),
       ts: Date.now()
     };
+    // ملف المريض بيتربط بالطبيب: الطبيب لنفسه، والباقي من الملف القديم أو من آخر حجز للمريض
+    var pfOld = pfCurrentSheetId ? patientFilesCache.filter(function(x){ return x.id === pfCurrentSheetId; })[0] : null;
+    var pfDoc = isDoctorRole() ? myDoctorIdClient() : ((pfOld && pfOld.doctorId) || '');
+    if(!pfDoc){
+      var pkey = pfPatientKey(p);
+      var lastB = allBookings.filter(function(x){ return x.doctorId && (x.phone + '|' + (x.name || '').trim().toLowerCase()) === pkey; }).pop();
+      pfDoc = lastB ? lastB.doctorId : '';
+    }
+    data.doctorId = pfDoc;
 
     var ref = pfCurrentSheetId
       ? firestoreDb.collection('patientFiles').doc(pfCurrentSheetId)
@@ -5638,6 +5783,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // ---- New booking (staff, from inside the dashboard) ----
   function openNewBookingModal(){
     if(denyTrainee()) return;
+    fillDoctorSelect('nbDoctor', 'nbDoctorField', '');
     var daySel = document.getElementById('nbDaySelect');
     daySel.value = todayIso();
     updateNbWeekdayLabel(daySel.value);
@@ -5828,6 +5974,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var ci = nbCheckin;
     var data = { name: name, phone: phone, age: age, gender: gender, status: 'confirmed', bookedBy: 'staff', bookedByName: getStaffName(), ts: Date.now() };
     if(visitType) data.visitType = visitType;
+    var nbDoc = document.getElementById('nbDoctor').value;
+    if(nbDoc){ data.doctorId = nbDoc; data.doctorName = doctorNameOf(nbDoc); }
     if(ci){ data.birthDate = ci.birthDate; data.address = ci.address; data.checkinId = ci.id; }
     // الكشف: بينزل سعره تلقائي كمدفوع في حسابات يوم الحجز
     var fee = (visitType === 'checkup') ? CHECKUP_FEE : 0;
@@ -9252,7 +9400,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   document.getElementById('svPrintQ').addEventListener('click', printSurveyQuestions);
 
   // ---- نسخة احتياطية ----
-  var BK_COLLS = ['bookings','bookingPrivate','publicSlots','blockedDays','checkins','surveys','patientFiles','patientXrays','prescriptions','payments','dailyExpenses','envelopeTransactions','materials','assistants','assistantDays','assistantBonuses','trainees','traineeSessions','activityLog','staff'];
+  var BK_COLLS = ['doctors','doctorShifts','bookings','bookingPrivate','publicSlots','blockedDays','checkins','surveys','patientFiles','patientXrays','prescriptions','payments','dailyExpenses','envelopeTransactions','materials','assistants','assistantDays','assistantBonuses','trainees','traineeSessions','activityLog','staff'];
   var BK_LAST = 'clinicBackupLast', BK_AUTO = 'clinicBackupAuto', bkBusy = false;
   function bkGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
   function bkSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
@@ -9307,6 +9455,292 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   document.getElementById('backupOverlay').addEventListener('click', function(e){ if(e.target.id === 'backupOverlay') e.target.classList.remove('open'); });
   document.getElementById('bkNow').addEventListener('click', function(){ runBackup(false); });
   document.getElementById('bkAuto').addEventListener('change', function(){ bkSet(BK_AUTO, this.checked ? '1' : '0'); });
+
+  // ================= الأطباء (شيفتات) =================
+  var doctorsCache = [], doctorShiftsCache = [], drEditingId = null, drShiftEditingId = null, drWeekStart = null;
+  var DR_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  function drIso(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function drParse(iso){ var p = iso.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2], 12); }
+  function drAddDays(iso, n){ var d = drParse(iso); d.setDate(d.getDate() + n); return drIso(d); }
+  function drWeekOf(iso){ var d = drParse(iso); return drAddDays(iso, -((d.getDay() + 1) % 7)); } // الأسبوع بيبدأ السبت
+  function drMin(hm){ var p = String(hm || '').split(':'); return p.length === 2 ? (+p[0]) * 60 + (+p[1]) : null; }
+  function drShiftHours(s){
+    var a = drMin(s.timeIn), b = drMin(s.timeOut);
+    return (a != null && b != null && b > a) ? (b - a) / 60 : 0;
+  }
+  function drNum(n){ return (Math.round(n * 10) / 10).toLocaleString('ar-EG'); }
+  function drCanUse(){ return currentRole() === 'admin' || currentRole() === 'team'; }
+  function myDoctorIdClient(){ return isDoctorRole() && currentStaff ? (currentStaff.doctorId || '') : ''; }
+  function fillDoctorSelect(selId, fieldId, value){
+    var sel = document.getElementById(selId), field = document.getElementById(fieldId); if(!sel) return;
+    var list = doctorsCache.filter(function(d){ return d.status !== 'ended' || d.id === value; });
+    sel.innerHTML = '<option value="">بدون تحديد</option>';
+    list.forEach(function(d){ var o = document.createElement('option'); o.value = d.id; o.textContent = 'د. ' + d.name; sel.appendChild(o); });
+    sel.value = value || '';
+    if(field) field.style.display = list.length ? '' : 'none';
+    sel.dataset.on = list.length ? '1' : '0';
+  }
+  function doctorNameOf(id){ var d = doctorsCache.filter(function(x){ return x.id === id; })[0]; return d ? d.name : ''; }
+  function watchDoctors(){
+    if(!firestoreDb) return;
+    if(isDoctorRole()){
+      var myId = currentStaff && currentStaff.doctorId;
+      if(!myId){ document.getElementById('doctorsEmpty').style.display = 'block'; document.getElementById('doctorsEmpty').textContent = 'حسابك مش مربوط بطبيب. كلّم الأدمن.'; return; }
+      firestoreDb.collection('doctors').doc(myId).onSnapshot(function(doc){
+        doctorsCache = doc.exists ? [Object.assign({ id: doc.id }, doc.data())] : []; renderDoctors();
+      }, function(err){ console.warn('Firestore listener error for doctor.', err); });
+      firestoreDb.collection('doctorShifts').where('doctorId', '==', myId).onSnapshot(function(snap){
+        doctorShiftsCache = []; snap.forEach(function(d2){ var x = d2.data(); x.id = d2.id; doctorShiftsCache.push(x); }); renderDoctors();
+      }, function(err){ console.warn('Firestore listener error for doctorShifts.', err); });
+      return;
+    }
+    if(!drCanUse()) return;
+    firestoreDb.collection('doctors').onSnapshot(function(snap){
+      doctorsCache = []; snap.forEach(function(doc){ var d = doc.data(); d.id = doc.id; doctorsCache.push(d); });
+      doctorsCache.sort(function(a, b){ return String(a.name).localeCompare(String(b.name), 'ar'); });
+      renderDoctors();
+    }, function(err){ console.warn('Firestore listener error for doctors.', err); });
+    firestoreDb.collection('doctorShifts').onSnapshot(function(snap){
+      doctorShiftsCache = []; snap.forEach(function(doc){ var d = doc.data(); d.id = doc.id; doctorShiftsCache.push(d); });
+      renderDoctors();
+    }, function(err){ console.warn('Firestore listener error for doctorShifts.', err); });
+  }
+  function drShiftsOf(did, iso){ return doctorShiftsCache.filter(function(s){ return s.doctorId === did && s.date === iso; }).sort(function(a, b){ return String(a.start).localeCompare(String(b.start)); }); }
+  function drOpenShiftNow(did){ // شيفت النهاردة اللي الدكتور جواه
+    return doctorShiftsCache.filter(function(s){ return s.doctorId === did && s.date === todayIso() && s.status === 'present' && s.timeIn && !s.timeOut; })[0] || null;
+  }
+  function renderDoctors(){
+    var view = document.getElementById('doctorsView');
+    if(!view || view.style.display === 'none') return;
+    if(isDoctorRole()){ document.getElementById('drAddBtn').style.display = 'none'; document.getElementById('drShiftBtn').style.display = 'none'; var tsub = view.querySelector('.chart-card .tr-sub'); if(tsub) tsub.textContent = 'ده جدول شيفتاتك. سجّل حضورك وانصرافك من الكارت تحت.'; }
+    if(!drWeekStart) drWeekStart = drWeekOf(todayIso());
+    var today = todayIso(), q = (document.getElementById('drSearchInput').value || '').trim().toLowerCase(), f = document.getElementById('drStatusFilter').value;
+    var active = doctorsCache.filter(function(d){ return d.status !== 'ended'; });
+    var inside = active.filter(function(d){ return !!drOpenShiftNow(d.id); }).length;
+    var todayShifts = doctorShiftsCache.filter(function(s){ return s.date === today && s.status !== 'absent'; }).length;
+    var wkHours = 0, wkEnd = drAddDays(drWeekStart, 6);
+    doctorShiftsCache.forEach(function(s){ if(s.date >= drWeekStart && s.date <= wkEnd) wkHours += drShiftHours(s); });
+    document.getElementById('drStatActive').textContent = active.length.toLocaleString('ar-EG');
+    document.getElementById('drStatInside').textContent = inside.toLocaleString('ar-EG');
+    document.getElementById('drStatToday').textContent = todayShifts.toLocaleString('ar-EG');
+    document.getElementById('drStatHours').textContent = drNum(wkHours);
+    // ---- week grid ----
+    document.getElementById('drWeekLabel').textContent = formatDateLabel(drWeekStart) + ' ← ' + formatDateLabel(wkEnd);
+    var grid = document.getElementById('drWeekGrid'); grid.innerHTML = '';
+    var g = document.createElement('div'); g.className = 'dr-grid';
+    g.appendChild(trEl('div', 'dr-h', 'الطبيب'));
+    for(var i = 0; i < 7; i++){
+      var di = drAddDays(drWeekStart, i), dd = drParse(di), hd = trEl('div', 'dr-h' + (di === today ? ' today' : ''), DR_DAYS[dd.getDay()]);
+      hd.appendChild(trEl('small', '', dd.getDate() + '/' + (dd.getMonth() + 1))); g.appendChild(hd);
+    }
+    var rows = active.filter(function(d){ return !q || (d.name + ' ' + (d.specialty || '')).toLowerCase().indexOf(q) !== -1; });
+    rows.forEach(function(d){
+      var who = trEl('div', 'dr-who', d.name); if(d.specialty) who.appendChild(trEl('small', '', d.specialty)); g.appendChild(who);
+      for(var j = 0; j < 7; j++){ (function(iso){
+        var cell = trEl('div', 'dr-cell');
+        drShiftsOf(d.id, iso).forEach(function(s){
+          var chip = trEl('div', 'dr-chip ' + (s.status || 'scheduled'), trTimeLabel(s.start) + ' – ' + trTimeLabel(s.end));
+          if(s.status === 'present' && s.timeIn){ chip.appendChild(trEl('small', '', 'فعلي ' + trTimeLabel(s.timeIn) + (s.timeOut ? ' → ' + trTimeLabel(s.timeOut) : ' (جوه)'))); }
+          if(!isDoctorRole()) chip.addEventListener('click', function(e){ e.stopPropagation(); openShiftModal(s); });
+          cell.appendChild(chip);
+        });
+        if(!isDoctorRole()) cell.addEventListener('click', function(){ openShiftModal(null, d.id, iso); });
+        g.appendChild(cell);
+      })(drAddDays(drWeekStart, j)); }
+    });
+    if(!rows.length){ var em = trEl('div', 'empty-mini', 'ضيف أطباء الأول عشان يظهر جدول الشيفتات.'); em.style.gridColumn = '1 / -1'; g.appendChild(em); }
+    grid.appendChild(g);
+    // ---- cards ----
+    var list = document.getElementById('doctorsList'); list.innerHTML = '';
+    var shown = doctorsCache.filter(function(d){
+      if(f === 'active' && d.status === 'ended') return false; if(f === 'ended' && d.status !== 'ended') return false;
+      return !q || (d.name + ' ' + (d.specialty || '')).toLowerCase().indexOf(q) !== -1;
+    });
+    var em2 = document.getElementById('doctorsEmpty'); em2.style.display = shown.length ? 'none' : 'block'; em2.textContent = 'لسه مفيش أطباء. اضغط «➕ طبيب جديد».';
+    var mp = today.slice(0, 7);
+    shown.forEach(function(d){
+      var card = trEl('div', 'dr-card' + (d.status === 'ended' ? ' off' : ''));
+      card.appendChild(trEl('h5', '', '🩺 ' + d.name));
+      if(d.specialty) card.appendChild(trEl('div', 'dr-sp', d.specialty));
+      var mine = doctorShiftsCache.filter(function(s){ return s.doctorId === d.id && String(s.date).slice(0, 7) === mp; });
+      var hrs = 0, days = 0, abs = 0; mine.forEach(function(s){ hrs += drShiftHours(s); if(s.status === 'present') days++; if(s.status === 'absent') abs++; });
+      card.appendChild(trEl('div', 'dr-meta', (d.phone ? '📞 ' + d.phone + ' · ' : '') + 'الشهر ده: ' + days.toLocaleString('ar-EG') + ' شيفت · ' + drNum(hrs) + ' ساعة' + (abs ? ' · غياب ' + abs.toLocaleString('ar-EG') : '')));
+      var due = trEl('div', 'dr-due', '💰 مستحقاته الشهر ده (' + drPct(d).toLocaleString('ar-EG') + '%): ' + Math.round(drMonthShare(d)).toLocaleString('ar-EG') + ' جنيه'); card.appendChild(due);
+      var ts = drShiftsOf(d.id, today), open = drOpenShiftNow(d.id);
+      var now = ts.length ? ts.map(function(s){ return trTimeLabel(s.start) + '–' + trTimeLabel(s.end); }).join('، ') : 'مفيش شيفت النهاردة';
+      card.appendChild(trEl('div', 'dr-now', (open ? '🟢 جوه العيادة من ' + trTimeLabel(open.timeIn) : '📅 النهاردة: ' + now)));
+      if(d.notes && !isDoctorRole()) card.appendChild(trEl('div', 'dr-meta', '📝 ' + d.notes));
+      var act = trEl('div', 'dr-actions');
+      if(d.status !== 'ended'){
+        var b1 = trEl('button', open ? 'btn btn-outline' : 'cta-btn gold', open ? '🚪 تسجيل انصراف' : '✅ تسجيل حضور الآن'); b1.type = 'button';
+        b1.addEventListener('click', function(){ drQuickToggle(d); }); act.appendChild(b1);
+        if(!isDoctorRole()){ var b2 = trEl('button', 'btn btn-outline', '📅 شيفت'); b2.type = 'button'; b2.addEventListener('click', function(){ openShiftModal(null, d.id, today); }); act.appendChild(b2); }
+      }
+      var b4 = trEl('button', 'btn btn-outline', '🧾 كشف حساب'); b4.type = 'button'; b4.addEventListener('click', function(){ openDrStatement(d); }); act.appendChild(b4);
+      if(!isDoctorRole()){ var b3 = trEl('button', 'btn btn-outline', '✏️'); b3.type = 'button'; b3.title = 'تعديل بيانات الطبيب'; b3.addEventListener('click', function(){ openDoctorModal(d); }); act.appendChild(b3); }
+      card.appendChild(act); list.appendChild(card);
+    });
+  }
+  function drQuickToggle(d){
+    var open = drOpenShiftNow(d.id), now = trNowHM(), today = todayIso();
+    if(open){
+      firestoreDb.collection('doctorShifts').doc(open.id).update({ timeOut: now, ts: Date.now() })
+        .then(function(){ logActivity('edit', 'انصراف د. ' + d.name + ' — ' + trTimeLabel(now)); })
+        .catch(function(e){ alert('حصل خطأ: ' + e.message); });
+      return;
+    }
+    var sched = drShiftsOf(d.id, today).filter(function(s){ return s.status === 'scheduled'; })[0];
+    var req = sched
+      ? firestoreDb.collection('doctorShifts').doc(sched.id).update({ status: 'present', timeIn: now, timeOut: '', by: getStaffName(), ts: Date.now() })
+      : firestoreDb.collection('doctorShifts').add({ doctorId: d.id, doctorName: d.name, date: today, start: now, end: '', status: 'present', timeIn: now, timeOut: '', note: 'شيفت غير مجدول', by: getStaffName(), ts: Date.now() });
+    req.then(function(){ logActivity('edit', 'حضور د. ' + d.name + ' — ' + trTimeLabel(now)); }).catch(function(e){ alert('حصل خطأ: ' + e.message); });
+  }
+  function openDoctorModal(d){
+    drEditingId = d ? d.id : null;
+    document.getElementById('doctorModalTitle').textContent = d ? 'تعديل بيانات الطبيب' : 'طبيب جديد';
+    document.getElementById('drNameInput').value = d ? d.name : '';
+    document.getElementById('drSpecInput').value = d ? (d.specialty || '') : '';
+    document.getElementById('drPhoneInput').value = d ? (d.phone || '') : '';
+    document.getElementById('drStatusInput').value = d ? (d.status || 'active') : 'active';
+    document.getElementById('drPctInput').value = d && d.sharePct != null ? d.sharePct : 40;
+    document.getElementById('drNotesInput').value = d ? (d.notes || '') : '';
+    document.getElementById('drErr').textContent = '';
+    document.getElementById('drDeleteBtn').style.display = d ? '' : 'none';
+    var hint = document.getElementById('drIdHint'); hint.style.display = d ? '' : 'none';
+    if(d) hint.textContent = 'معرّف الطبيب لربط حسابه (doctorId): ' + d.id;
+    document.getElementById('doctorOverlay').classList.add('open');
+  }
+  function saveDoctor(){
+    var err = document.getElementById('drErr'), name = document.getElementById('drNameInput').value.trim();
+    if(!name){ err.textContent = 'اكتب اسم الطبيب.'; return; }
+    var data = { name: name, specialty: document.getElementById('drSpecInput').value.trim(), phone: document.getElementById('drPhoneInput').value.trim(),
+      status: document.getElementById('drStatusInput').value, notes: document.getElementById('drNotesInput').value.trim(), sharePct: Math.max(0, Math.min(100, parseFloat(document.getElementById('drPctInput').value) || 0)), ts: Date.now() };
+    var ref = drEditingId ? firestoreDb.collection('doctors').doc(drEditingId) : firestoreDb.collection('doctors').doc();
+    ref.set(data).then(function(){
+      logActivity('edit', (drEditingId ? 'تعديل بيانات د. ' : 'إضافة طبيب جديد: د. ') + name);
+      document.getElementById('doctorOverlay').classList.remove('open');
+    }).catch(function(e){ err.textContent = 'حصل خطأ: ' + e.message; });
+  }
+  function deleteDoctor(){
+    var d = doctorsCache.filter(function(x){ return x.id === drEditingId; })[0]; if(!d) return;
+    var pin = prompt('اكتب الكود السري عشان تمسح د. ' + d.name + ' وكل شيفتاته:', ''); if(pin === null) return;
+    if(!canDeletePin(pin)){ alert('الكود غير صحيح.'); return; }
+    var batch = firestoreDb.batch();
+    batch.delete(firestoreDb.collection('doctors').doc(d.id));
+    doctorShiftsCache.filter(function(s){ return s.doctorId === d.id; }).forEach(function(s){ batch.delete(firestoreDb.collection('doctorShifts').doc(s.id)); });
+    batch.commit().then(function(){ logActivity('edit', 'مسح د. ' + d.name); document.getElementById('doctorOverlay').classList.remove('open'); }).catch(function(e){ alert('حصل خطأ: ' + e.message); });
+  }
+  function openShiftModal(s, did, iso){
+    var active = doctorsCache.filter(function(d){ return d.status !== 'ended' || (s && s.doctorId === d.id); });
+    if(!active.length){ alert('ضيف طبيب الأول.'); return; }
+    drShiftEditingId = s ? s.id : null;
+    var sel = document.getElementById('shDoctor'); sel.innerHTML = '';
+    active.forEach(function(d){ var o = document.createElement('option'); o.value = d.id; o.textContent = d.name; sel.appendChild(o); });
+    sel.value = s ? s.doctorId : (did || active[0].id);
+    document.getElementById('shiftModalTitle').textContent = s ? 'تعديل شيفت' : 'شيفت جديد';
+    document.getElementById('shDate').value = s ? s.date : (iso || todayIso());
+    document.getElementById('shStart').value = s ? s.start : '14:00';
+    document.getElementById('shEnd').value = s ? s.end : '18:00';
+    document.getElementById('shStatus').value = s ? (s.status || 'scheduled') : 'scheduled';
+    document.getElementById('shIn').value = s ? (s.timeIn || '') : '';
+    document.getElementById('shOut').value = s ? (s.timeOut || '') : '';
+    document.getElementById('shNote').value = s ? (s.note || '') : '';
+    document.getElementById('shErr').textContent = '';
+    document.getElementById('shDeleteBtn').style.display = s ? '' : 'none';
+    shToggleActual();
+    document.getElementById('shiftOverlay').classList.add('open');
+  }
+  function shToggleActual(){ document.getElementById('shActual').style.display = document.getElementById('shStatus').value === 'present' ? 'flex' : 'none'; }
+  function saveShift(){
+    var err = document.getElementById('shErr'), did = document.getElementById('shDoctor').value, doc = doctorsCache.filter(function(d){ return d.id === did; })[0];
+    var date = document.getElementById('shDate').value, st = document.getElementById('shStart').value, en = document.getElementById('shEnd').value, status = document.getElementById('shStatus').value;
+    if(!doc || !date || !st || !en){ err.textContent = 'اختار الطبيب واليوم ووقت البداية والنهاية.'; return; }
+    if(drMin(en) <= drMin(st)){ err.textContent = 'وقت النهاية لازم يكون بعد البداية.'; return; }
+    var clash = doctorShiftsCache.filter(function(x){ return x.id !== drShiftEditingId && x.doctorId === did && x.date === date && x.status !== 'absent' && drMin(x.start) < drMin(en) && drMin(x.end) > drMin(st); });
+    if(clash.length && !confirm('الطبيب ده عنده شيفت متداخل في نفس اليوم (' + trTimeLabel(clash[0].start) + '–' + trTimeLabel(clash[0].end) + '). تكمل؟')) return;
+    var data = { doctorId: did, doctorName: doc.name, date: date, start: st, end: en, status: status,
+      timeIn: status === 'present' ? (document.getElementById('shIn').value || st) : '', timeOut: status === 'present' ? document.getElementById('shOut').value : '',
+      note: document.getElementById('shNote').value.trim(), by: getStaffName(), ts: Date.now() };
+    if(data.timeOut && drMin(data.timeOut) <= drMin(data.timeIn)){ err.textContent = 'الانصراف لازم يكون بعد الحضور.'; return; }
+    var ref = drShiftEditingId ? firestoreDb.collection('doctorShifts').doc(drShiftEditingId) : firestoreDb.collection('doctorShifts').doc();
+    ref.set(data).then(function(){
+      logActivity('edit', (drShiftEditingId ? 'تعديل شيفت د. ' : 'شيفت جديد لـ د. ') + doc.name + ' — ' + formatDateLabel(date) + ' ' + trTimeLabel(st) + '–' + trTimeLabel(en));
+      document.getElementById('shiftOverlay').classList.remove('open');
+    }).catch(function(e){ err.textContent = 'حصل خطأ: ' + e.message; });
+  }
+  function deleteShift(){
+    if(!drShiftEditingId || !confirm('تمسح الشيفت ده؟')) return;
+    firestoreDb.collection('doctorShifts').doc(drShiftEditingId).delete().then(function(){ document.getElementById('shiftOverlay').classList.remove('open'); }).catch(function(e){ alert('حصل خطأ: ' + e.message); });
+  }
+  document.getElementById('drSearchInput').addEventListener('input', renderDoctors);
+  document.getElementById('drStatusFilter').addEventListener('change', renderDoctors);
+  document.getElementById('drAddBtn').addEventListener('click', function(){ openDoctorModal(null); });
+  document.getElementById('drShiftBtn').addEventListener('click', function(){ openShiftModal(null); });
+  document.getElementById('drPrevWeek').addEventListener('click', function(){ drWeekStart = drAddDays(drWeekStart || drWeekOf(todayIso()), -7); renderDoctors(); });
+  document.getElementById('drNextWeek').addEventListener('click', function(){ drWeekStart = drAddDays(drWeekStart || drWeekOf(todayIso()), 7); renderDoctors(); });
+  document.getElementById('drThisWeek').addEventListener('click', function(){ drWeekStart = drWeekOf(todayIso()); renderDoctors(); });
+  document.getElementById('drSaveBtn').addEventListener('click', saveDoctor);
+  document.getElementById('drDeleteBtn').addEventListener('click', deleteDoctor);
+  document.getElementById('doctorClose').addEventListener('click', function(){ document.getElementById('doctorOverlay').classList.remove('open'); });
+  document.getElementById('shSaveBtn').addEventListener('click', saveShift);
+  document.getElementById('shDeleteBtn').addEventListener('click', deleteShift);
+  document.getElementById('shStatus').addEventListener('change', shToggleActual);
+  document.getElementById('shiftClose').addEventListener('click', function(){ document.getElementById('shiftOverlay').classList.remove('open'); });
+  ['doctorOverlay', 'shiftOverlay'].forEach(function(id){ document.getElementById(id).addEventListener('click', function(e){ if(e.target.id === id) e.target.classList.remove('open'); }); });
+  setInterval(function(){ var v = document.getElementById('doctorsView'); if(v && v.style.display !== 'none') renderDoctors(); }, 60000);
+
+  // ---- مستحقات الأطباء: النسبة من إجمالي شغل اليوم (زي نصيب الدكتور) على الأيام اللي حضر فيها ----
+  function drPct(d){ return d && d.sharePct != null ? +d.sharePct : 40; }
+  function drPresentHours(s){ var h2 = drShiftHours(s); if(h2) return h2; var a = drMin(s.start), b = drMin(s.end); return (a != null && b != null && b > a) ? (b - a) / 60 : 1; }
+  function drStatement(d, ym){
+    var days = {}; // iso -> { mine, all }
+    doctorShiftsCache.forEach(function(s){
+      if(s.status !== 'present' || String(s.date).slice(0, 7) !== ym) return;
+      var o = days[s.date] || (days[s.date] = { mine: 0, all: 0 }), hrs = drPresentHours(s);
+      o.all += hrs; if(s.doctorId === d.id) o.mine += hrs;
+    });
+    var rows = [], total = 0, hours = 0;
+    Object.keys(days).sort().forEach(function(iso){
+      var o = days[iso]; if(!o.mine) return;
+      var dayTotal = getDayConfirmedTotal(iso), share = dayTotal * drPct(d) / 100 * (o.mine / o.all);
+      rows.push({ iso: iso, hours: o.mine, dayTotal: dayTotal, shared: o.all > o.mine, share: share });
+      total += share; hours += o.mine;
+    });
+    return { rows: rows, total: total, hours: hours };
+  }
+  function drMonthShare(d){ return drStatement(d, todayIso().slice(0, 7)).total; }
+  var drStmtDoctor = null;
+  function openDrStatement(d){
+    drStmtDoctor = d;
+    document.getElementById('drStmtTitle').textContent = '🧾 كشف حساب د. ' + d.name + ' (' + drPct(d).toLocaleString('ar-EG') + '%)';
+    document.getElementById('drStmtMonth').value = todayIso().slice(0, 7);
+    renderDrStatement();
+    document.getElementById('drStmtOverlay').classList.add('open');
+  }
+  function renderDrStatement(){
+    var d = drStmtDoctor; if(!d) return;
+    var st = drStatement(d, document.getElementById('drStmtMonth').value), body = document.getElementById('drStmtBody');
+    if(!st.rows.length){ body.innerHTML = '<div class="empty-mini">مفيش أيام حضور متسجلة للطبيب في الشهر ده.</div>'; return; }
+    var html = '<table class="dr-stmt"><thead><tr><th>اليوم</th><th>ساعات</th><th>إجمالي شغل اليوم</th><th>نصيب الطبيب</th></tr></thead><tbody>';
+    st.rows.forEach(function(r){
+      html += '<tr><td>' + escapeHtml(formatDateLabel(r.iso)) + '</td><td>' + drNum(r.hours) + '</td><td>' + r.dayTotal.toLocaleString('ar-EG') + ' ج</td><td>' + Math.round(r.share).toLocaleString('ar-EG') + ' ج' + (r.shared ? ' <small>(موزّع بين أطباء)</small>' : '') + '</td></tr>';
+    });
+    html += '</tbody></table><div class="dr-stmt-total">الإجمالي المستحق: <strong>' + Math.round(st.total).toLocaleString('ar-EG') + ' جنيه</strong> — ' + st.rows.length.toLocaleString('ar-EG') + ' يوم · ' + drNum(st.hours) + ' ساعة</div>' +
+      '<p class="chart-hint">النصيب = إجمالي حجوزات اليوم المؤكدة × النسبة (قبل أي خصومات)، ولو في أكتر من طبيب في نفس اليوم بيتوزع على حسب الساعات.</p>';
+    body.innerHTML = html;
+  }
+  function printDrStatement(){
+    var d = drStmtDoctor; if(!d) return;
+    var ym = document.getElementById('drStmtMonth').value, st = drStatement(d, ym);
+    var w = window.open('', '_blank'); if(!w) return;
+    var rows = st.rows.map(function(r){ return '<tr><td>' + escapeHtml(formatDateLabel(r.iso)) + '</td><td>' + drNum(r.hours) + '</td><td>' + r.dayTotal.toLocaleString('ar-EG') + '</td><td>' + Math.round(r.share).toLocaleString('ar-EG') + '</td></tr>'; }).join('');
+    w.document.write('<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>كشف حساب د. ' + escapeHtml(d.name) + '</title><style>body{font-family:Tahoma,Arial,sans-serif;padding:26px;color:#0E2B30;}h1{font-size:20px;text-align:center;margin:0}p.s{text-align:center;color:#4A6067;margin:4px 0 16px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #cfdcdc;padding:7px 9px;text-align:center}th{background:#E6F4F4}.t{margin-top:14px;font-size:16px;font-weight:800;text-align:left}.sign{display:flex;justify-content:space-between;margin-top:40px;font-size:13px;color:#4A6067}.foot{margin-top:20px;text-align:center;font-size:11px;color:#82969b}</style></head><body><h1>عيادة د. أبانوب سليم — كشف حساب طبيب</h1><p class="s">د. ' + escapeHtml(d.name) + (d.specialty ? ' (' + escapeHtml(d.specialty) + ')' : '') + ' · شهر ' + escapeHtml(ym) + ' · النسبة ' + drPct(d) + '%</p><table><thead><tr><th>اليوم</th><th>ساعات</th><th>إجمالي شغل اليوم (ج)</th><th>نصيب الطبيب (ج)</th></tr></thead><tbody>' + rows + '</tbody></table><div class="t">الإجمالي المستحق: ' + Math.round(st.total).toLocaleString('ar-EG') + ' جنيه</div><div class="sign"><span>توقيع الطبيب: ..............</span><span>توقيع المسؤول: ..............</span></div><div class="foot">النصيب = إجمالي حجوزات اليوم المؤكدة × النسبة</div><script>window.onload=function(){window.print();}<\/script></body></html>');
+    w.document.close();
+  }
+  document.getElementById('drStmtMonth').addEventListener('change', renderDrStatement);
+  document.getElementById('drStmtPrint').addEventListener('click', printDrStatement);
+  document.getElementById('drStmtClose').addEventListener('click', function(){ document.getElementById('drStmtOverlay').classList.remove('open'); });
+  document.getElementById('drStmtOverlay').addEventListener('click', function(e){ if(e.target.id === 'drStmtOverlay') e.target.classList.remove('open'); });
 
   function buildBarRow(label, count, max){
     var row = document.createElement('div');
@@ -9409,7 +9843,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       vdBtn.className = 'notes-btn vd-cell-btn' + (vdSteps.length ? ' has-notes' : '');
       vdBtn.textContent = vdSteps.length ? '🦷 عرض / تعديل' : '🦷 إضافة تفاصيل';
       vdBtn.addEventListener('click', function(){ openVisitDetails({ phone: b.phone, name: b.name }, b.id); });
-      if(!isTraineeRole()) vdCell.appendChild(vdBtn);
+      if(!isViewerOnly()) vdCell.appendChild(vdBtn);
 
       var notesCell = tr.querySelector('.notes-cell');
       var notesBtn = document.createElement('button');
@@ -9477,8 +9911,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       waBtn.rel = 'noopener';
       actions.appendChild(waBtn);
 
-      if(isTraineeRole()){
-        // المتدرب بيشوف مواعيد الحالات بس: من غير موبايل / مصدر / ملاحظات / إجراءات
+      if(isViewerOnly()){
+        // المتدرب/الطبيب بيشوف مواعيد الحالات بس: من غير موبايل / مصدر / ملاحظات / إجراءات
         [8, 6, 5, 3].forEach(function(i){ if(tr.children[i]) tr.removeChild(tr.children[i]); });
       }
       body.appendChild(tr);
@@ -9558,6 +9992,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('editAgeInput').value = b.age != null ? b.age : '';
     document.getElementById('editGenderInput').value = b.gender || '';
     document.getElementById('editStatusInput').value = b.status;
+    fillDoctorSelect('editDoctorInput', 'editDoctorField', b.doctorId || '');
 
     document.getElementById('editDayInput').value = b.dayIso;
     populateEditSlotSelect(b.dayIso, b.id, b.slotValue);
@@ -9810,7 +10245,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
     // بيحفظ التعديلات على الحجز (extraFields)، وبينقله لتاريخ/ميعاد جديد لو اختلفوا
     function persistBooking(extraFields){
+      var dsel = document.getElementById('editDoctorInput');
+      if(dsel && dsel.dataset.on === '1'){ extraFields.doctorId = dsel.value; extraFields.doctorName = dsel.value ? doctorNameOf(dsel.value) : ''; }
       var merged = Object.assign({}, {
+        birthDate: b.birthDate || '', address: b.address || '', visitType: b.visitType || '', doctorId: b.doctorId || '', doctorName: b.doctorName || '',
         name: b.name, phone: b.phone, age: b.age, gender: b.gender || '', status: b.status, bookedBy: b.bookedBy || 'staff', bookedByName: b.bookedByName || '', lastEditedBy: getStaffName(), visitDetails: b.visitDetails || [],
         services: b.services || [], serviceDiscounts: b.serviceDiscounts || {},
         serviceQuantities: b.serviceQuantities || {}, customService: b.customService || null,
