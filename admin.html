@@ -2964,24 +2964,28 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   var SERVICES = [
     { id: 'checkup', name: 'الكشف', price: 150 },
     { id: 'xray', name: 'الأشعة', price: 50 },
+    { id: 'home_visit', name: 'كشف وتشخيص منزلي', price: 500 },
     { id: 'extract_normal', name: 'الخلع العادي', price: 500 },
     { id: 'extract_surgical', name: 'الخلع الجراحي', price: 1200 },
     { id: 'extract_impacted', name: 'الخلع المدفون', price: 2500 },
-    { id: 'filling_amalgam', name: 'حشو عادي — أملغم', price: 750 },
-    { id: 'filling_composite', name: 'حشو عادي — كمبوزيت', price: 950 },
-    { id: 'root_canal', name: 'حشو عصب', price: 2500 },
-    { id: 'calcium_amalgam', name: 'تغطية بكالسيوم — أملغم', price: 1000 },
-    { id: 'calcium_composite', name: 'تغطية بكالسيوم — كمبوزيت', price: 1250 },
+    { id: 'filling_amalgam', name: 'حشو عادي — أملغم', price: 850 },
+    { id: 'filling_composite', name: 'حشو عادي — كمبوزيت', price: 1000 },
+    { id: 'root_canal', name: 'حشو عصب', price: 2750 },
+    { id: 'calcium', name: 'تغطية بكالسيوم', price: 1250 },
     { id: 'scaling', name: 'تنظيف الجير', price: 750 },
     { id: 'porcelain', name: 'تركيبة بورسلين', price: 1750 },
-    { id: 'zircon', name: 'تركيبة زيركون', price: 2500 },
+    { id: 'zircon', name: 'تركيبة زيركون', price: 2750 },
     { id: 'denture_acrylic', name: 'تركيبة متحركة أكريل', price: null },
     { id: 'denture_flex', name: 'تركيبة متحركة فيلكس', price: null },
     { id: 'post', name: 'دعامة', price: 1000 },
+    { id: 'whitening', name: 'تبييض الأسنان', price: 4000 },
     { id: 'night_guard', name: 'عضاضة ليلية', price: 1300 }
   ];
   var SERVICE_BY_ID = {};
   SERVICES.forEach(function(s){ SERVICE_BY_ID[s.id] = s; });
+  // خدمات قديمة اتدمجت: بتفضل معروفة عشان الحجوزات القديمة تتعرض وتتحسب صح (مش بتظهر في الاختيار)
+  SERVICE_BY_ID['calcium_amalgam'] = { id: 'calcium_amalgam', name: 'تغطية بكالسيوم — أملغم', price: 1000 };
+  SERVICE_BY_ID['calcium_composite'] = { id: 'calcium_composite', name: 'تغطية بكالسيوم — كمبوزيت', price: 1250 };
 
   // قايمة الأدوية اللي العيادة بتكتبها عادةً — من روشتة د. أبانوب المرجعية
   // صيغة الجرعة المتفق عليها: [عدد مرات اليوم] × [الجرعة الواحدة] × [عدد الأيام] — مثال: 2×1×5 = مرتين يوميًا لمدة 5 أيام
@@ -10042,7 +10046,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var savedQuantities = b.serviceQuantities || {};
       var listEl = document.getElementById('serviceCheckList');
       listEl.innerHTML = '';
-      SERVICES.forEach(function(s){
+      var pickList = SERVICES.slice();
+      ['calcium_amalgam','calcium_composite'].forEach(function(lid){ if (selectedServices.indexOf(lid) !== -1) pickList.push(SERVICE_BY_ID[lid]); });
+      pickList.forEach(function(s){
         var isChecked = selectedServices.indexOf(s.id) !== -1;
         var item = document.createElement('label');
         item.className = 'service-check-item' + (isChecked ? ' checked' : '');
