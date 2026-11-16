@@ -782,6 +782,14 @@
   .ci-actions button,.ci-actions a{font:inherit;font-size:.84rem;font-weight:700;padding:7px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none;}
   .ci-actions .go{background:var(--gold);border-color:var(--gold);color:#3a2a08;}
   .ci-actions .del{color:#D64545;}
+  .ci-badge{display:inline-block;font-size:.74rem;font-weight:800;padding:2px 9px;border-radius:99px;margin-inline-start:6px;}
+  .ci-badge.warn{background:#FFF1D6;color:#8a5a00;}
+  .ci-badge.ok{background:#DFF5EA;color:#17724a;}
+  .ci-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .ci-edit-grid label{display:flex;flex-direction:column;gap:4px;font-size:.84rem;font-weight:700;}
+  .ci-edit-grid label.wide{grid-column:1/-1;}
+  .ci-edit-grid input,.ci-edit-grid select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:10px;}
+  @media(max-width:520px){.ci-edit-grid{grid-template-columns:1fr;}}
   .ci-sec{font-family:'Tajawal',sans-serif;font-weight:800;color:var(--teal);margin:12px 0 8px;font-size:.92rem;}
   .ci-info{background:var(--pale-aqua);border-radius:12px;padding:8px 12px;font-size:.84rem;margin-bottom:12px;line-height:1.8;}
   .qr-box{display:flex;justify-content:center;margin:12px 0;}
@@ -2723,6 +2731,27 @@
   </div>
 </div>
 
+<div class="booking-modal-overlay" id="ciVerifyOverlay">
+  <div class="booking-modal">
+    <button class="modal-close" id="ciVerifyClose" aria-label="إغلاق">✕</button>
+    <h3>🔍 مراجعة بيانات المريض</h3>
+    <p class="chart-hint" style="margin-bottom:10px;">المريض كتب البيانات دي بنفسه. راجعها معاه (قارنها بالبطاقة لو تحب) وصحّح أي غلط، وبعدين دوس «تأكيد البيانات».</p>
+    <div class="ci-edit-grid">
+      <label class="wide">الاسم<input id="cvName" type="text" maxlength="80"></label>
+      <label>الموبايل<input id="cvPhone" type="tel" inputmode="numeric" maxlength="11" dir="ltr"></label>
+      <label>النوع<select id="cvGender"><option value="male">ذكر</option><option value="female">أنثى</option></select></label>
+      <label>تاريخ الميلاد<input id="cvBirth" type="date"></label>
+      <label>الرقم القومي<input id="cvNid" type="text" inputmode="numeric" maxlength="14" dir="ltr"></label>
+      <label class="wide">العنوان<input id="cvAddr" type="text" maxlength="200"></label>
+    </div>
+    <p class="form-error" id="cvError" style="color:#D64545;margin:8px 0 0;min-height:1em;"></p>
+    <div class="ci-actions" style="margin-top:12px;">
+      <button class="go" id="cvSave" type="button">✔ تأكيد البيانات</button>
+      <button type="button" id="cvCancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <div class="booking-modal-overlay" id="qrOverlay">
   <div class="booking-modal">
     <button class="modal-close" id="qrClose" aria-label="إغلاق">✕</button>
@@ -3545,6 +3574,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('prPrintBtn').addEventListener('click', printPeriodReport);
     document.getElementById('checkinBtn').addEventListener('click', openCheckinModal);
     document.getElementById('checkinClose').addEventListener('click', closeCheckinModal);
+    document.getElementById('ciVerifyClose').addEventListener('click', closeCiVerify);
+    document.getElementById('cvCancel').addEventListener('click', closeCiVerify);
+    document.getElementById('cvSave').addEventListener('click', saveCiVerify);
     document.getElementById('checkinOverlay').addEventListener('click', function(e){ if(e.target.id === 'checkinOverlay') closeCheckinModal(); });
     document.getElementById('qrBtn').addEventListener('click', function(){ document.getElementById('moreActionsMenu').classList.remove('show'); openQrModal(); });
     document.getElementById('qrClose').addEventListener('click', closeQrModal);
@@ -5680,7 +5712,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var mb = (!c.status || c.status === 'pending') ? ciMatchBooking(c) : null;
     var when = mb ? ('حاضر — ميعاده ' + (SLOT_LABELS[mb.slotValue] || mb.slotValue || '')) : isDone && c.bookingDay ? ('اتحجز ' + formatDateLabel(c.bookingDay) + ' — ' + (SLOT_LABELS[c.bookingSlot] || c.bookingSlot || '')) : '';
     d.innerHTML =
-      '<div class="ci-head"><strong>' + escapeHtml(c.name) + '</strong><span class="ci-time">' + (isDone ? escapeHtml(when) : ciAgo(c.ts || 0)) + '</span></div>' +
+      '<div class="ci-head"><strong>' + escapeHtml(c.name) + (c.status === 'pending' ? (c.verified ? '<span class="ci-badge ok">✔ اتراجعت' + (c.verifiedBy ? ' — ' + escapeHtml(c.verifiedBy) : '') + '</span>' : '<span class="ci-badge warn">⚠ لسه متراجعتش</span>') : '') + '</strong><span class="ci-time">' + (isDone ? escapeHtml(when) : ciAgo(c.ts || 0)) + '</span></div>' +
       '<div class="ci-grid">' +
         '<span><b>الموبايل:</b> <bdi dir="ltr">' + escapeHtml(c.phone) + '</bdi></span>' +
         '<span><b>النوع:</b> ' + g + '</span>' +
@@ -5693,8 +5725,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var act = document.createElement('div'); act.className = 'ci-actions';
     if(!isDone){
       var go = document.createElement('button'); go.className = 'go'; go.textContent = '✅ تأكيد وتحديد ميعاد';
-      go.addEventListener('click', function(){ openCheckinConfirm(c); });
+      go.addEventListener('click', function(){
+        if(c.verified) openCheckinConfirm(c); else openCiVerify(c, true);
+      });
       act.appendChild(go);
+    }
+    if(c.status === 'pending'){
+      var vf = document.createElement('button'); vf.textContent = c.verified ? '✏️ تعديل البيانات' : '🔍 مراجعة البيانات';
+      vf.addEventListener('click', function(){ openCiVerify(c, false); });
+      act.appendChild(vf);
     }
     var wa = document.createElement('a'); wa.textContent = '💬 واتساب'; wa.target = '_blank'; wa.rel = 'noopener';
     wa.href = 'https://wa.me/20' + String(c.phone || '').replace(/^0/, '');
@@ -5707,6 +5746,50 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     act.appendChild(del);
     d.appendChild(act);
     return d;
+  }
+  var ciVerifyCur = null, ciVerifyThenBook = false;
+  function openCiVerify(c, thenBook){
+    ciVerifyCur = c; ciVerifyThenBook = !!thenBook;
+    document.getElementById('cvName').value = c.name || '';
+    document.getElementById('cvPhone').value = c.phone || '';
+    document.getElementById('cvGender').value = c.gender === 'female' ? 'female' : 'male';
+    document.getElementById('cvBirth').value = c.birthDate || '';
+    document.getElementById('cvNid').value = c.nationalId || '';
+    document.getElementById('cvAddr').value = c.address || '';
+    document.getElementById('cvError').textContent = '';
+    document.getElementById('ciVerifyOverlay').classList.add('open');
+  }
+  function closeCiVerify(){ document.getElementById('ciVerifyOverlay').classList.remove('open'); ciVerifyCur = null; }
+  function saveCiVerify(){
+    var c = ciVerifyCur; if(!c) return;
+    var err = document.getElementById('cvError');
+    var name = document.getElementById('cvName').value.trim().replace(/\s+/g, ' ');
+    var phone = document.getElementById('cvPhone').value.trim();
+    var nid = document.getElementById('cvNid').value.trim();
+    var birth = document.getElementById('cvBirth').value;
+    var addr = document.getElementById('cvAddr').value.trim();
+    var gender = document.getElementById('cvGender').value;
+    if(name.length < 3){ err.textContent = 'الاسم قصير.'; return; }
+    if(!/^01\d{9}$/.test(phone)){ err.textContent = 'رقم الموبايل لازم 11 رقم يبدأ بـ 01.'; return; }
+    if(!/^\d{14}$/.test(nid)){ err.textContent = 'الرقم القومي لازم 14 رقم.'; return; }
+    if(!ciValidIso(birth)){ err.textContent = 'اكتب تاريخ الميلاد.'; return; }
+    if(addr.length < 3){ err.textContent = 'اكتب العنوان.'; return; }
+    var upd = { name: name, phone: phone, nationalId: nid, birthDate: birth, address: addr, gender: gender, verified: true, verifiedBy: getStaffName(), verifiedTs: Date.now() };
+    var batch = firestoreDb.batch();
+    batch.update(firestoreDb.collection('checkins').doc(c.id), upd);
+    // لو المريض عنده حجز مؤكد النهاردة بنفس الموبايل القديم، نصحّح بياناته كمان
+    var mb = ciMatchBooking(c);
+    if(mb){
+      batch.update(firestoreDb.collection('bookings').doc(mb.id), { name: name, phone: phone, gender: gender, birthDate: birth, address: addr });
+      batch.set(firestoreDb.collection('bookingPrivate').doc(mb.id), { nationalId: nid });
+    }
+    var thenBook = ciVerifyThenBook;
+    batch.commit().then(function(){
+      var merged = {}; Object.keys(c).forEach(function(k){ merged[k] = c[k]; }); Object.keys(upd).forEach(function(k){ merged[k] = upd[k]; });
+      try{ logActivity('confirm', 'مراجعة بيانات مريض من الـ QR — ' + name); }catch(e){}
+      closeCiVerify();
+      if(thenBook) openCheckinConfirm(merged);
+    }).catch(function(e){ err.textContent = 'حصل خطأ: ' + e.message; });
   }
   function openCheckinConfirm(c){
     closeCheckinModal();
@@ -5986,6 +6069,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if(fee){ data.services = ['checkup']; data.totalAmount = fee; data.paidAmount = fee; }
     var batch = firestoreDb.batch();
     batch.set(firestoreDb.collection('bookings').doc(key), data);
+    if(ci && /^\d{14}$/.test(ci.nationalId || '')){ batch.set(firestoreDb.collection('bookingPrivate').doc(key), { nationalId: ci.nationalId }); }
     if(ci){
       batch.update(firestoreDb.collection('checkins').doc(ci.id), {
         status: 'confirmed', bookingId: key, bookingDay: dayIso, bookingSlot: slotValue, confirmedBy: getStaffName(), confirmedTs: Date.now()
