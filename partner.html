@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E5A6B">
+<meta name="robots" content="noindex">
+<title>بوابة المعمل والاستور — عيادة د. أبانوب سليم</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--deep-teal:#0E5A6B;--teal:#1F8A96;--pale-aqua:#E6F4F5;--ink:#132A30;--ink-soft:#5E7479;--line:#DCE8E9;--bg:#EEF6F7;--gold:#D9A43B;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;}
+  button,input,select,textarea{font:inherit;}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 40px;}
+  .card{background:#fff;border-radius:18px;box-shadow:0 10px 30px -18px rgba(9,46,56,.35);padding:16px;}
+  .login{max-width:400px;margin:8vh auto 0;}
+  .login h1{font-family:'Tajawal',sans-serif;color:var(--deep-teal);margin:0 0 4px;font-size:1.4rem;text-align:center;}
+  .login p{color:var(--ink-soft);text-align:center;margin:0 0 16px;font-size:.88rem;}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-weight:700;font-size:.84rem;}
+  .fld input,.fld select,.fld textarea{padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-weight:400;background:#fff;}
+  .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;background:var(--deep-teal);color:#fff;}
+  .btn.gold{background:var(--gold);color:#1d1400;} .btn.ghost{background:#F0F4F5;color:var(--ink);} .btn.small{padding:7px 11px;font-size:.8rem;}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .full{width:100%;}
+  .err{color:#D64545;font-weight:700;min-height:1.2em;font-size:.84rem;margin:6px 0;}
+  .link{background:none;border:none;color:var(--teal);font-weight:700;cursor:pointer;padding:6px 0;}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+  header.top .who b{display:block;font-family:'Tajawal',sans-serif;color:var(--deep-teal);font-size:1.15rem;}
+  header.top .who span{font-size:.8rem;color:var(--ink-soft);}
+  .tabs{display:flex;gap:6px;background:var(--pale-aqua);padding:4px;border-radius:12px;margin-bottom:12px;}
+  .tab{flex:1;border:none;background:none;border-radius:9px;padding:9px 6px;font-weight:800;color:var(--ink-soft);cursor:pointer;position:relative;}
+  .tab.on{background:#fff;color:var(--deep-teal);box-shadow:0 2px 6px rgba(9,46,56,.1);}
+  .badge{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;border-radius:99px;background:#D64545;color:#fff;font-size:.68rem;font-weight:800;padding:0 5px;margin-inline-start:4px;}
+  .badge:empty,.badge[data-n="0"]{display:none;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px;}
+  .stats div{background:var(--pale-aqua);border-radius:12px;padding:9px;text-align:center;}
+  .stats b{display:block;font-size:1.2rem;color:var(--deep-teal);} .stats span{font-size:.72rem;font-weight:700;color:var(--ink-soft);}
+  .stats div.bad{background:#FBEAEA;} .stats div.bad b{color:#D64545;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-weight:700;font-size:.8rem;cursor:pointer;}
+  .chip.on{background:var(--deep-teal);color:#fff;border-color:transparent;}
+  .ord{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:right;border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px 12px;margin-bottom:7px;cursor:pointer;}
+  .ord b{display:block;font-size:.9rem;} .ord span{font-size:.76rem;color:var(--ink-soft);}
+  .ord .side{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+  .st{display:inline-block;font-size:.72rem;font-weight:800;border:1px solid;border-radius:99px;padding:3px 10px;white-space:nowrap;}
+  .st.late{background:#FBEAEA;color:#D64545;border-color:#F3B4B4;}
+  .no{font-family:monospace;font-size:.78rem;color:var(--ink-soft);}
+  .empty{color:var(--ink-soft);text-align:center;padding:24px 8px;font-size:.88rem;}
+  .chat{border:1px solid var(--line);border-radius:14px;background:#F5F9FA;padding:10px;height:min(60vh,460px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+  .msg{max-width:80%;border-radius:14px;padding:8px 11px;font-size:.88rem;line-height:1.6;box-shadow:0 1px 2px rgba(0,0,0,.06);}
+  .msg.me{align-self:flex-start;background:#DDF3EE;border-bottom-right-radius:4px;}
+  .msg.them{align-self:flex-end;background:#fff;border-bottom-left-radius:4px;}
+  .msg .ref{font-size:.7rem;font-weight:800;color:var(--teal);}
+  .msg img{display:block;max-width:220px;max-height:220px;border-radius:10px;margin-top:4px;cursor:zoom-in;}
+  .msg .meta{font-size:.66rem;color:var(--ink-soft);margin-top:3px;}
+  .compose{display:flex;gap:6px;align-items:flex-end;margin-top:8px;}
+  .compose textarea{flex:1;padding:9px 10px;border:1px solid var(--line);border-radius:12px;min-height:44px;resize:vertical;}
+  .attach{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font-size:1.1rem;}
+  .note{display:block;min-height:1em;font-weight:700;color:var(--teal);font-size:.8rem;margin-top:4px;}
+  .sheet{position:fixed;inset:0;background:rgba(9,30,36,.5);display:none;align-items:flex-end;justify-content:center;z-index:50;}
+  .sheet.open{display:flex;}
+  .sheet .card{width:100%;max-width:760px;max-height:92vh;overflow-y:auto;border-radius:20px 20px 0 0;position:relative;}
+  @media(min-width:760px){ .sheet{align-items:center;} .sheet .card{border-radius:20px;} }
+  .x{position:absolute;top:12px;left:12px;border:none;background:var(--pale-aqua);width:34px;height:34px;border-radius:50%;cursor:pointer;font-weight:800;}
+  table.info{width:100%;border-collapse:collapse;font-size:.84rem;margin:8px 0;}
+  table.info th,table.info td{border:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:top;}
+  table.info th{background:#F4F9F9;color:var(--deep-teal);font-size:.76rem;}
+  table.info input,table.info select{width:100%;padding:6px;border:1px solid var(--line);border-radius:8px;min-width:0;}
+  .acts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+  .sec{font-weight:800;color:var(--deep-teal);margin:14px 0 6px;font-size:.9rem;}
+  .ledger{width:100%;border-collapse:collapse;font-size:.82rem;}
+  .ledger th,.ledger td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:right;}
+  .ledger th{color:var(--ink-soft);font-size:.74rem;}
+  .hint{color:var(--ink-soft);font-size:.78rem;}
+  .log i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-left:6px;}
+  .log div{font-size:.78rem;padding:3px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="loginView" class="card login">
+    <h1>بوابة المعمل والاستور</h1>
+    <p>عيادة د. أبانوب سليم لطب الأسنان</p>
+    <div class="fld">الإيميل<input id="lgEmail" type="email" dir="ltr" autocomplete="username"></div>
+    <div class="fld">الباسورد<input id="lgPass" type="password" dir="ltr" autocomplete="current-password"></div>
+    <button class="btn full" id="lgBtn">دخول</button>
+    <div class="err" id="lgErr"></div>
+    <button class="link" id="lgForgot">نسيت الباسورد؟</button>
+  </div>
+
+  <div id="appView" style="display:none;">
+    <header class="top">
+      <div class="who"><b id="pName"></b><span>بوابة عيادة د. أبانوب سليم لطب الأسنان</span></div>
+      <button class="btn ghost small" id="logoutBtn">خروج</button>
+    </header>
+    <div class="stats" id="stats"></div>
+    <div class="tabs">
+      <button class="tab on" data-t="orders">📋 الطلبات<span class="badge" id="bOrders"></span></button>
+      <button class="tab" data-t="chat">💬 المحادثة<span class="badge" id="bChat"></span></button>
+      <button class="tab" data-t="acct">💰 الحساب</button>
+    </div>
+    <div class="card" id="tOrders">
+      <div class="chips" id="filt"><button class="chip on" data-f="open">الشغالة</button><button class="chip" data-f="all">الكل</button><button class="chip" data-f="done">المنتهية</button></div>
+      <div id="orders"></div>
+    </div>
+    <div class="card" id="tChat" style="display:none;">
+      <div class="chat" id="chat"></div>
+      <div class="compose"><textarea id="chatIn" rows="2" maxlength="2000" placeholder="اكتب رسالة للعيادة…"></textarea><label class="attach">📷<input type="file" id="chatImg" accept="image/*" hidden></label><button class="btn gold" id="chatSend">إرسال</button></div>
+      <small class="note" id="chatSt"></small>
+    </div>
+    <div class="card" id="tAcct" style="display:none;">
+      <div class="stats" id="acctSum"></div>
+      <div id="ledger"></div>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet"><div class="card">
+  <button class="x" id="sheetX">✕</button>
+  <h3 id="dTitle" style="margin:4px 0 6px;color:var(--deep-teal);"></h3>
+  <div id="dInfo"></div>
+  <div class="acts" id="dActs"></div>
+  <div id="dExtra"></div>
+  <details class="log"><summary class="hint">🕒 سجل الحالات</summary><div id="dLog"></div></details>
+  <div class="sec">💬 المحادثة على الطلب ده</div>
+  <div class="chat" id="dChat" style="height:260px;"></div>
+  <div class="compose"><textarea id="dIn" rows="2" maxlength="2000" placeholder="اكتب رسالة على الطلب ده…"></textarea><label class="attach">📷<input type="file" id="dImg" accept="image/*" hidden></label><button class="btn gold" id="dSend">إرسال</button></div>
+  <small class="note" id="dSt"></small>
+</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+  // ===== ثوابت مشتركة بين لوحة العيادة وبوابة المعمل/الاستور =====
+  var LAB_ST = {
+    sent:      { l: 'اتبعت للمعمل',    side: 'clinic',  c: '#4F85C7' },
+    received:  { l: 'المعمل استلم',     side: 'partner', c: '#6B7FD7' },
+    working:   { l: 'تحت التنفيذ',      side: 'partner', c: '#C9932B' },
+    tryin:     { l: 'جاهز للبروفة',     side: 'partner', c: '#8E5BD0' },
+    ready:     { l: 'جاهز للتسليم',     side: 'partner', c: '#1E9E5A' },
+    delivered: { l: 'اتسلم في العيادة', side: 'clinic',  c: '#0E7C6B' },
+    fitted:    { l: 'اتركب للمريض',     side: 'clinic',  c: '#0B5E52' },
+    redo:      { l: 'رجع للتعديل',      side: 'clinic',  c: '#D64545' },
+    cancelled: { l: 'اتلغى',            side: 'clinic',  c: '#8A9599' }
+  };
+  var STORE_ST = {
+    requested: { l: 'طلب جديد',            side: 'clinic',  c: '#4F85C7' },
+    quoted:    { l: 'الاستور بعت الأسعار', side: 'partner', c: '#8E5BD0' },
+    confirmed: { l: 'اتأكد',               side: 'partner', c: '#C9932B' },
+    shipped:   { l: 'في الطريق',            side: 'partner', c: '#1E9E5A' },
+    delivered: { l: 'اتسلم',               side: 'clinic',  c: '#0B5E52' },
+    cancelled: { l: 'اتلغى',               side: 'clinic',  c: '#8A9599' }
+  };
+  var LAB_WORK = ['زيركون', 'E-max', 'بورسلين على معدن (PFM)', 'طربوش مؤقت', 'تاج على زرعة', 'Inlay / Onlay', 'Post & Core', 'كوبري',
+    'طقم كامل أكريل', 'طقم جزئي أكريل', 'طقم فليكسبل', 'طقم معدني (كروم كوبالت)', 'Night guard', 'ريتينر / تقويم شفاف', 'إصلاح طقم', 'أخرى'];
+  var LAB_OPEN = ['sent', 'received', 'working', 'tryin', 'ready', 'redo'];
+  var STORE_OPEN = ['requested', 'quoted', 'confirmed', 'shipped'];
+  function ptIso(ts){ var d = ts ? new Date(ts) : new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function ptTime(ts){ var d = new Date(ts); var h = d.getHours(), m = String(d.getMinutes()).padStart(2,'0'); return (h % 12 || 12) + ':' + m + (h < 12 ? ' ص' : ' م'); }
+  function ptMoney(n){ return (Math.round((+n || 0) * 100) / 100).toLocaleString('ar-EG'); }
+  function ptOrderTotal(o){ return (o.items || []).reduce(function(s, it){ return s + (+it.qty || 0) * (+it.price || 0); }, 0); }
+  // المستحق للشريك: شغل المعمل اللي اتسلم/اتركب + طلبات الاستور اللي اتسلمت
+  function ptCharges(cases, orders){
+    var out = [];
+    cases.forEach(function(c){ if((c.status === 'delivered' || c.status === 'fitted') && +c.cost) out.push({ ts: c.deliveredTs || c.updatedTs || c.ts, t: 'شغل معمل ' + (c.no || '') + ' — ' + (c.work || '') + ' — ' + (c.patientName || ''), amt: +c.cost }); });
+    orders.forEach(function(o){ if(o.status === 'delivered'){ var t = ptOrderTotal(o); if(t) out.push({ ts: o.deliveredTs || o.updatedTs || o.ts, t: 'طلب خامات ' + (o.no || ''), amt: t }); } });
+    return out;
+  }
+  function ptCompress(file, maxDim, q){
+    return new Promise(function(res, rej){
+      var r = new FileReader();
+      r.onload = function(e){ var im = new Image(); im.onload = function(){
+        var w = im.width, h = im.height; if(w > maxDim || h > maxDim){ if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; } else { w = Math.round(w * maxDim / h); h = maxDim; } }
+        var cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.getContext('2d').drawImage(im, 0, 0, w, h); res(cv.toDataURL('image/jpeg', q));
+      }; im.onerror = rej; im.src = e.target.result; };
+      r.onerror = rej; r.readAsDataURL(file);
+    });
+  }
+  function ptEsc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function ptRefKey(type, id){ return (type || 'g') + '_' + (id || 'general'); }
+  var firebaseConfig = {
+    apiKey: "AIzaSyAXoB_WHtLStu0mr4dnZKG8YeXOn_R1dg4",
+    authDomain: "abanoub-clinic.firebaseapp.com",
+    projectId: "abanoub-clinic",
+    storageBucket: "abanoub-clinic.firebasestorage.app",
+    messagingSenderId: "904420382642",
+    appId: "1:904420382642:web:2c048976c4d04e2d8436ab"
+  };
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore(), auth = firebase.auth();
+  var me = null, partner = null, cases = [], orders = [], msgs = [], pays = [], reads = {}, unsubs = [];
+  var tab = 'orders', filt = 'open', cur = null, firstMsgs = true, seen = {};
+  var DAYS = ['الأحد','الاتنين','التلات','الأربع','الخميس','الجمعة','السبت'];
+  function $(id){ return document.getElementById(id); }
+  function dLabel(iso){ if(!iso) return '—'; var d = new Date(iso + 'T00:00:00'); return DAYS[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1); }
+  function today(){ return ptIso(); }
+  function isLab(){ return partner && partner.type === 'lab'; }
+  function ST(){ return isLab() ? LAB_ST : STORE_ST; }
+  function list(){ return isLab() ? cases : orders; }
+  function OPEN(){ return isLab() ? LAB_OPEN : STORE_OPEN; }
+  function typeKey(){ return isLab() ? 'lab' : 'store'; }
+  function myName(){ return (me && me.name) || (partner && partner.name) || 'المعمل'; }
+  function readTs(refKey){ return (reads.partner && reads.partner[refKey]) || 0; }
+  function unreadOf(refKey){ return msgs.filter(function(m){ return m.from === 'clinic' && ptRefKey(m.refType, m.refId) === refKey && m.ts > readTs(refKey); }).length; }
+  function orderNew(o){ var last = (o.log || [])[(o.log || []).length - 1]; return last && last.side === 'clinic' && (o.updatedTs || 0) > readTs(ptRefKey(typeKey(), o.id)); }
+  function markRead(refKey){ if(readTs(refKey) >= Date.now() - 1000 || !partner) return; var u = {}; u[refKey] = Date.now(); db.collection('partnerReads').doc(partner.id).set({ partner: u }, { merge: true }).catch(function(){}); }
+  function beep(){ try{ var C = window.AudioContext || window.webkitAudioContext; var c = new C(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.value = .08; o.start(); setTimeout(function(){ o.stop(); c.close(); }, 180); }catch(e){} }
+
+  // ---------- الدخول ----------
+  $('lgBtn').onclick = function(){
+    var e = $('lgEmail').value.trim(), p = $('lgPass').value; $('lgErr').textContent = '';
+    if(!e || !p){ $('lgErr').textContent = 'اكتب الإيميل والباسورد.'; return; }
+    $('lgBtn').disabled = true;
+    auth.signInWithEmailAndPassword(e, p).catch(function(err){ $('lgBtn').disabled = false; $('lgErr').textContent = /wrong-password|invalid-credential|user-not-found|invalid-login/.test(err.code) ? 'الإيميل أو الباسورد غلط.' : ('مقدرتش أدخل: ' + err.message); });
+  };
+  $('lgPass').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('lgBtn').click(); });
+  $('lgForgot').onclick = function(){
+    var e = $('lgEmail').value.trim(); if(!e){ $('lgErr').textContent = 'اكتب إيميلك الأول.'; return; }
+    auth.sendPasswordResetEmail(e).then(function(){ $('lgErr').style.color = '#17724a'; $('lgErr').textContent = 'بعتنالك رسالة تغيير الباسورد على الإيميل.'; }).catch(function(err){ $('lgErr').textContent = err.message; });
+  };
+  $('logoutBtn').onclick = function(){ auth.signOut(); };
+  auth.onAuthStateChanged(function(u){
+    unsubs.forEach(function(f){ try{ f(); }catch(e){} }); unsubs = [];
+    if(!u){ $('loginView').style.display = ''; $('appView').style.display = 'none'; $('lgBtn').disabled = false; return; }
+    db.collection('partnerUsers').doc(u.uid).get().then(function(d){
+      if(!d.exists) throw new Error('الحساب ده مش مربوط بمعمل أو استور. كلّم العيادة.');
+      me = d.data();
+      return db.collection('partners').doc(me.partnerId).get();
+    }).then(function(pd){
+      partner = pd.data(); partner.id = pd.id;
+      $('loginView').style.display = 'none'; $('appView').style.display = '';
+      $('pName').textContent = (isLab() ? '🧪 ' : '🏬 ') + partner.name;
+      start();
+    }).catch(function(err){ $('lgErr').textContent = err.message; $('lgBtn').disabled = false; auth.signOut(); });
+  });
+
+  function start(){
+    var pid = partner.id;
+    unsubs.push(db.collection(isLab() ? 'labCases' : 'storeOrders').where('partnerId', '==', pid).onSnapshot(function(s){ var a = []; s.forEach(function(d){ var x = d.data(); x.id = d.id; a.push(x); }); if(isLab()) cases = a; else orders = a; render(); }, function(e){ console.warn(e); }));
+    unsubs.push(db.collection('partnerMsgs').where('partnerId', '==', pid).onSnapshot(function(s){
+      var a = [], fresh = 0; s.forEach(function(d){ var x = d.data(); x.id = d.id; a.push(x); if(!firstMsgs && !seen[d.id] && x.from === 'clinic') fresh++; seen[d.id] = 1; });
+      msgs = a.sort(function(x, y){ return x.ts - y.ts; }); firstMsgs = false;
+      if(fresh){ beep(); try{ if(document.hidden && window.Notification && Notification.permission === 'granted') new Notification('رسالة جديدة من العيادة'); }catch(e){} }
+      render();
+    }, function(e){ console.warn(e); }));
+    unsubs.push(db.collection('partnerPays').where('partnerId', '==', pid).onSnapshot(function(s){ pays = []; s.forEach(function(d){ var x = d.data(); x.id = d.id; pays.push(x); }); render(); }, function(e){ console.warn(e); }));
+    unsubs.push(db.collection('partnerReads').doc(pid).onSnapshot(function(d){ reads = d.exists ? d.data() : {}; render(); }, function(e){ console.warn(e); }));
+    try{ if(window.Notification && Notification.permission === 'default') Notification.requestPermission(); }catch(e){}
+  }
+
+  // ---------- العرض ----------
+  function chip(s){ var m = ST()[s] || { l: s, c: '#888' }; return '<span class="st" style="background:' + m.c + '1A;color:' + m.c + ';border-color:' + m.c + '55">' + m.l + '</span>'; }
+  function render(){
+    if(!partner) return;
+    var t = today(), arr = list(), open = arr.filter(function(o){ return OPEN().indexOf(o.status) !== -1; });
+    var late = isLab() ? open.filter(function(o){ return o.dueIso && o.dueIso < t; }).length : 0;
+    var newOnes = arr.filter(function(o){ return o.status === (isLab() ? 'sent' : 'requested'); }).length;
+    var ch = ptCharges(cases, orders).reduce(function(s, x){ return s + x.amt; }, 0), pd = pays.reduce(function(s, x){ return s + (+x.amount || 0); }, 0);
+    $('stats').innerHTML = '<div><b>' + newOnes + '</b><span>طلبات جديدة</span></div><div><b>' + open.length + '</b><span>شغالة</span></div>' +
+      (isLab() ? '<div class="' + (late ? 'bad' : '') + '"><b>' + late + '</b><span>متأخرة</span></div>' : '') + '<div><b>' + ptMoney(ch - pd) + '</b><span>مستحق ليك</span></div>';
+    var unGen = unreadOf('g_general');
+    var unOrd = arr.reduce(function(s, o){ return s + unreadOf(ptRefKey(typeKey(), o.id)) + (orderNew(o) ? 1 : 0); }, 0);
+    $('bChat').textContent = unGen || ''; $('bChat').setAttribute('data-n', unGen);
+    $('bOrders').textContent = unOrd || ''; $('bOrders').setAttribute('data-n', unOrd);
+    document.title = (unGen + unOrd ? '(' + (unGen + unOrd) + ') ' : '') + 'بوابة ' + partner.name;
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){ b.classList.toggle('on', b.dataset.t === tab); });
+    $('tOrders').style.display = tab === 'orders' ? '' : 'none'; $('tChat').style.display = tab === 'chat' ? '' : 'none'; $('tAcct').style.display = tab === 'acct' ? '' : 'none';
+    if(tab === 'orders') renderOrders();
+    if(tab === 'chat'){ thread($('chat'), msgs, true); markRead('g_general'); }
+    if(tab === 'acct') renderAcct(ch, pd);
+    if(cur) renderDetail();
+  }
+  function renderOrders(){
+    var t = today(), box = $('orders');
+    var arr = list().filter(function(o){ var op = OPEN().indexOf(o.status) !== -1; return filt === 'all' || (filt === 'open' ? op : !op); }).sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+    if(!arr.length){ box.innerHTML = '<div class="empty">مفيش طلبات هنا.</div>'; return; }
+    box.innerHTML = '';
+    arr.forEach(function(o){
+      var un = unreadOf(ptRefKey(typeKey(), o.id)) + (orderNew(o) ? 1 : 0);
+      var late = isLab() && OPEN().indexOf(o.status) !== -1 && o.dueIso && o.dueIso < t;
+      var b = document.createElement('button'); b.className = 'ord';
+      var title = isLab() ? (o.work + (o.teeth ? ' — سنان ' + o.teeth : '')) : ((o.items || []).length + ' صنف: ' + (o.items || []).slice(0, 3).map(function(i){ return i.name; }).join('، '));
+      var sub = isLab() ? ('المريض: ' + (o.patientName || '') + (o.dueIso ? ' • التسليم ' + dLabel(o.dueIso) : '')) : ((o.neededBy ? 'مطلوب قبل ' + dLabel(o.neededBy) : 'بتاريخ ' + dLabel(ptIso(o.ts))));
+      b.innerHTML = '<div><b><span class="no">' + ptEsc(o.no || '') + '</span> ' + ptEsc(title) + '</b><span>' + ptEsc(sub) + '</span></div><div class="side">' + chip(o.status) + (late ? '<span class="st late">متأخر</span>' : '') + (un ? '<span class="badge">' + un + '</span>' : '') + '</div>';
+      b.onclick = function(){ cur = o.id; $('sheet').classList.add('open'); renderDetail(); };
+      box.appendChild(b);
+    });
+  }
+  function msgHtml(m, showRef){
+    return '<div class="msg ' + (m.from === 'partner' ? 'me' : 'them') + '">' + (showRef && m.refId ? '<div class="ref">↪ ' + ptEsc(m.refLabel || '') + '</div>' : '') +
+      (m.text ? '<div>' + ptEsc(m.text).replace(/\n/g, '<br>') + '</div>' : '') + (m.img ? '<img src="' + m.img + '" alt="صورة">' : '') +
+      '<div class="meta">' + ptEsc(m.from === 'partner' ? (m.byName || 'أنا') : ('العيادة — ' + (m.byName || ''))) + ' • ' + dLabel(ptIso(m.ts)) + ' ' + ptTime(m.ts) + '</div></div>';
+  }
+  function thread(el, arr, showRef){
+    el.innerHTML = arr.length ? arr.map(function(m){ return msgHtml(m, showRef); }).join('') : '<div class="empty">لسه مفيش رسايل.</div>';
+    Array.prototype.forEach.call(el.querySelectorAll('img'), function(im){ im.onclick = function(){ window.open(im.src, '_blank'); }; });
+    el.scrollTop = el.scrollHeight;
+  }
+  function renderAcct(ch, pd){
+    $('acctSum').innerHTML = '<div><b>' + ptMoney(ch) + '</b><span>إجمالي المستحق</span></div><div><b>' + ptMoney(pd) + '</b><span>اتدفع</span></div><div class="' + (ch - pd > 0 ? 'bad' : '') + '"><b>' + ptMoney(ch - pd) + '</b><span>الباقي</span></div>';
+    var rows = ptCharges(cases, orders).map(function(x){ return { ts: x.ts, t: x.t, d: x.amt, c: 0 }; }).concat(pays.map(function(x){ return { ts: x.ts, t: 'دفعة' + (x.method ? ' (' + x.method + ')' : '') + (x.note ? ' — ' + x.note : ''), d: 0, c: +x.amount || 0 }; })).sort(function(a, b){ return a.ts - b.ts; });
+    var run = 0;
+    $('ledger').innerHTML = rows.length ? '<table class="ledger"><tr><th>التاريخ</th><th>البيان</th><th>مستحق</th><th>مدفوع</th><th>الرصيد</th></tr>' + rows.map(function(r){ run += r.d - r.c; return '<tr><td>' + dLabel(ptIso(r.ts)) + '</td><td>' + ptEsc(r.t) + '</td><td>' + (r.d ? ptMoney(r.d) : '') + '</td><td>' + (r.c ? ptMoney(r.c) : '') + '</td><td><b>' + ptMoney(run) + '</b></td></tr>'; }).join('') + '</table>' : '<div class="empty">لسه مفيش حركات.</div>';
+  }
+
+  // ---------- تفاصيل الطلب ----------
+  function curObj(){ return list().filter(function(o){ return o.id === cur; })[0] || null; }
+  function renderDetail(){
+    var o = curObj(); if(!o){ return; }
+    $('dTitle').innerHTML = ptEsc(o.no || '') + ' ' + chip(o.status);
+    var h = '';
+    if(isLab()){
+      h = '<table class="info"><tr><th>المريض</th><td>' + ptEsc(o.patientName) + '</td><th>الشغل</th><td>' + ptEsc(o.work) + '</td></tr>' +
+        '<tr><th>السنان</th><td>' + ptEsc(o.teeth || '—') + (o.units ? ' (' + o.units + ' وحدة)' : '') + '</td><th>اللون</th><td>' + ptEsc(o.shade || '—') + '</td></tr>' +
+        '<tr><th>الطبعة</th><td>' + ptEsc(o.impression || '—') + '</td><th>الدكتور</th><td>' + ptEsc(o.doctorName || '—') + '</td></tr>' +
+        '<tr><th>اتبعت</th><td>' + dLabel(o.sentIso) + '</td><th>التسليم المطلوب</th><td>' + dLabel(o.dueIso) + '</td></tr>' +
+        '<tr><th>التكلفة</th><td colspan="3">' + (o.cost != null && o.cost !== '' ? ptMoney(o.cost) + ' جنيه' : '—') + '</td></tr>' +
+        (o.notes ? '<tr><th>ملاحظات العيادة</th><td colspan="3">' + ptEsc(o.notes).replace(/\n/g, '<br>') + '</td></tr>' : '') + '</table>';
+      $('dExtra').innerHTML = '<div class="fld">ميعاد التسليم المتوقع منك<input type="date" id="xDue" value="' + ptEsc(o.partnerDueIso || '') + '"></div><div class="fld">ملاحظة للعيادة<input type="text" id="xNote" maxlength="200" value="' + ptEsc(o.partnerNote || '') + '"></div><button class="btn small" id="xSave">💾 حفظ</button>';
+    } else {
+      h = '<table class="info"><tr><th>الصنف</th><th>الكمية</th><th>سعر الوحدة</th><th>متوفر؟</th></tr>' + (o.items || []).map(function(it, i){
+        var editable = STORE_OPEN.indexOf(o.status) !== -1;
+        return '<tr><td>' + ptEsc(it.name) + '</td><td>' + ptMoney(it.qty) + ' ' + ptEsc(it.unit || '') + '</td><td>' + (editable ? '<input type="number" min="0" step="any" data-i="' + i + '" class="xp" value="' + (it.price != null ? it.price : '') + '">' : (it.price != null ? ptMoney(it.price) : '—')) + '</td><td>' +
+          (editable ? '<select data-i="' + i + '" class="xa"><option value="">—</option><option value="yes"' + (it.avail === 'yes' ? ' selected' : '') + '>✅ متوفر</option><option value="partial"' + (it.avail === 'partial' ? ' selected' : '') + '>⚠️ جزئي</option><option value="no"' + (it.avail === 'no' ? ' selected' : '') + '>❌ مش متوفر</option></select>' : (it.avail === 'no' ? '❌' : it.avail === 'partial' ? '⚠️' : it.avail === 'yes' ? '✅' : '—')) + '</td></tr>';
+      }).join('') + '<tr><th colspan="2">الإجمالي</th><td colspan="2"><b id="xTot">' + ptMoney(ptOrderTotal(o)) + '</b> جنيه</td></tr></table>' +
+        (o.neededBy ? '<div class="hint">مطلوب قبل ' + dLabel(o.neededBy) + '</div>' : '') + (o.notes ? '<div class="hint">ملاحظات العيادة: ' + ptEsc(o.notes) + '</div>' : '');
+      $('dExtra').innerHTML = STORE_OPEN.indexOf(o.status) !== -1 ? '<div class="fld">ملاحظة التوصيل (ميعاد / مصاريف شحن…)<input type="text" id="xNote" maxlength="200" value="' + ptEsc(o.deliveryNote || '') + '"></div><button class="btn small" id="xSave">💾 حفظ الأسعار والملاحظة</button>' : '';
+    }
+    $('dInfo').innerHTML = h;
+    var xs = $('xSave'); if(xs) xs.onclick = saveExtra;
+    Array.prototype.forEach.call(document.querySelectorAll('.xp'), function(inp){ inp.oninput = function(){ var it = o.items.map(function(x){ return Object.assign({}, x); }); Array.prototype.forEach.call(document.querySelectorAll('.xp'), function(q){ it[+q.dataset.i].price = q.value === '' ? null : +q.value; }); $('xTot').textContent = ptMoney(ptOrderTotal({ items: it })); }; });
+    // أزرار الحالة المسموحة للمعمل/الاستور
+    var next = isLab() ? { sent: ['received'], received: ['working'], working: ['tryin', 'ready'], tryin: ['ready'], redo: ['working', 'ready'] }[o.status] || []
+                       : { requested: ['quoted', 'confirmed'], quoted: ['confirmed'], confirmed: ['shipped'] }[o.status] || [];
+    $('dActs').innerHTML = '';
+    next.forEach(function(s){ var b = document.createElement('button'); b.className = 'btn small'; b.textContent = '← ' + ST()[s].l; b.onclick = function(){ setStatus(s); }; $('dActs').appendChild(b); });
+    if(!next.length) $('dActs').innerHTML = '<span class="hint">' + (OPEN().indexOf(o.status) !== -1 ? 'مستني العيادة.' : 'الطلب ده خلص.') + '</span>';
+    $('dLog').innerHTML = (o.log || []).map(function(l){ var m = ST()[l.s] || {}; return '<div><i style="background:' + (m.c || '#999') + '"></i><b>' + ptEsc(m.l || l.s) + '</b> — ' + ptEsc(l.side === 'clinic' ? 'العيادة' : (l.by || 'أنا')) + ' • ' + dLabel(ptIso(l.ts)) + ' ' + ptTime(l.ts) + (l.note ? ' — ' + ptEsc(l.note) : '') + '</div>'; }).join('');
+    var rk = ptRefKey(typeKey(), o.id);
+    thread($('dChat'), msgs.filter(function(m){ return ptRefKey(m.refType, m.refId) === rk; }), false);
+    markRead(rk);
+  }
+  function setStatus(s){
+    var o = curObj(); if(!o) return;
+    var upd = { status: s, partnerTs: Date.now(), updatedTs: Date.now(), log: (o.log || []).concat([{ s: s, ts: Date.now(), by: myName(), side: 'partner' }]) };
+    if(!isLab() && (s === 'quoted' || s === 'confirmed')){ var it = collectItems(o); if(it) upd.items = it; }
+    db.collection(isLab() ? 'labCases' : 'storeOrders').doc(o.id).update(upd).catch(function(e){ alert('مااتحفظش: ' + e.message); });
+  }
+  function collectItems(o){
+    if(!document.querySelector('.xp')) return null;
+    var it = (o.items || []).map(function(x){ return Object.assign({}, x); });
+    Array.prototype.forEach.call(document.querySelectorAll('.xp'), function(q){ it[+q.dataset.i].price = q.value === '' ? null : +q.value; });
+    Array.prototype.forEach.call(document.querySelectorAll('.xa'), function(q){ it[+q.dataset.i].avail = q.value; });
+    return it;
+  }
+  function saveExtra(){
+    var o = curObj(); if(!o) return;
+    var upd = { partnerTs: Date.now(), updatedTs: Date.now() };
+    if(isLab()){ upd.partnerDueIso = $('xDue').value || ''; upd.partnerNote = $('xNote').value.trim(); }
+    else { upd.deliveryNote = $('xNote').value.trim(); var it = collectItems(o); if(it) upd.items = it; }
+    db.collection(isLab() ? 'labCases' : 'storeOrders').doc(o.id).update(upd).then(function(){ $('dSt').textContent = '✅ اتحفظ.'; }).catch(function(e){ $('dSt').textContent = 'مااتحفظش: ' + e.message; });
+  }
+  function send(refType, refId, refLabel, inId, imgId, stId){
+    var text = $(inId).value.trim(), f = $(imgId).files && $(imgId).files[0];
+    if(!text && !f) return;
+    $(stId).textContent = '⏳ بيتبعت…';
+    (f ? ptCompress(f, 1100, 0.72) : Promise.resolve('')).then(function(img){
+      return db.collection('partnerMsgs').add({ partnerId: partner.id, refType: refType, refId: refId, refLabel: refLabel, from: 'partner', byName: myName(), text: text.slice(0, 2000), img: img || '', ts: Date.now() });
+    }).then(function(){ $(inId).value = ''; $(imgId).value = ''; $(stId).textContent = ''; markRead(ptRefKey(refType, refId)); })
+      .catch(function(e){ $(stId).textContent = 'مااتبعتش: ' + e.message; });
+  }
+  $('chatSend').onclick = function(){ send('', '', '', 'chatIn', 'chatImg', 'chatSt'); };
+  $('dSend').onclick = function(){ var o = curObj(); if(o) send(typeKey(), o.id, o.no || '', 'dIn', 'dImg', 'dSt'); };
+  $('chatImg').onchange = function(){ $('chatSt').textContent = this.files[0] ? '📷 صورة جاهزة — دوس إرسال' : ''; };
+  $('dImg').onchange = function(){ $('dSt').textContent = this.files[0] ? '📷 صورة جاهزة — دوس إرسال' : ''; };
+  $('sheetX').onclick = function(){ $('sheet').classList.remove('open'); cur = null; $('dSt').textContent = ''; render(); };
+  $('sheet').onclick = function(e){ if(e.target === $('sheet')) $('sheetX').click(); };
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){ b.onclick = function(){ tab = b.dataset.t; render(); }; });
+  $('filt').onclick = function(e){ var b = e.target.closest('.chip'); if(!b) return; filt = b.dataset.f; Array.prototype.forEach.call(this.children, function(x){ x.classList.toggle('on', x === b); }); render(); };
+
+</script>
+</body>
+</html>
