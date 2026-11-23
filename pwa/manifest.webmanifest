@@ -1,0 +1,30 @@
+{
+ "name": "نظام إدارة العيادة",
+ "short_name": "العيادة",
+ "start_url": "./admin.html",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "dir": "rtl",
+ "lang": "ar",
+ "background_color": "#EAF6F7",
+ "theme_color": "#0E5A6B",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
