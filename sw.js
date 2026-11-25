@@ -16,7 +16,7 @@ try { firebase.messaging(); } catch (e) {}
 // ===== أوفلاين =====
 // 1) شكل البرنامج (admin.html) + مكتبات Firebase + الخطوط بتتحفظ، فالسيستم يفتح من غير نت.
 // 2) البيانات نفسها بتتحفظ جوه Firestore (كاش محلي) وأي تعديل بيتزامن لما النت يرجع.
-const CACHE = 'clinic-shell-v10';
+const CACHE = 'clinic-shell-v23';
 const SDK = ['app', 'firestore', 'auth', 'messaging', 'storage'].map(n => 'https://www.gstatic.com/firebasejs/10.12.2/firebase-' + n + '-compat.js');
 const SHELL = ['./admin.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
