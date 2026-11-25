@@ -3205,6 +3205,7 @@ body.lang-en #ui2FiltBtn .f-dot{right:6px;border-top-right-radius:50%;border-top
     <button id="pinSubmit">دخول</button>
     <p class="pin-error" id="pinError"></p>
     <p class="vy-foot">VYORA · نظام إدارة العيادات الطبية</p>
+    <p class="vy-foot">VYORA · نظام إدارة العيادات الطبية</p>
   </div>
 </div>
 
@@ -6202,7 +6203,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('ptAddBtn').addEventListener('click', function(){ openPtEdit(null); });
     document.getElementById('ptPortalBtn').addEventListener('click', function(){
       var u = PT_PORTAL_URL;
-      (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function(){ alert('اتنسخ رابط البوابة:\n' + u + '\n\nارفع ملف partner.html جنب checkin.html على GitHub.'); }).catch(function(){ prompt('رابط البوابة:', u); });
+      (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function(){ (function(m){var t=document.createElement('div');t.id='vyToast';t.textContent=m;t.style.cssText="position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#092E38;color:#fff;padding:12px 22px;border-radius:14px;font:600 .95rem 'IBM Plex Sans Arabic',sans-serif;z-index:99999;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);opacity:0;transition:opacity .2s";document.body.appendChild(t);requestAnimationFrame(function(){t.style.opacity=1;});setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove();},250);},2200);})('اتنسخ رابط البوابة ✓'); }).catch(function(){ prompt('رابط البوابة:', u); });
     });
     document.getElementById('ptEditClose').addEventListener('click', function(){ document.getElementById('ptEditOverlay').classList.remove('open'); });
     document.getElementById('ptfSave').addEventListener('click', savePtEdit);
@@ -21958,13 +21959,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 // OPS-BEGIN ===== مركز المساعدة: ابدأ هنا / التدريب / الجديد / البلاغات / الأخطاء / التحديث =====
 (function(){
   'use strict';
-  var APP_VERSION = '2026.11.25.5', APP_BUILD = 5;
+  var APP_VERSION = '2026.11.26.6', APP_BUILD = 6;
   var CHANGELOG = [
     { b: 1, v: '2026.11.25', d: '2026-11-25', t: ['مركز مساعدة جديد (زرار ؟ فوق): «ابدأ هنا» + دروس تدريب + بلاغاتي', 'متابعة الأخطاء تلقائي عشان الدعم يعرف أي مشكلة قبل ما تتصل', 'تنبيه تحديث تلقائي — أي نسخة جديدة بتوصلك بضغطة واحدة'] },
     { b: 2, v: '2026.11.25.2', d: '2026-11-25', t: ["الفواتير الإلكترونية (طباعة + واتساب + ربط ETA)", "الدفع الأونلاين Paymob: QR في الاستقبال ولينك دفع على واتساب", "مركز المساعدة والتدريب"] },
     { b: 3, v: '2026.11.25', d: '2026-11-25', t: ["التأمين والتعاقدات: مطالبات وتحصيل من الشركات", "عارض أشعة محسّن (زوم/قياس/مقارنة/تحسين ذكي/تحليل AI)", "تقارير ضرائب ومحاسبة: إقرار قيمة مضافة، دفتر يومية، ميزان مراجعة"] },
     { b: 4, v: '2026.11.25.4', d: '2026-11-25', t: ["نظام دعم فني جديد: بلاغات بمحادثة مع الدعم، تقرير فني تلقائي، سكرين شوت، تقييم", "إشعار برد الدعم على زرار ؟"] },
-    { b: 5, v: '2026.11.25.5', d: '2026-11-25', t: ["هوية VYORA الجديدة: شعار وأيقونات وألوان وخطوط جديدة", "خط Inter للجداول والأرقام"] }
+    { b: 5, v: '2026.11.25.5', d: '2026-11-25', t: ["هوية VYORA الجديدة: شعار وأيقونات وألوان وخطوط جديدة", "خط Inter للجداول والأرقام"] },
+    { b: 6, v: '2026.11.26.6', d: '2026-11-26', t: ["نسخ رابط بوابة المعامل: إشعار صغير يختفي لوحده بدل نافذة OK"] }
   ];
   window.APP_VERSION = APP_VERSION; window.APP_BUILD = APP_BUILD;
   var $ = function(id){ return document.getElementById(id); };
