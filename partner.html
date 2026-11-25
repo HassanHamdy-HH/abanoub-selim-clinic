@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0E5A6B">
+<meta name="theme-color" content="#0E7F91">
 <meta name="robots" content="noindex">
 <title>بوابة المعمل والاستور — عيادة د. أبانوب سليم</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--deep-teal:#0E5A6B;--teal:#1F8A96;--pale-aqua:#E6F4F5;--ink:#132A30;--ink-soft:#5E7479;--line:#DCE8E9;--bg:#EEF6F7;--gold:#D9A43B;}
   *{box-sizing:border-box;}
@@ -15,7 +15,7 @@
   .wrap{max-width:900px;margin:0 auto;padding:16px 16px 40px;}
   .card{background:#fff;border-radius:18px;box-shadow:0 10px 30px -18px rgba(9,46,56,.35);padding:16px;}
   .login{max-width:400px;margin:8vh auto 0;}
-  .login h1{font-family:'Tajawal',sans-serif;color:var(--deep-teal);margin:0 0 4px;font-size:1.4rem;text-align:center;}
+  .login h1{font-family:'Sora','IBM Plex Sans Arabic',sans-serif;color:var(--deep-teal);margin:0 0 4px;font-size:1.4rem;text-align:center;}
   .login p{color:var(--ink-soft);text-align:center;margin:0 0 16px;font-size:.88rem;}
   .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-weight:700;font-size:.84rem;}
   .fld input,.fld select,.fld textarea{padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-weight:400;background:#fff;}
@@ -26,7 +26,7 @@
   .err{color:#D64545;font-weight:700;min-height:1.2em;font-size:.84rem;margin:6px 0;}
   .link{background:none;border:none;color:var(--teal);font-weight:700;cursor:pointer;padding:6px 0;}
   header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
-  header.top .who b{display:block;font-family:'Tajawal',sans-serif;color:var(--deep-teal);font-size:1.15rem;}
+  header.top .who b{display:block;font-family:'Sora','IBM Plex Sans Arabic',sans-serif;color:var(--deep-teal);font-size:1.15rem;}
   header.top .who span{font-size:.8rem;color:var(--ink-soft);}
   .tabs{display:flex;gap:6px;background:var(--pale-aqua);padding:4px;border-radius:12px;margin-bottom:12px;}
   .tab{flex:1;border:none;background:none;border-radius:9px;padding:9px 6px;font-weight:800;color:var(--ink-soft);cursor:pointer;position:relative;}
@@ -67,6 +67,14 @@
   table.info th,table.info td{border:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:top;}
   table.info th{background:#F4F9F9;color:var(--deep-teal);font-size:.76rem;}
   table.info input,table.info select{width:100%;padding:6px;border:1px solid var(--line);border-radius:8px;min-width:0;}
+  .lf-box{border:1.5px dashed #b9d4da;border-radius:14px;padding:10px 12px;margin:8px 0;background:#f6fbfc;}
+  .lf-head{font-weight:800;font-size:.9rem;margin-bottom:6px;}
+  .lf-row{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #e3eef0;font-size:.82rem;flex-wrap:wrap;}
+  .lf-row:last-child{border-bottom:none;} .lf-row .nm{flex:1;min-width:140px;font-weight:700;word-break:break-all;direction:ltr;text-align:right;} .lf-row .mt{color:#6b8187;font-size:.74rem;}
+  .lf-k{border-radius:20px;padding:2px 9px;font-size:.72rem;font-weight:800;} .lf-k.scan{background:#dbeafe;color:#1e40af;} .lf-k.design{background:#ede9fe;color:#5b21b6;} .lf-k.other{background:#eee;color:#555;}
+  .lf-a{font:inherit;font-size:.76rem;font-weight:800;border:1px solid #cfdde0;background:#fff;border-radius:8px;padding:4px 9px;cursor:pointer;text-decoration:none;color:inherit;} .lf-a.del{color:#b42318;}
+  .lf-up{display:inline-flex;align-items:center;gap:6px;background:#0E5A6B;color:#fff;border-radius:10px;padding:8px 12px;font-weight:800;font-size:.82rem;cursor:pointer;margin:4px 0;}
+  .lf-st{font-size:.78rem;color:#0E5A6B;font-weight:700;} .lf-bar{height:6px;background:#dbe8ea;border-radius:4px;overflow:hidden;margin-top:4px;} .lf-bar i{display:block;height:100%;background:#C9A24B;width:0;}
   .acts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
   .sec{font-weight:800;color:var(--deep-teal);margin:14px 0 6px;font-size:.9rem;}
   .ledger{width:100%;border-collapse:collapse;font-size:.82rem;}
@@ -76,6 +84,7 @@
   .log i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-left:6px;}
   .log div{font-size:.78rem;padding:3px 0;}
 </style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InEiIHgxPSIwIiB5MT0iMCIgeDI9IjY0IiB5Mj0iNjQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMzNUJGRDEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwRTdGOTEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNiIgZmlsbD0idXJsKCNxKSIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDExLjUyIDEyLjI4OCkgc2NhbGUoMC40MDk2KSI+PHBhdGggZD0iTTUwIDVMODggMTlWNTBDODggNzIgNzIgODcgNTAgOTZDMjggODcgMTIgNzIgMTIgNTBWMTlaIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0zMiAzNkw1MCA2OEw2OCAzNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMEU3RjkxIiBzdHJva2Utd2lkdGg9IjkuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSIyNSIgcj0iNS42IiBmaWxsPSIjRDlBNDQxIi8+PC9nPjwvc3ZnPg==">
 </head>
 <body>
 <div class="wrap">
@@ -120,6 +129,7 @@
   <button class="x" id="sheetX">✕</button>
   <h3 id="dTitle" style="margin:4px 0 6px;color:var(--deep-teal);"></h3>
   <div id="dInfo"></div>
+  <div id="dFiles" class="lf-box"></div>
   <div class="acts" id="dActs"></div>
   <div id="dExtra"></div>
   <details class="log"><summary class="hint">🕒 سجل الحالات</summary><div id="dLog"></div></details>
@@ -132,6 +142,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
   // ===== ثوابت مشتركة بين لوحة العيادة وبوابة المعمل/الاستور =====
   var LAB_ST = {
@@ -329,6 +340,7 @@
       $('dExtra').innerHTML = STORE_OPEN.indexOf(o.status) !== -1 ? '<div class="fld">ملاحظة التوصيل (ميعاد / مصاريف شحن…)<input type="text" id="xNote" maxlength="200" value="' + ptEsc(o.deliveryNote || '') + '"></div><button class="btn small" id="xSave">💾 حفظ الأسعار والملاحظة</button>' : '';
     }
     $('dInfo').innerHTML = h;
+    renderFiles(o);
     var xs = $('xSave'); if(xs) xs.onclick = saveExtra;
     Array.prototype.forEach.call(document.querySelectorAll('.xp'), function(inp){ inp.oninput = function(){ var it = o.items.map(function(x){ return Object.assign({}, x); }); Array.prototype.forEach.call(document.querySelectorAll('.xp'), function(q){ it[+q.dataset.i].price = q.value === '' ? null : +q.value; }); $('xTot').textContent = ptMoney(ptOrderTotal({ items: it })); }; });
     // أزرار الحالة المسموحة للمعمل/الاستور
@@ -341,6 +353,49 @@
     var rk = ptRefKey(typeKey(), o.id);
     thread($('dChat'), msgs.filter(function(m){ return ptRefKey(m.refType, m.refId) === rk; }), false);
     markRead(rk);
+  }
+
+  // ===== ملفات الاسكانر والديزاين =====
+  var LFK = { scan: ['🟦', 'سكان'], design: ['🟪', 'ديزاين'], other: ['📄', 'أخرى'] };
+  function lfSize(b){ b = +b || 0; return b >= 1048576 ? (Math.round(b / 104857.6) / 10) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  function lfExt(n){ var m = String(n || '').match(/\.[A-Za-z0-9]{1,12}$/); return m ? m[0].toLowerCase() : ''; }
+  function renderFiles(o){
+    var box = $('dFiles'); if(!box) return;
+    if(!isLab()){ box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    var files = (o.files || []).slice().sort(function(a, b){ return (a.ts || 0) - (b.ts || 0); }), keep = ($('lfStatus') || {}).innerHTML || '';
+    box.innerHTML = '<div class="lf-head">📎 ملفات الحالة (سكان / ديزاين) — ' + files.length + '</div>' +
+      files.map(function(f){ var k = LFK[f.kind] || LFK.other;
+        return '<div class="lf-row"><span class="lf-k ' + (LFK[f.kind] ? f.kind : 'other') + '">' + k[0] + ' ' + k[1] + '</span><span class="nm">' + ptEsc(f.name) + '</span><span class="mt">' + lfSize(f.size) + ' • ' + (f.side === 'partner' ? 'أنا' : 'العيادة') + '</span>' +
+          '<a class="lf-a" href="' + ptEsc(f.url) + '" target="_blank" rel="noopener" download>⬇️ تحميل</a>' + (f.side === 'partner' ? '<button type="button" class="lf-a del" data-del="' + ptEsc(f.id) + '">🗑️</button>' : '') + '</div>'; }).join('') +
+      (files.length ? '' : '<div class="hint">لسه مفيش ملفات.</div>') +
+      '<label class="lf-up">⬆️ ارفع ملف (ديزاين / ملف راجع)<input type="file" id="lfIn" multiple hidden></label><div id="lfStatus" class="lf-st">' + keep + '</div>';
+    $('lfIn').onchange = function(){ if(this.files.length) lfUp(this.files, o); this.value = ''; };
+    Array.prototype.forEach.call(box.querySelectorAll('[data-del]'), function(b){ b.onclick = function(){ lfDel(o, b.getAttribute('data-del')); }; });
+  }
+  function lfUp(fl, o){
+    var st = function(h){ var e = $('lfStatus'); if(e) e.innerHTML = h; };
+    var files = Array.prototype.slice.call(fl), total = files.length, done = 0, failed = 0, names = [], prog = {};
+    var tick = function(){ var v = Object.keys(prog).map(function(k){ return prog[k]; }), pct = v.length ? Math.round(v.reduce(function(s, x){ return s + x; }, 0) / total) : 0; st('⏳ بيترفع ' + (done + failed) + ' / ' + total + ' — ' + pct + '%<div class="lf-bar"><i style="width:' + pct + '%"></i></div>'); };
+    var fin = function(){ if(done + failed < total) return;
+      if(done) db.collection('partnerMsgs').add({ partnerId: partner.id, refType: 'lab', refId: o.id, refLabel: o.no || '', from: 'partner', byName: myName(), text: '📎 رفعت ' + done + ' ملف: ' + names.join('، ').slice(0, 300), img: '', ts: Date.now() }).catch(function(){});
+      st(failed ? '⚠️ اترفع ' + done + ' وفشل ' + failed : '✅ اترفع ' + done + ' ملف'); };
+    files.forEach(function(file, i){
+      if(file.size > 300 * 1024 * 1024){ failed++; alert('«' + file.name + '» أكبر من 300 ميجا.'); fin(); return; }
+      var id = Date.now().toString(36) + i + Math.random().toString(36).slice(2, 5), path = 'labfiles/' + o.id + '/' + id + lfExt(file.name), ref = firebase.storage().ref(path); prog[id] = 0;
+      var kind = /\.(dentalproject|constructioninfo)$/i.test(file.name) || /design/i.test(file.name) ? 'design' : (/\.(stl|ply|obj)$/i.test(file.name) ? 'design' : 'other');
+      var t = ref.put(file, { contentType: file.type || 'application/octet-stream' });
+      t.on('state_changed', function(s){ prog[id] = s.totalBytes ? s.bytesTransferred / s.totalBytes * 100 : 0; tick(); }, function(){ failed++; delete prog[id]; fin(); }, function(){
+        ref.getDownloadURL().then(function(url){
+          return db.collection(typeKey() === 'lab' ? 'labCases' : 'storeOrders').doc(o.id).update({ files: firebase.firestore.FieldValue.arrayUnion({ id: id, name: file.name, kind: kind, size: file.size, path: path, url: url, by: myName(), side: 'partner', ts: Date.now() }), updatedTs: Date.now() });
+        }).then(function(){ done++; names.push(file.name); prog[id] = 100; tick(); fin(); }).catch(function(){ failed++; delete prog[id]; fin(); });
+      });
+    });
+    tick();
+  }
+  function lfDel(o, id){
+    var f = (o.files || []).filter(function(x){ return x.id === id; })[0]; if(!f || f.side !== 'partner' || !confirm('تمسح «' + f.name + '»؟')) return;
+    db.collection('labCases').doc(o.id).update({ files: (o.files || []).filter(function(x){ return x.id !== id; }), updatedTs: Date.now() }).then(function(){ firebase.storage().ref(f.path).delete().catch(function(){}); }).catch(function(e){ alert('مااتمسحش: ' + e.message); });
   }
   function setStatus(s){
     var o = curObj(); if(!o) return;
@@ -381,5 +436,6 @@
   $('filt').onclick = function(e){ var b = e.target.closest('.chip'); if(!b) return; filt = b.dataset.f; Array.prototype.forEach.call(this.children, function(x){ x.classList.toggle('on', x === b); }); render(); };
 
 </script>
+<div style="text-align:center;font:600 .68rem Sora,sans-serif;letter-spacing:.12em;color:#7C949B;opacity:.8;margin:22px 0 14px">VYORA</div>
 </body>
 </html>
