@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سياسة الخصوصية</title>
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--teal:#0B3B47;--gold:#C9A24B;--bg:#EAF6F7;--ink:#1f2d33;--soft:#5b727a}
+body{margin:0;font-family:Tajawal,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--ink);line-height:1.9}
+header{background:var(--teal);color:#fff;padding:22px 16px;text-align:center}header h1{margin:0;font-size:1.3rem}header p{margin:4px 0 0;opacity:.8;font-size:.9rem}
+main{max-width:720px;margin:0 auto;padding:16px}.card{background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 4px 18px rgba(11,59,71,.08)}
+h2{font-size:1.02rem;color:var(--teal);margin:18px 0 4px}h2:first-child{margin-top:0}ul{margin:4px 0;padding-right:20px}.hint{color:var(--soft);font-size:.85rem}
+footer{text-align:center;color:var(--soft);font-size:.75rem;padding:14px}
+</style>
+</head>
+<body>
+<header><h1>سياسة الخصوصية</h1><p id="cn"></p></header>
+<main><div class="card">
+<p>تهمّنا خصوصيتك. توضح هذه الصفحة ما نجمعه من بيانات، ولماذا، وكيف نحميها، وما هي حقوقك.</p>
+<h2>البيانات التي نجمعها</h2>
+<ul><li>بيانات التعريف والتواصل: الاسم، رقم الموبايل، العنوان، تاريخ الميلاد أو السن.</li><li>البيانات الصحية: الشكوى، التاريخ المرضي والحساسية والأدوية، التشخيص، الأشعة، الروشتات وخطة العلاج.</li><li>بيانات الحجز والزيارات والمدفوعات.</li></ul>
+<h2>لماذا نستخدمها</h2>
+<ul><li>تقديم الخدمة الطبية وتنظيم المواعيد والمتابعة والتذكير بها.</li><li>إعداد الفواتير وحفظ السجل الطبي والمالي والالتزام بما يفرضه القانون.</li><li>تحسين جودة الخدمة. ولا نستخدم بياناتك الصحية في التسويق.</li></ul>
+<h2>مع من نشارك بياناتك</h2>
+<ul><li>فريق العيادة المختص بحسب دوره فقط.</li><li>مزودو التقنية الذين يشغّلون النظام، بصفتهم معالجين ملتزمين بالسرية.</li><li>المعمل أو جهة التأمين أو جهة قضائية مختصة عند الحاجة وبقدر الضرورة.</li><li>لا نبيع بياناتك لأي جهة.</li></ul>
+<h2>كيف نحميها</h2>
+<ul><li>صلاحيات وصول حسب الدور وتسجيل لنشاط الموظفين.</li><li>تخزين سحابي مؤمّن واتصال مشفّر، ونسخ احتياطي دوري.</li></ul>
+<h2>حقوقك</h2>
+<ul><li>الاطلاع على بياناتك وطلب نسخة منها، وتصحيح غير الدقيق.</li><li>سحب موافقتك على الاستخدام غير الضروري، مع العلم أن بعض بيانات السجل الطبي يلزم الاحتفاظ بها قانونًا.</li><li>تقديم شكوى لمركز حماية البيانات الشخصية وفق القانون رقم 151 لسنة 2020.</li></ul>
+<h2>الرابط الخاص بك</h2>
+<p>الرابط الذي نرسله لك لعرض مواعيدك وحسابك خاص بك، فلا تشاركه مع أحد. ويمكنك طلب إلغائه في أي وقت.</p>
+<h2>التواصل</h2>
+<p id="ct">لأي استفسار يخص بياناتك تواصل مع العيادة مباشرة.</p>
+<p class="hint">آخر تحديث: <span id="up"></span></p>
+</div></main>
+<footer>Powered by VYORA</footer>
+<script src="config.js"></script>
+<script>
+(function(){ var CC = window.CLINIC_CONFIG || {}, CL = CC.clinic || {}; var n = CL.full || CL.short || (CC.firebase ? '' : 'عيادة د. أبانوب سليم'); document.getElementById('cn').textContent = n; if(n) document.title = 'سياسة الخصوصية — ' + n;
+  if(CL.phone) document.getElementById('ct').textContent = 'لأي استفسار يخص بياناتك تواصل مع العيادة على: ' + CL.phone;
+  document.getElementById('up').textContent = '26/11/2026'; })();
+</script>
+</body>
+</html>

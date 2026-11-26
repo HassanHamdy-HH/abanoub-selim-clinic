@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>احجز ميعادك</title>
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--teal:#0B3B47;--gold:#C9A24B;--bg:#EAF6F7;--ink:#1f2d33;--soft:#5b727a}
+*{box-sizing:border-box}body{margin:0;font-family:Tajawal,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{background:var(--teal);color:#fff;padding:22px 16px;text-align:center}header h1{margin:0 0 4px;font-size:1.35rem}header p{margin:0;opacity:.8;font-size:.9rem}
+main{max-width:560px;margin:0 auto;padding:16px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 4px 18px rgba(11,59,71,.08)}
+h2{font-size:1rem;margin:0 0 10px;color:var(--teal)}
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.day{flex:0 0 auto;min-width:74px;text-align:center;padding:8px 6px;border:1.5px solid #cfe3e6;border-radius:12px;background:#fff;cursor:pointer;font:inherit}
+.day b{display:block;font-size:.85rem}.day span{font-size:.75rem;color:var(--soft)}
+.day.on{background:var(--teal);color:#fff;border-color:var(--teal)}.day.on span{color:#cfe3e6}.day.off{opacity:.4;cursor:not-allowed}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.slot{padding:10px 0;border:1.5px solid #cfe3e6;border-radius:10px;background:#fff;font:inherit;font-weight:600;cursor:pointer}
+.slot.on{background:var(--gold);border-color:var(--gold);color:#fff}.slot:disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+label{display:block;font-weight:600;margin:10px 0 4px;font-size:.9rem}
+input,select{width:100%;padding:12px;border:1.5px solid #cfe3e6;border-radius:10px;font:inherit}
+.seg{display:flex;gap:8px}.seg button{flex:1;padding:10px;border:1.5px solid #cfe3e6;border-radius:10px;background:#fff;font:inherit;cursor:pointer}.seg .on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.go{width:100%;margin-top:14px;padding:14px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--gold),#b8893a);color:#fff;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer}.go:disabled{opacity:.6}
+.err{color:#c0392b;font-weight:600;min-height:1.3em;margin-top:8px}.hint{color:var(--soft);font-size:.82rem}
+.ok{text-align:center}.ok .big{font-size:2.4rem}.ok a{display:inline-block;margin-top:10px;padding:10px 18px;border-radius:10px;background:#25D366;color:#fff;text-decoration:none;font-weight:700}
+footer{text-align:center;color:var(--soft);font-size:.75rem;padding:14px}
+</style>
+</head>
+<body>
+<header><h1 id="cn">احجز ميعادك</h1><p>اختار اليوم والميعاد وسيب بياناتك، وهنأكد معاك</p></header>
+<main id="app">
+  <div class="card"><h2>١) اليوم</h2><div class="days" id="days"></div></div>
+  <div class="card"><h2>٢) الميعاد</h2><div class="slots" id="slots"></div><p class="hint" id="sh"></p></div>
+  <div class="card"><h2>٣) بياناتك</h2>
+    <label>الاسم بالكامل</label><input id="nm" autocomplete="name" maxlength="80">
+    <label>رقم الموبايل</label><input id="ph" type="tel" inputmode="numeric" dir="ltr" maxlength="14" placeholder="01xxxxxxxxx" style="text-align:left">
+    <label>نوع الزيارة</label><div class="seg" id="vt"><button type="button" class="on" data-v="checkup">كشف جديد</button><button type="button" data-v="followup">متابعة</button></div>
+    <div class="err" id="er"></div>
+    <button class="go" id="go">تأكيد الحجز</button>
+    <p class="hint" style="text-align:center;margin-top:8px;">بالحجز أنت توافق على جمع بياناتك لأغراض الحجز والعلاج — <a href="privacy.html">سياسة الخصوصية</a></p>
+  </div>
+</main>
+<footer><a href="privacy.html" style="color:inherit">سياسة الخصوصية</a> · Powered by VYORA</footer>
+<script src="config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  var CC = window.CLINIC_CONFIG || {}, CL = CC.clinic || {};
+  var FB = CC.firebase || { apiKey:"AIzaSyAXoB_WHtLStu0mr4dnZKG8YeXOn_R1dg4", authDomain:"abanoub-clinic.firebaseapp.com", projectId:"abanoub-clinic", storageBucket:"abanoub-clinic.firebasestorage.app", messagingSenderId:"904420382642", appId:"1:904420382642:web:2c048976c4d04e2d8436ab" };
+  var NAME = CL.full || CL.short || (CC.firebase ? 'عيادتنا' : 'عيادة د. أبانوب سليم');
+  document.getElementById('cn').textContent = NAME; document.title = 'احجز ميعادك — ' + NAME;
+  firebase.initializeApp(FB); var db = firebase.firestore();
+  var SL = []; for(var h = 14; h <= 21; h++){ ['00','30'].forEach(function(m){ SL.push(('0' + h).slice(-2) + ':' + m); }); }
+  function lab(v){ var p = v.split(':'), h = +p[0], s = h >= 12 ? (h >= 17 ? 'م' : 'ظ') : 'ص', hh = h > 12 ? h - 12 : h; return hh + ':' + p[1] + ' ' + s; }
+  var WD = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  function iso(d){ return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  var days = [], sel = 0, slot = '', vt = 'checkup', taken = {}, blocked = {};
+  for(var i = 0; i < 14; i++){ var d = new Date(); d.setDate(d.getDate() + i); days.push({ iso: iso(d), w: i === 0 ? 'النهارده' : i === 1 ? 'بكرة' : WD[d.getDay()], dl: d.getDate() + '/' + (d.getMonth() + 1) }); }
+  function dayClosed(i){ var b = blocked[days[i].iso]; return !!b && b.fullDay !== false; }
+  function slotBlocked(dIso, v){
+    var b = blocked[dIso]; if(!b) return false; if(b.fullDay !== false) return true;
+    var a = SL.indexOf(b.fromSlot), z = SL.indexOf(b.toSlot), k = SL.indexOf(v); return a < 0 || z < 0 || (k >= a && k <= z);
+  }
+  function rDays(){
+    var el = document.getElementById('days'); el.innerHTML = '';
+    days.forEach(function(d, i){ var b = document.createElement('button'); b.type = 'button'; b.className = 'day' + (i === sel ? ' on' : '') + (dayClosed(i) ? ' off' : '');
+      b.innerHTML = '<b>' + d.w + '</b><span>' + (dayClosed(i) ? 'مغلق' : d.dl) + '</span>';
+      b.onclick = function(){ if(dayClosed(i)) return; sel = i; slot = ''; rDays(); rSlots(); }; el.appendChild(b); });
+  }
+  function rSlots(){
+    var el = document.getElementById('slots'); el.innerHTML = ''; var d = days[sel], now = new Date(), nowV = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2), free = 0;
+    SL.forEach(function(v){ var b = document.createElement('button'); b.type = 'button'; b.textContent = lab(v);
+      var dis = !!taken[d.iso + '_' + v] || slotBlocked(d.iso, v) || (sel === 0 && v <= nowV); if(!dis) free++;
+      b.disabled = dis; b.className = 'slot' + (slot === v ? ' on' : ''); b.onclick = function(){ slot = v; rSlots(); }; el.appendChild(b); });
+    document.getElementById('sh').textContent = free ? '' : 'مفيش مواعيد فاضية في اليوم ده، جرّب يوم تاني.';
+  }
+  rDays(); rSlots();
+  db.collection('publicSlots').onSnapshot(function(s){ taken = {}; s.forEach(function(x){ taken[x.id] = 1; }); rSlots(); }, function(){});
+  db.collection('blockedDays').onSnapshot(function(s){ blocked = {}; s.forEach(function(x){ blocked[x.id] = x.data(); }); rDays(); rSlots(); }, function(){});
+  document.querySelectorAll('#vt button').forEach(function(b){ b.onclick = function(){ document.querySelectorAll('#vt button').forEach(function(x){ x.classList.remove('on'); }); b.classList.add('on'); vt = b.getAttribute('data-v'); }; });
+  function norm(p){ var x = String(p || '').replace(/[٠-٩]/g, function(c){ return '٠١٢٣٤٥٦٧٨٩'.indexOf(c); }).replace(/\D/g, ''); if(x.indexOf('0020') === 0) x = x.slice(4); else if(x.length === 12 && x.indexOf('20') === 0) x = x.slice(2); if(x.length === 10 && x[0] === '1') x = '0' + x; return x; }
+  document.getElementById('go').onclick = function(){
+    var er = document.getElementById('er'), nm = document.getElementById('nm').value.trim(), ph = norm(document.getElementById('ph').value);
+    er.textContent = '';
+    if(!slot){ er.textContent = 'اختار الميعاد الأول.'; return; }
+    if(nm.length < 3){ er.textContent = 'اكتب الاسم بالكامل (3 حروف على الأقل).'; return; }
+    if(!/^01[0-9]{9}$/.test(ph)){ er.textContent = 'رقم الموبايل لازم 11 رقم يبدأ بـ 01.'; return; }
+    var key = days[sel].iso + '_' + slot, btn = document.getElementById('go'); btn.disabled = true; btn.textContent = 'جاري الحجز…';
+    var batch = db.batch();
+    batch.set(db.collection('bookings').doc(key), { name: nm, phone: ph, status: 'pending', bookedBy: 'patient', visitType: vt, ts: Date.now() });
+    batch.set(db.collection('publicSlots').doc(key), { status: 'pending' });
+    batch.commit().then(function(){
+      var wa = CL.phone ? '<a href="https://wa.me/2' + norm(CL.phone).replace(/^0/, '') + '" target="_blank" rel="noopener">💬 كلّمنا على واتساب</a>' : '';
+      document.getElementById('app').innerHTML = '<div class="card ok"><div class="big">✅</div><h2>تم استلام طلب الحجز</h2><p><b>' + days[sel].w + ' ' + days[sel].dl + ' — ' + lab(slot) + '</b></p><p class="hint">هنكلّمك لتأكيد الميعاد. لو محتاج تغيّر حاجة كلّمنا.</p>' + wa + '</div>';
+    }).catch(function(e){
+      btn.disabled = false; btn.textContent = 'تأكيد الحجز';
+      er.textContent = (e && e.code === 'permission-denied') ? 'الميعاد ده اتحجز من حد تاني، اختار ميعاد غيره.' : 'حصلت مشكلة، جرّب تاني.';
+    });
+  };
+})();
+</script>
+</body>
+</html>
