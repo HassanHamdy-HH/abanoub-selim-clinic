@@ -4376,7 +4376,7 @@ html[data-mode="dark"] .vx-mic{filter:invert(1) hue-rotate(180deg)}
         <div class="modal-field">
           <label>الأشعة والصور<bdi class="lbl-en" dir="ltr">X-rays &amp; Clinical Photos</bdi><span class="lbl-note">مشتركة لنفس المريض في كل ملفاته</span></label>
           <div class="pf-media-up">
-            <select id="pfMediaKind"><option value="xray">🩻 أشعة</option><option value="intraoral">😁 صورة Intraoral</option><option value="extraoral">🙂 صورة Extraoral</option></select>
+            <select id="pfMediaKind"><option value="xray">🩻 أشعة</option><option value="intraoral">😁 صورة Intraoral</option><option value="extraoral">🙂 صورة Extraoral</option><option value="doc">📄 مستند / تحاليل</option></select>
             <input type="date" id="pfMediaDate" title="تاريخ الصورة">
             <input type="text" id="pfMediaTooth" placeholder="السنة / المنطقة" maxlength="30">
             <input type="text" id="pfMediaNote" placeholder="ملاحظة (قبل / بعد...)" maxlength="80">
@@ -9224,7 +9224,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   // ---- 6) السجل الموحّد ----
   var PF_ST_LBL = { pending: 'في الانتظار', awaiting: 'لسه ما أكدش', confirmed: 'مؤكد', no_show: 'لم يحضر' };
-  var PF_MEDIA_KIND = { xray: '🩻 أشعة', intraoral: '😁 Intraoral', extraoral: '🙂 Extraoral' };
+  var PF_MEDIA_KIND = { xray: '🩻 أشعة', intraoral: '😁 Intraoral', extraoral: '🙂 Extraoral', doc: '📄 مستند' };
   function pfBookingsOf(key){ return allBookings.filter(function(b){ return b.phone && pfKeysMatch(b.phone + '|' + (b.name || '').trim().toLowerCase(), key); }); }
   function pfMediaOf(key){ return patientXraysCache.filter(function(x){ return pfKeysMatch(x.patientKey, key); }); }
   function pfTimeline(p){
@@ -18838,7 +18838,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     top.insertBefore(b, prof || null);
     var g = function(id){ return document.getElementById(id); };
     firestoreDb.collection('settings').doc('support').onSnapshot(function(d){
-      supCfg = Object.assign({ name: 'The Fento Media — فينتو', hours: '' }, (d.exists && d.data()) || {});
+      supCfg = Object.assign({ name: 'The Fento Media — فينتو', hours: '' }, (window.CLINIC_CONFIG && window.CLINIC_CONFIG.support) || {}, (d.exists && d.data()) || {});
       g('supName').value = supCfg.name || ''; g('supWa').value = supCfg.wa || ''; g('supTel').value = supCfg.tel || ''; g('supMail').value = supCfg.mail || ''; g('supHours').value = supCfg.hours || ''; supRender();
     }, function(){ supRender(); });
     b.addEventListener('click', function(){ g('supAdmin').style.display = currentRole() === 'admin' ? '' : 'none'; g('supMsgOut').textContent = ''; supRender(); g('supOverlay').classList.add('open'); });
@@ -22046,7 +22046,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 // OPS-BEGIN ===== مركز المساعدة: ابدأ هنا / التدريب / الجديد / البلاغات / الأخطاء / التحديث =====
 (function(){
   'use strict';
-  var APP_VERSION = '2026.11.26.19', APP_BUILD = 19;
+  var APP_VERSION = '2026.11.26.22', APP_BUILD = 22;
   var CHANGELOG = [
     { b: 1, v: '2026.11.25', d: '2026-11-25', t: ['مركز مساعدة جديد (زرار ؟ فوق): «ابدأ هنا» + دروس تدريب + بلاغاتي', 'متابعة الأخطاء تلقائي عشان الدعم يعرف أي مشكلة قبل ما تتصل', 'تنبيه تحديث تلقائي — أي نسخة جديدة بتوصلك بضغطة واحدة'] },
     { b: 2, v: '2026.11.25.2', d: '2026-11-25', t: ["الفواتير الإلكترونية (طباعة + واتساب + ربط ETA)", "الدفع الأونلاين Paymob: QR في الاستقبال ولينك دفع على واتساب", "مركز المساعدة والتدريب"] },
@@ -22066,7 +22066,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     { b: 16, v: '2026.11.26.16', d: '2026-11-26', t: ["تقرير الشهر اللي فات بيظهر للأدمن تلقائي أول ما الشهر يتغيّر (إيراد/حجوزات/مرضى جداد)","PIN الأمان (المزيد ← 🛡️): مسح دفعة/ملف مريض/روشتة/أشعة بيحتاج PIN من غير الأدمن"] },
     { b: 17, v: '2026.11.26.17', d: '2026-11-26', t: ["🎁 المرضى والولاء (المزيد): رابط خاص للمريض يشوف مواعيده وحسابه، كوبونات خصم، ونقاط ولاء","صفحة حجز أونلاين book.html للمرضى (من غير تسجيل دخول)"] },
     { b: 18, v: '2026.11.26.18', d: '2026-11-26', t: ["إقرارات الموافقة بتتغيّر حسب التخصص (طب بشري / علاج طبيعي)","صفحة privacy.html لسياسة الخصوصية، ومرتبطة بصفحة الحجز ورابط المريض","تسريع شاشة الحسابات مع الحجوزات الكتير (عرض 300 صف ومعاه «عرض المزيد»)"] },
-    { b: 19, v: '2026.11.26.19', d: '2026-11-26', t: ["وضع توفير القراءات (المزيد ← 🛡️): الجهاز يسمع آخر 6/12/24 شهر بس عشان يقلل قراءات Firebase في العيادات الكبيرة"] }
+    { b: 19, v: '2026.11.26.19', d: '2026-11-26', t: ["وضع توفير القراءات (المزيد ← 🛡️): الجهاز يسمع آخر 6/12/24 شهر بس عشان يقلل قراءات Firebase في العيادات الكبيرة"] },
+    { b: 22, v: '2026.11.26.22', d: '2026-11-26', t: ["المسح الذكي بيشتغل عن طريق مركز VYORA من غير ما العيادة تحتاج إعدادات سيرفر"] },
+    { b: 21, v: '2026.11.26.21', d: '2026-11-26', t: ["📷 المسح الذكي: صوّر روشتة بخط اليد أو كشف أو تحاليل أو فاتورة وبيتقري ويتسجّل بعد مراجعتك (روشتة / ملف مريض / مصروف)"] },
+    { b: 20, v: '2026.11.26.20', d: '2026-11-26', t: ["بيانات الدعم الفني (الاسم/الواتساب/المواعيد) بتتسجّل تلقائي من إعدادات النشر لكل عيادة"] }
   ];
   window.APP_VERSION = APP_VERSION; window.APP_BUILD = APP_BUILD;
   var $ = function(id){ return document.getElementById(id); };
@@ -22094,6 +22097,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   window.addEventListener('error', function(e){ report('js', e.message, e.filename, e.lineno, e.error && e.error.stack); });
   window.addEventListener('unhandledrejection', function(e){ var r = e.reason; report('promise', (r && (r.message || r.code)) ? ((r.code ? r.code + ': ' : '') + (r.message || '')) : String(r), '', 0, r && r.stack); });
+  window.opsHub = function(){ return { endpoint: cfg.endpoint || '', token: cfg.token || '', clinic: cfg.clinic || (location.hostname + location.pathname) }; };
   window.opsReport = function(msg, extra){ report('manual', msg + (extra ? ' | ' + extra : ''), '', 0, ''); };
   function post(obj){
     if(!cfg.endpoint) return;
@@ -23259,6 +23263,489 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 
 </script><!--/SP-BODY-->
+<!--SC-BODY--><script>
+/* VYORA: المسح الذكي — صوّر أي مستند (روشتة بخط اليد، كشف، تحاليل، فاتورة…) والسيستم يقراه ويسجّله بعد مراجعتك */
+(function(){
+  'use strict';
+  var ov, body, st = { step: 'cap', pages: [], hint: 'auto', ctx: null, rv: null, busy: false, cam: null };
+  var TYPES = {
+    prescription: ['💊', 'روشتة'], patient_file: ['📋', 'كشف / ملف مريض'], lab_report: ['🧪', 'تحاليل / تقرير'], xray_report: ['🩻', 'تقرير أشعة'],
+    expense_receipt: ['🧾', 'مصروف / إيصال'], supplier_invoice: ['📦', 'فاتورة مورد / معمل'], registration_form: ['📝', 'استمارة بيانات'], other: ['📄', 'مستند آخر']
+  };
+  var HINTS = [['auto', '✨ تلقائي'], ['prescription', '💊 روشتة'], ['patient_file', '📋 كشف'], ['lab_report', '🧪 تحاليل'], ['expense_receipt', '🧾 مصروف'], ['supplier_invoice', '📦 فاتورة مورد'], ['registration_form', '📝 استمارة']];
+  var FORMS = ['Tablet', 'Capsule', 'Syrup', 'Suspension', 'Gel', 'Cream', 'Ointment', 'Mouthwash', 'Drops', 'Injection', 'Lozenge', 'Suppository', 'Sachet', 'Spray', 'Solution', 'Paste', 'Toothpaste'];
+  function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function role(){ try{ return window.currentStaff ? currentStaff.role : ''; }catch(e){ return ''; } }
+  function db(){ return window.firestoreDb || null; }
+  function who(){ try{ return getStaffName(); }catch(e){ return ''; } }
+  function toast(m, bad){ try{ finToast(m, bad); }catch(e){ try{ alert(m); }catch(x){} } }
+  function today(){ try{ return todayIso(); }catch(e){ return new Date().toISOString().slice(0, 10); } }
+  function fnum(v){ var n = parseFloat(String(v == null ? '' : v).replace(/[٠-٩]/g, function(c){ return c.charCodeAt(0) - 1632; }).replace(/[^\d.\-]/g, '')); return isNaN(n) ? null : n; }
+  function normPhone(p){ try{ return pfNormPhone(p); }catch(e){ return String(p || '').replace(/\D/g, ''); } }
+  function $(s){ return ov.querySelector(s); }
+
+  /* ============ CSS ============ */
+  function css(){
+    if(document.getElementById('scCss')) return;
+    var s = document.createElement('style'); s.id = 'scCss';
+    s.textContent = '.sc-modal{max-width:1040px!important;width:100%;padding:22px 22px 18px!important}' +
+      '.sc-h{display:flex;align-items:center;gap:10px;margin-bottom:4px}.sc-h h3{margin:0!important}.sc-sub{color:var(--ink-soft);font-size:.82rem;margin:0 0 12px}' +
+      '.sc-drop{border:2px dashed var(--aqua);border-radius:16px;background:var(--pale-aqua);padding:20px;text-align:center;transition:.15s}.sc-drop.over{background:#d3eef0;border-color:var(--teal)}' +
+      '.sc-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0 2px}.sc-b{border:none;border-radius:12px;padding:11px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--teal);color:#fff;display:inline-flex;gap:6px;align-items:center}' +
+      '.sc-b.o{background:#fff;color:var(--deep-teal);border:1.5px solid var(--line)}.sc-b.g{background:var(--gold);color:#3b2a06}.sc-b.r{background:#fbe9e7;color:#b3261e}.sc-b:disabled{opacity:.5;cursor:default}' +
+      '.sc-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.sc-chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:.82rem;cursor:pointer}.sc-chip.on{background:var(--deep-teal);color:#fff;border-color:var(--deep-teal)}' +
+      '.sc-pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:12px 0}.sc-pg{position:relative;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}' +
+      '.sc-pg img{width:100%;height:150px;object-fit:cover;display:block;background:#eee}.sc-pg .t{position:absolute;top:4px;inset-inline-start:4px;background:rgba(0,0,0,.55);color:#fff;border-radius:8px;font-size:.7rem;padding:1px 7px}' +
+      '.sc-pg .a{display:flex;border-top:1px solid var(--line)}.sc-pg .a button{flex:1;border:none;background:#fff;padding:6px 0;cursor:pointer;font-size:.9rem}.sc-pg .a button:hover{background:var(--pale-aqua)}.sc-pg .a button.on{background:var(--pale-aqua);color:var(--teal);font-weight:700}' +
+      '.sc-note{background:#fff8e6;border:1px solid #f0d58a;border-radius:12px;padding:9px 12px;font-size:.78rem;color:#6a4b00;margin:8px 0;line-height:1.7}' +
+      '.sc-ok{background:#e9f7ef;border:1px solid #b9e3c8;color:#17623a}.sc-err{background:#fdecea;border-color:#f3b8b3;color:#8a1d15}' +
+      '.sc-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px}@media(max-width:820px){.sc-grid{grid-template-columns:1fr}}' +
+      '.sc-view{position:sticky;top:0;align-self:start}.sc-view img{width:100%;border-radius:12px;border:1px solid var(--line);cursor:zoom-in;max-height:68vh;object-fit:contain;background:#f4f4f4}.sc-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}' +
+      '.sc-sec{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;background:#fff}.sc-sec>h4{margin:0 0 8px;font-size:.92rem;color:var(--deep-teal)}' +
+      '.sc-f{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.sc-f label{display:block;font-size:.74rem;color:var(--ink-soft);margin-bottom:2px}' +
+      '.sc-f input,.sc-f select,.sc-f textarea,.sc-tb input,.sc-tb select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:.86rem;background:#fff}.sc-f textarea{min-height:56px;resize:vertical}' +
+      '.sc-low input,.sc-low select,.sc-low textarea,input.sc-low,select.sc-low{background:#fff4d6!important;border-color:#e0a945!important}' +
+      '.sc-tb{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:.82rem}.sc-tb th{font-weight:600;text-align:right;color:var(--ink-soft);font-size:.72rem;padding:0 3px}.sc-tb td{padding:0 3px;vertical-align:top}' +
+      '.sc-badge{display:inline-block;border-radius:999px;font-size:.68rem;padding:1px 8px;font-weight:700}.sc-badge.g{background:#e7f6ee;color:#1b6b45}.sc-badge.a{background:#fbf3e3;color:#8a5a00}.sc-badge.r{background:#fdecea;color:#b3261e}' +
+      '.sc-warn{border-radius:10px;padding:7px 10px;font-size:.8rem;margin-bottom:5px;line-height:1.6}.sc-warn.amber{background:#fff4d6;color:#6a4b00}.sc-warn.red{background:#fdecea;color:#8a1d15}.sc-warn.info{background:#eaf4fb;color:#1c4f73}' +
+      '.sc-pt{display:flex;flex-direction:column;gap:5px;margin-top:6px}.sc-pt label{display:flex;gap:8px;align-items:center;border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;cursor:pointer;font-size:.84rem;background:#fff}.sc-pt label.sel{border-color:var(--teal);background:var(--pale-aqua)}' +
+      '.sc-spin{display:flex;flex-direction:column;align-items:center;gap:14px;padding:46px 10px;text-align:center}.sc-spin i{width:46px;height:46px;border-radius:50%;border:5px solid var(--pale-aqua);border-top-color:var(--teal);animation:scSp 1s linear infinite}@keyframes scSp{to{transform:rotate(360deg)}}' +
+      '.sc-foot{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);position:sticky;bottom:-18px;background:#fff}' +
+      '.sc-cam{position:fixed;inset:0;z-index:100600;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}.sc-cam video{max-width:100%;max-height:78vh}' +
+      '.sc-z{position:fixed;inset:0;z-index:100700;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;cursor:zoom-out}.sc-z img{max-width:96vw;max-height:94vh}' +
+      '.sc-x{border:none;background:none;color:#b3261e;cursor:pointer;font-size:1rem;padding:6px}';
+    document.head.appendChild(s);
+  }
+
+  /* ============ صور: تحميل / تدوير / تحسين ============ */
+  var seq = 0;
+  function loadImg(src){ return new Promise(function(res, rej){ var im = new Image(); im.onload = function(){ res(im); }; im.onerror = rej; im.src = src; }); }
+  function fromImage(im){
+    var k = Math.min(1, 2000 / Math.max(im.naturalWidth || im.width, im.naturalHeight || im.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round((im.naturalWidth || im.width) * k)); c.height = Math.max(1, Math.round((im.naturalHeight || im.height) * k));
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    return { id: ++seq, c: c, rot: 0, enh: true };
+  }
+  function addFiles(files){
+    var arr = Array.prototype.slice.call(files || []).filter(function(f){ return /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic)$/i.test(f.name || ''); });
+    if(!arr.length){ toast('اختار صور (JPG / PNG).', true); return; }
+    if(st.pages.length + arr.length > 5){ toast('أقصى حاجة 5 صفحات في المسح الواحد.', true); arr = arr.slice(0, 5 - st.pages.length); }
+    Promise.all(arr.map(function(f){ var u = URL.createObjectURL(f); return loadImg(u).then(function(im){ var p = fromImage(im); URL.revokeObjectURL(u); return p; }); }))
+      .then(function(ps){ st.pages = st.pages.concat(ps); draw(); })
+      .catch(function(){ toast('مقدرتش أقرا الصورة. لو من الآيفون جرّب تصوّر من الكاميرا مباشرة.', true); });
+  }
+  function enhance(cv){
+    var w = cv.width, h = cv.height, ctx = cv.getContext('2d'), sw = Math.max(8, Math.round(w / 20)), sh = Math.max(8, Math.round(h / 20));
+    var sm = document.createElement('canvas'); sm.width = sw; sm.height = sh; var sc = sm.getContext('2d'); sc.imageSmoothingQuality = 'high'; sc.drawImage(cv, 0, 0, sw, sh);
+    var bg = document.createElement('canvas'); bg.width = w; bg.height = h; var bc = bg.getContext('2d'); bc.imageSmoothingEnabled = true; bc.imageSmoothingQuality = 'high'; bc.drawImage(sm, 0, 0, w, h);
+    var d = ctx.getImageData(0, 0, w, h), b = bc.getImageData(0, 0, w, h), a = d.data, q = b.data, i, c, v;
+    for(i = 0; i < a.length; i += 4){ for(c = 0; c < 3; c++){ v = a[i + c] / Math.max(q[i + c] * 1.04, 70) * 238; v = (v - 28) * 1.14; a[i + c] = v < 0 ? 0 : v > 255 ? 255 : v; } }
+    ctx.putImageData(d, 0, 0);
+  }
+  function renderPage(p, maxDim, qual){
+    var c = p.c, sw = c.width, sh = c.height, k = Math.min(1, maxDim / Math.max(sw, sh)), turn = p.rot % 2 === 1, o = document.createElement('canvas');
+    o.width = Math.round((turn ? sh : sw) * k); o.height = Math.round((turn ? sw : sh) * k);
+    var x = o.getContext('2d'); x.translate(o.width / 2, o.height / 2); x.rotate(p.rot * Math.PI / 2); x.drawImage(c, -sw * k / 2, -sh * k / 2, sw * k, sh * k);
+    if(p.enh){ x.setTransform(1, 0, 0, 1, 0, 0); enhance(o); }
+    return o.toDataURL('image/jpeg', qual);
+  }
+
+  /* ============ كاميرا الكمبيوتر ============ */
+  function openCam(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ toast('الكاميرا مش متاحة هنا. استخدم «اختيار صور».', true); return; }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }).then(function(stream){
+      var w = document.createElement('div'); w.className = 'sc-cam'; w.innerHTML = '<video autoplay playsinline muted></video><div class="sc-btns"><button class="sc-b g" id="scSnap">📸 التقط</button><button class="sc-b o" id="scCamX">إغلاق</button></div>';
+      document.body.appendChild(w); var v = w.querySelector('video'); v.srcObject = stream; st.cam = stream;
+      function stop(){ try{ stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} w.remove(); st.cam = null; }
+      w.querySelector('#scCamX').onclick = stop;
+      w.querySelector('#scSnap').onclick = function(){
+        if(!v.videoWidth) return; var c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+        if(st.pages.length >= 5){ toast('وصلت 5 صفحات.', true); stop(); return; }
+        loadImg(c.toDataURL('image/jpeg', .92)).then(function(im){ st.pages.push(fromImage(im)); draw(); toast('✅ اتلقطت صفحة ' + st.pages.length); });
+      };
+    }).catch(function(){ toast('مقدرتش أفتح الكاميرا (الصلاحية مرفوضة).', true); });
+  }
+
+  /* ============ بناء الشاشة ============ */
+  function build(){
+    if(ov) return; css();
+    ov = document.createElement('div'); ov.className = 'booking-modal-overlay'; ov.id = 'scOv';
+    ov.innerHTML = '<div class="booking-modal sc-modal"><button class="modal-close" id="scClose" aria-label="إغلاق">✕</button><div id="scBody"></div></div>';
+    document.body.appendChild(ov); body = ov.querySelector('#scBody');
+    ov.addEventListener('click', function(e){ if(e.target === ov) close(); });
+    ov.querySelector('#scClose').onclick = close;
+    document.addEventListener('paste', function(e){ if(!ov.classList.contains('open') || st.step !== 'cap') return; var fs = []; (e.clipboardData && e.clipboardData.items || []).forEach ? 0 : 0; Array.prototype.forEach.call((e.clipboardData && e.clipboardData.items) || [], function(it){ if(it.kind === 'file'){ var f = it.getAsFile(); if(f) fs.push(f); } }); if(fs.length) addFiles(fs); });
+  }
+  function close(){
+    if(st.busy) return;
+    if(st.step === 'rev' && !st.rv.saved && !confirm('هتقفل من غير ما تحفظ؟ القراءة هتضيع.')) return;
+    ov.classList.remove('open'); try{ st.cam && st.cam.getTracks().forEach(function(t){ t.stop(); }); }catch(e){}
+  }
+  function open(ctx){
+    build(); st = { step: 'cap', pages: [], hint: 'auto', ctx: ctx || null, rv: null, busy: false, cam: null };
+    draw(); ov.classList.add('open');
+  }
+  function draw(){ if(st.step === 'cap') drawCap(); else if(st.step === 'wait') drawWait(); else drawRev(); }
+
+  /* ---------- خطوة 1: التقاط ---------- */
+  function drawCap(){
+    var consent = ''; try{ consent = localStorage.getItem('vyScanOk') || ''; }catch(e){}
+    var h = '<div class="sc-h"><span style="font-size:1.5rem">📷</span><h3>المسح الذكي</h3></div>' +
+      '<p class="sc-sub">صوّر روشتة أو كشف أو تحاليل أو فاتورة — والسيستم يقراها ويجهّز لك البيانات. <b>مفيش حاجة بتتسجل غير بعد ما تراجعها وتوافق.</b></p>';
+    if(st.ctx && st.ctx.name) h += '<div class="sc-note sc-ok">🧑‍⚕️ المسح ده للمريض: <b>' + esc(st.ctx.name) + '</b> <button class="sc-x" id="scCtxX" title="شيل">✕</button></div>';
+    h += '<div class="sc-drop" id="scDrop"><div style="font-size:2.2rem">📄</div><div style="font-weight:700">اسحب الصور هنا أو اضغط على أحد الأزرار</div>' +
+      '<div class="sc-btns"><button class="sc-b g" id="scCam1">📷 صوّر</button><button class="sc-b" id="scPick">🖼️ اختيار صور</button><button class="sc-b o" id="scCam2">💻 كاميرا الكمبيوتر</button></div>' +
+      '<div style="font-size:.74rem;color:var(--ink-soft)">تقدر تلصق صورة بـ Ctrl+V • لحد 5 صفحات</div></div>' +
+      '<input type="file" id="scF1" accept="image/*" capture="environment" style="display:none"><input type="file" id="scF2" accept="image/*" multiple style="display:none">';
+    if(st.pages.length){
+      h += '<div class="sc-pages">' + st.pages.map(function(p, i){
+        return '<div class="sc-pg"><span class="t">' + (i + 1) + '</span><img src="' + renderPage(p, 360, .6) + '"><div class="a"><button data-a="l" data-i="' + i + '" title="لف يسار">↺</button><button data-a="r" data-i="' + i + '" title="لف يمين">↻</button>' +
+          '<button data-a="e" data-i="' + i + '" class="' + (p.enh ? 'on' : '') + '" title="تحسين الورق">✨</button>' + (i > 0 ? '<button data-a="m" data-i="' + i + '" title="قدّم">▶</button>' : '') + '<button data-a="d" data-i="' + i + '" title="امسح">🗑</button></div></div>';
+      }).join('') + '</div>';
+    }
+    h += '<div style="font-size:.8rem;font-weight:700;margin-top:6px">نوع المستند</div><div class="sc-chips">' + HINTS.map(function(x){ return '<button class="sc-chip' + (st.hint === x[0] ? ' on' : '') + '" data-h="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
+    h += '<div class="sc-note">🔒 الصورة بتتبعت مرة واحدة للذكاء الاصطناعي (Claude) عشان تتقري، من غير ما تتخزن عنده. ماتصوّرش حاجة مش لازمة، وراجع البيانات دايمًا — القراءة بتغلط أحيانًا مع الخطوط الصعبة.' +
+      '<label style="display:flex;gap:6px;align-items:center;margin-top:6px"><input type="checkbox" id="scConsent"' + (consent ? ' checked' : '') + '> أوافق وأفهم إن المريض ممكن يطلب معرفة ده (مذكور في سياسة الخصوصية)</label></div>';
+    h += '<div class="sc-foot"><span style="font-size:.78rem;color:var(--ink-soft)">' + (st.pages.length ? st.pages.length + ' صفحة جاهزة' : 'لسه مفيش صور') + '</span><button class="sc-b" id="scGo"' + (st.pages.length ? '' : ' disabled') + '>🔍 اقرأ المستند</button></div>';
+    body.innerHTML = h;
+    var f1 = $('#scF1'), f2 = $('#scF2'), dz = $('#scDrop');
+    $('#scCam1').onclick = function(){ f1.value = ''; f1.click(); }; $('#scPick').onclick = function(){ f2.value = ''; f2.click(); }; $('#scCam2').onclick = openCam;
+    f1.onchange = f2.onchange = function(){ addFiles(this.files); };
+    dz.ondragover = function(e){ e.preventDefault(); dz.classList.add('over'); }; dz.ondragleave = function(){ dz.classList.remove('over'); };
+    dz.ondrop = function(e){ e.preventDefault(); dz.classList.remove('over'); addFiles(e.dataTransfer.files); };
+    var cx = $('#scCtxX'); if(cx) cx.onclick = function(){ st.ctx = null; draw(); };
+    Array.prototype.forEach.call(body.querySelectorAll('[data-h]'), function(b){ b.onclick = function(){ st.hint = b.getAttribute('data-h'); draw(); }; });
+    Array.prototype.forEach.call(body.querySelectorAll('.sc-pg [data-a]'), function(b){
+      b.onclick = function(){ var i = +b.getAttribute('data-i'), a = b.getAttribute('data-a'), p = st.pages[i];
+        if(a === 'l') p.rot = (p.rot + 3) % 4; else if(a === 'r') p.rot = (p.rot + 1) % 4; else if(a === 'e') p.enh = !p.enh;
+        else if(a === 'd') st.pages.splice(i, 1); else if(a === 'm'){ st.pages.splice(i, 1); st.pages.splice(i - 1, 0, p); }
+        draw(); };
+    });
+    $('#scConsent').onchange = function(){ try{ localStorage.setItem('vyScanOk', this.checked ? '1' : ''); }catch(e){} };
+    $('#scGo').onclick = function(){ if(!$('#scConsent').checked){ toast('وافق على الإشعار الأول.', true); return; } try{ localStorage.setItem('vyScanOk', '1'); }catch(e){} run(); };
+  }
+
+  /* ---------- خطوة 2: القراءة ---------- */
+  var MSGS = ['بقرا الخط…', 'بفهم نوع المستند…', 'بطابق الأدوية…', 'بظبّط البيانات…'];
+  function drawWait(){
+    body.innerHTML = '<div class="sc-spin"><i></i><div style="font-weight:700" id="scMsg">' + MSGS[0] + '</div><div style="font-size:.8rem;color:var(--ink-soft)">ممكن ياخد 10 – 30 ثانية حسب عدد الصفحات</div></div>';
+    var n = 0; clearInterval(st.tm); st.tm = setInterval(function(){ var m = $('#scMsg'); if(!m){ clearInterval(st.tm); return; } m.textContent = MSGS[++n % MSGS.length]; }, 2600);
+  }
+  /* المسح بيتبعت للمركز (Apps Script) لو متظبط، وإلا لدالة السيرفر (Firebase) */
+  function scanCall(b){
+    var h = null; try{ h = window.opsHub && window.opsHub(); }catch(e){}
+    if(h && h.endpoint && h.token){
+      var o = { token: h.token, clinic: h.clinic, type: 'scan', images: b.images, hint: b.hint, patientName: b.patientName };
+      return fetch(h.endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(o) })
+        .then(function(r){ return r.json(); }, function(){ var e = new Error('مقدرتش أوصل لمركز VYORA. اتأكد من النت وجرّب تاني.'); throw e; })
+        .then(function(j){ if(j && j.error){ var e = new Error(j.message || j.error); e.data = j; throw e; } return j; });
+    }
+    return einvCall('scanDoc', b);
+  }
+  function run(){
+    st.step = 'wait'; st.busy = true; drawWait();
+    var images = st.pages.map(function(p){ return renderPage(p, 1800, .85); });
+    var call; try{ call = scanCall({ images: images, hint: st.hint, patientName: st.ctx ? st.ctx.name : '' }); }catch(e){ call = Promise.reject(e); }
+    call.then(function(j){ st.busy = false; clearInterval(st.tm); st.rv = makeReview(j.result || {}, j.left); st.step = 'rev'; draw(); })
+      .catch(function(e){
+        st.busy = false; clearInterval(st.tm); st.step = 'cap'; draw();
+        var d = e && e.data || {}, m = e && e.message || '';
+        if(d.error === 'NO_KEY' || d.error === 'DISABLED'){ var hub = window.opsHub && window.opsHub().endpoint; var box = '<div class="sc-note sc-err">🤖 المسح الذكي لسه مش مفعّل في العيادة دي. ' + (hub ? 'كلّم الدعم الفني عشان يفعّله.' : (role() === 'admin' ? '<button class="sc-b" id="scKey" style="margin-top:6px">تفعيل دلوقتي (مفتاح Anthropic)</button>' : 'اطلب من الأدمن يفعّله.')) + '</div>'; body.insertAdjacentHTML('afterbegin', box); var k = $('#scKey'); if(k) k.onclick = function(){ close(); try{ xrvAiKey(); }catch(x){} }; return; }
+        if(/Failed to fetch|NetworkError|HTTP 404|Load failed/i.test(m)) m = 'مقدرتش أوصل لخدمة المسح. اتأكد من النت، ولو أول مرة: لازم دوال السيرفر تتنشر (خطة Blaze) — اكتب لفريق الدعم.';
+        body.insertAdjacentHTML('afterbegin', '<div class="sc-note sc-err">⚠️ ' + esc(m || 'حصل خطأ في القراءة') + '</div>');
+      });
+  }
+
+  /* ============ مراجعة النتيجة ============ */
+  function arr(a){ return Array.isArray(a) ? a : []; }
+  function s_(v){ return v == null ? '' : String(v); }
+  function makeReview(r, left){
+    var pt = r.patient || {}, type = TYPES[r.docType] ? r.docType : (st.hint !== 'auto' && TYPES[st.hint] ? st.hint : 'other');
+    if(st.hint !== 'auto' && TYPES[st.hint] && (r.docTypeConfidence || 0) < 0.6) type = st.hint;
+    var ex = r.expense || {};
+    var rv = { type: type, conf: +r.docTypeConfidence || 0, left: left, date: /^\d{4}-\d{2}-\d{2}$/.test(s_(r.date)) ? r.date : today(), saved: false,
+      pt: { name: s_(pt.name) || (st.ctx ? st.ctx.name : ''), phone: s_(pt.phone), age: pt.age == null ? '' : s_(pt.age), gender: pt.gender === 'male' || pt.gender === 'female' ? pt.gender : '' },
+      sel: '', saveImgs: true,
+      complaint: s_(r.complaint), diagnosis: s_(r.diagnosis), history: s_(r.medicalHistory), allergy: s_(r.allergies), meds: s_(r.currentMeds), notes: [s_(r.treatmentNotes), s_(r.notes)].filter(Boolean).join('\n'),
+      summary: s_(r.summary), raw: s_(r.rawText), unclear: arr(r.unclear), warns: arr(r.warnings).map(String), doctor: s_(r.doctorName),
+      drugs: arr(r.drugs).map(mapDrug), xrays: arr(r.xrayRequests).map(String), labs: arr(r.labResults),
+      ex: { vendor: s_(ex.vendor), no: s_(ex.invoiceNo), total: ex.total == null ? '' : s_(ex.total), cat: guessCat(type, ex.categoryGuess, ex.vendor), method: /card|فيزا|visa/i.test(s_(ex.paymentMethod)) ? 'card' : 'cash', items: arr(ex.items) },
+      page: 0 };
+    // مطابقة المريض
+    var cands = candidates(rv.pt); rv.cands = cands;
+    if(st.ctx && st.ctx.key) rv.sel = st.ctx.key; else if(cands.length && cands[0].sc >= 60) rv.sel = cands[0].key; else rv.sel = (rv.pt.name && /^01[0-9]{9}$/.test(normPhone(rv.pt.phone))) ? 'new' : '';
+    if(rv.sel && st.ctx && st.ctx.key === rv.sel && !cands.some(function(c){ return c.key === rv.sel; })) cands.unshift({ key: st.ctx.key, name: st.ctx.name, phone: st.ctx.phone || '', sc: 100 });
+    return rv;
+  }
+  function guessCat(type, g, vendor){
+    var t = s_(g) + ' ' + s_(vendor); if(type === 'supplier_invoice'){ if(/معمل|lab/i.test(t)) return 'معمل'; return 'ماتريال'; }
+    if(/كهرب|مياه|water|electric/i.test(t)) return 'كهرباء ومياه'; if(/إيجار|ايجار|rent/i.test(t)) return 'إيجار'; if(/صيان|maint/i.test(t)) return 'صيانة'; if(/تسويق|اعلان|إعلان|ads/i.test(t)) return 'تسويق';
+    if(/معمل|lab/i.test(t)) return 'معمل'; if(/ماتريال|مواد|material/i.test(t)) return 'ماتريال'; if(/أدوات|مستلزمات|supplies/i.test(t)) return 'أدوات ومستلزمات'; return 'نثريات';
+  }
+  function candidates(pt){
+    var all = []; try{ all = pfAllPatients(); }catch(e){}
+    var np = normPhone(pt.phone), nn = ''; try{ nn = pfNormName(pt.name); }catch(e){ nn = s_(pt.name).toLowerCase(); }
+    var tk = nn.split(' ').filter(function(t){ return t.length >= 3; }), out = [];
+    all.forEach(function(x){
+      var sc = 0; if(np.length >= 10 && normPhone(x.phone) === np) sc += 60;
+      if(tk.length){ var xn = ''; try{ xn = pfNormName(x.name); }catch(e){ xn = s_(x.name).toLowerCase(); } var xt = xn.split(' ').filter(function(t){ return t.length >= 3; }), common = tk.filter(function(t){ return xt.indexOf(t) !== -1; }).length;
+        if(common) sc += Math.round(40 * common / Math.max(tk.length, xt.length, 1)); if(nn && xn === nn) sc += 20; }
+      if(sc >= 25) out.push({ key: x.key, name: x.name, phone: x.phone, sc: sc });
+    });
+    return out.sort(function(a, b){ return b.sc - a.sc; }).slice(0, 4);
+  }
+  function mapDrug(d){
+    var name = s_(d.name).trim(), hit = null, ent = null;
+    try{ var found = rxSearch(name); ent = found && found[0] || null; if(!ent && d.generic){ found = rxSearch(d.generic); ent = found && found[0] || null; } }catch(e){}
+    var low = name.toLowerCase().replace(/[^a-z0-9؀-ۿ]/g, '');
+    if(ent){ var gk = s_(ent.g).toLowerCase().replace(/[^a-z0-9؀-ۿ]/g, ''); var bk = arr(ent.brands).some(function(b){ var x = s_(b).toLowerCase().replace(/[^a-z0-9؀-ۿ]/g, ''); return x && (x === low || low.indexOf(x) === 0 || x.indexOf(low) === 0); });
+      if(gk === low || bk || (gk && low && (gk.indexOf(low) === 0 || low.indexOf(gk) === 0))) hit = ent; }
+    var form = FORMS.indexOf(s_(d.form)) !== -1 ? d.form : (hit && hit.def && hit.def.f) || 'Tablet';
+    var ins = s_(d.instructions), tm = /بعد/.test(ins) ? 'after' : /قبل/.test(ins) ? 'before' : /مع\s*الاكل|مع الأكل/.test(ins) ? 'with' : 'none';
+    var fr = fnum(d.frequency), un = fnum(d.unit), dy = fnum(d.days), cf = typeof d.confidence === 'number' ? d.confidence : 0.8;
+    return { name: hit ? hit.g : name, brand: hit && name && name.toLowerCase() !== s_(hit.g).toLowerCase() ? name : '', form: form, strength: s_(d.strength), freq: fr, unit: un != null ? un : (fr ? 1 : null), days: dy, timing: tm,
+      customSig: (fr && dy) ? '' : ins, note: (fr && dy && ins && tm === 'none') ? ins : '', matched: !!hit, conf: cf, orig: name };
+  }
+
+  function sel(opts, val, k, extra){ return '<select data-k="' + k + '"' + (extra || '') + '>' + opts.map(function(o){ return '<option value="' + esc(o[0]) + '"' + (String(o[0]) === String(val) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>'; }
+  function inp(k, v, ph, ex){ return '<input data-k="' + k + '" value="' + esc(v) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + (ex || '') + '>'; }
+  function fld(l, h, cls){ return '<div class="' + (cls || '') + '"><label>' + l + '</label>' + h + '</div>'; }
+
+  function drawRev(){
+    var rv = st.rv, t = TYPES[rv.type], medical = ['prescription', 'patient_file', 'lab_report', 'xray_report', 'registration_form', 'other'].indexOf(rv.type) !== -1;
+    var h = '<div class="sc-h"><span style="font-size:1.4rem">' + t[0] + '</span><h3>راجع اللي اتقرا</h3><span class="sc-badge ' + (rv.conf >= .8 ? 'g' : rv.conf >= .5 ? 'a' : 'r') + '">ثقة النوع ' + Math.round(rv.conf * 100) + '%</span></div>';
+    h += '<p class="sc-sub">الخانات الصفراء = القراءة مش متأكدة منها. عدّل أي حاجة قبل الحفظ.' + (rv.left != null ? ' (فاضل ' + rv.left + ' مسح النهارده)' : '') + '</p>';
+    h += '<div class="sc-grid"><div class="sc-view"><div class="sc-tabs">' + st.pages.map(function(p, i){ return '<button class="sc-chip' + (i === rv.page ? ' on' : '') + '" data-pg="' + i + '">صفحة ' + (i + 1) + '</button>'; }).join('') + '</div>' +
+      '<img id="scBig" src="' + renderPage(st.pages[rv.page] || st.pages[0], 1100, .8) + '" alt="المستند"></div><div id="scForm">';
+    h += '<div class="sc-sec"><h4>نوع المستند</h4><div class="sc-chips">' + Object.keys(TYPES).map(function(k){ return '<button class="sc-chip' + (rv.type === k ? ' on' : '') + '" data-ty="' + k + '">' + TYPES[k][0] + ' ' + TYPES[k][1] + '</button>'; }).join('') + '</div></div>';
+    if(rv.summary) h += '<div class="sc-warn info">📝 ' + esc(rv.summary) + '</div>';
+    rv.warns.forEach(function(w){ h += '<div class="sc-warn amber">⚠️ ' + esc(w) + '</div>'; });
+    if(rv.unclear.length) h += '<div class="sc-warn amber">🔎 مش واضح في المستند: ' + rv.unclear.map(esc).join(' • ') + '</div>';
+    if(medical){
+      h += '<div class="sc-sec"><h4>🧑 المريض</h4><div class="sc-f">' + fld('الاسم', inp('pt.name', rv.pt.name)) + fld('الموبايل', inp('pt.phone', rv.pt.phone, '01xxxxxxxxx', ' dir="ltr" style="text-align:left"')) + fld('السن', inp('pt.age', rv.pt.age, '', ' inputmode="numeric"')) + fld('النوع', sel([['', '—'], ['male', 'ذكر'], ['female', 'أنثى']], rv.pt.gender, 'pt.gender')) + '</div>';
+      h += '<div class="sc-pt">' + rv.cands.map(function(c){ return '<label class="' + (rv.sel === c.key ? 'sel' : '') + '"><input type="radio" name="scPt" value="' + esc(c.key) + '"' + (rv.sel === c.key ? ' checked' : '') + '> <span>' + esc(c.name) + ' — <span dir="ltr">' + esc(c.phone) + '</span></span> <span class="sc-badge ' + (c.sc >= 60 ? 'g' : 'a') + '">' + (c.sc >= 60 ? 'مطابق' : 'محتمل') + '</span></label>'; }).join('') +
+        '<label class="' + (rv.sel === 'new' ? 'sel' : '') + '"><input type="radio" name="scPt" value="new"' + (rv.sel === 'new' ? ' checked' : '') + '> <span>➕ مريض جديد بالبيانات اللي فوق</span></label>' +
+        '<label class="' + (rv.sel === '' ? 'sel' : '') + '"><input type="radio" name="scPt" value=""' + (rv.sel === '' ? ' checked' : '') + '> <span>من غير ربط بمريض</span></label></div></div>';
+    }
+    h += '<div class="sc-sec"><h4>📅 التاريخ</h4><div class="sc-f">' + fld('تاريخ المستند', inp('date', rv.date, '', ' type="date"')) + '</div></div>';
+    if(rv.type === 'prescription') h += revRx(rv);
+    else if(rv.type === 'patient_file') h += revFile(rv);
+    else if(rv.type === 'lab_report' || rv.type === 'xray_report') h += revReport(rv);
+    else if(rv.type === 'expense_receipt' || rv.type === 'supplier_invoice') h += revExp(rv);
+    else if(rv.type === 'registration_form') h += '<div class="sc-sec"><h4>📝 استمارة بيانات</h4><div class="sc-f">' + fld('شكوى / سبب الزيارة', '<textarea data-k="complaint">' + esc(rv.complaint) + '</textarea>', 'full') + fld('ملاحظات', '<textarea data-k="notes">' + esc(rv.notes) + '</textarea>') + '</div></div>';
+    else h += '<div class="sc-sec"><h4>📄 مستند</h4><div class="sc-f">' + fld('وصف', '<textarea data-k="summary">' + esc(rv.summary) + '</textarea>') + '</div></div>';
+    h += '<details class="sc-sec"><summary style="cursor:pointer;font-weight:700">🔤 النص الكامل اللي اتقرا</summary><textarea data-k="raw" style="width:100%;min-height:110px;margin-top:8px;border:1.5px solid var(--line);border-radius:10px;padding:8px;font:inherit;font-size:.82rem">' + esc(rv.raw) + '</textarea></details>';
+    h += '</div></div>';
+    h += '<div class="sc-foot"><label style="font-size:.8rem;display:flex;gap:6px;align-items:center"><input type="checkbox" id="scImgs"' + (rv.saveImgs ? ' checked' : '') + '> احفظ صور المستند الأصلية في ملف المريض</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="sc-b o" id="scBack">↩ رجوع</button><button class="sc-b g" id="scSave">' + saveLabel(rv.type) + '</button></div></div><div id="scMsg2" class="sc-note" style="display:none"></div>';
+    body.innerHTML = h; bindRev();
+  }
+  function saveLabel(t){ return { prescription: '💾 احفظ الروشتة', patient_file: '💾 أضف لملف المريض', lab_report: '💾 احفظ في ملف المريض', xray_report: '💾 احفظ في ملف المريض', expense_receipt: '🧾 كمّل تسجيل المصروف', supplier_invoice: '🧾 كمّل تسجيل الفاتورة', registration_form: '💾 احفظ / افتح حجز', other: '💾 احفظ' }[t] || '💾 احفظ'; }
+  function lowCls(c){ return c < 0.7 ? ' sc-low' : ''; }
+  function revRx(rv){
+    var h = '<div class="sc-sec"><h4>💊 الأدوية (' + rv.drugs.length + ')</h4><div style="overflow-x:auto"><table class="sc-tb"><thead><tr><th>الدواء</th><th>الشكل</th><th>التركيز</th><th>مرات</th><th>وحدة</th><th>أيام</th><th>تعليمات</th><th></th></tr></thead><tbody>';
+    rv.drugs.forEach(function(d, i){
+      h += '<tr class="' + lowCls(d.conf).trim() + '"><td style="min-width:150px"><input data-d="' + i + '.name" value="' + esc(d.name) + '" class="' + lowCls(d.conf).trim() + '"><div style="margin-top:2px">' + (d.matched ? '<span class="sc-badge g">✓ من الدليل</span>' : '<span class="sc-badge a">⚠️ غير موجود بالدليل</span>') + (d.brand ? ' <span class="sc-badge g">' + esc(d.brand) + '</span>' : '') + '</div></td>' +
+        '<td style="min-width:96px">' + sel(FORMS.map(function(f){ return [f, f]; }), d.form, '', ' data-d="' + i + '.form"') + '</td><td style="min-width:80px"><input data-d="' + i + '.strength" value="' + esc(d.strength) + '"></td>' +
+        '<td style="width:54px"><input data-d="' + i + '.freq" value="' + (d.freq == null ? '' : d.freq) + '" inputmode="numeric"></td><td style="width:54px"><input data-d="' + i + '.unit" value="' + (d.unit == null ? '' : d.unit) + '" inputmode="decimal"></td><td style="width:54px"><input data-d="' + i + '.days" value="' + (d.days == null ? '' : d.days) + '" inputmode="numeric"></td>' +
+        '<td style="min-width:130px"><input data-d="' + i + '.customSig" value="' + esc(d.customSig || d.note) + '" placeholder="مثلاً: بعد الأكل"></td><td><button class="sc-x" data-rd="' + i + '" title="شيل">🗑</button></td></tr>';
+    });
+    h += '</tbody></table></div><button class="sc-b o" id="scAddDrug" style="margin-top:4px">➕ دواء</button>';
+    var ck = rxWarns(rv); if(ck) h += '<div style="margin-top:8px">' + ck + '</div>';
+    h += '</div><div class="sc-sec"><h4>📋 بيانات الروشتة</h4><div class="sc-f">' + fld('التشخيص', inp('diagnosis', rv.diagnosis)) + fld('حساسية', inp('allergy', rv.allergy)) + fld('أدوية حالية', inp('meds', rv.meds)) + fld('طلبات أشعة (سطر لكل طلب)', '<textarea data-k="xraysText">' + esc(rv.xrays.join('\n')) + '</textarea>') + '</div></div>';
+    return h;
+  }
+  function rxWarns(rv){
+    try{
+      var ds = rv.drugs.map(function(d){ return Object.assign({}, d); }); ds.forEach(function(d){ try{ rxUpgradeLegacy(d); }catch(e){} });
+      var w = rxCheck({ drugs: ds, age: fnum(rv.pt.age), weight: null, allergy: rv.allergy, meds: rv.meds, pregnant: false, mh: {} });
+      return w.filter(function(x){ return x.lv === 'red' || x.lv === 'amber'; }).map(function(x){ return '<div class="sc-warn ' + x.lv + '">' + esc(x.t) + '</div>'; }).join('');
+    }catch(e){ return ''; }
+  }
+  function revFile(rv){
+    return '<div class="sc-sec"><h4>📋 بيانات الكشف</h4><div class="sc-f">' + fld('الشكوى', '<textarea data-k="complaint">' + esc(rv.complaint) + '</textarea>') + fld('التشخيص', '<textarea data-k="diagnosis">' + esc(rv.diagnosis) + '</textarea>') +
+      fld('التاريخ المرضي', '<textarea data-k="history">' + esc(rv.history) + '</textarea>') + fld('حساسية', inp('allergy', rv.allergy)) + fld('أدوية حالية', inp('meds', rv.meds)) + fld('ملاحظات العلاج', '<textarea data-k="notes">' + esc(rv.notes) + '</textarea>') + '</div>' +
+      '<p class="chart-hint" style="margin:8px 0 0">الخانات اللي بالفعل مكتوبة في الملف مش هتتمسح — الجديد بيتضاف تحتها بتاريخ المسح.</p></div>';
+  }
+  function revReport(rv){
+    var h = '<div class="sc-sec"><h4>' + (rv.type === 'xray_report' ? '🩻 تقرير الأشعة' : '🧪 نتايج التحاليل') + '</h4><div class="sc-f">' + fld('عنوان', inp('title', rv.title || '', rv.type === 'xray_report' ? 'مثلاً: بانوراما' : 'مثلاً: صورة دم كاملة')) + fld('الملخص', '<textarea data-k="summary">' + esc(rv.summary) + '</textarea>') + '</div>';
+    if(rv.labs.length) h += '<div style="overflow-x:auto"><table class="sc-tb" style="margin-top:6px"><thead><tr><th>التحليل</th><th>النتيجة</th><th>الوحدة</th><th>الطبيعي</th><th></th></tr></thead><tbody>' + rv.labs.map(function(l, i){
+      var fl = s_(l.flag); return '<tr><td><input data-l="' + i + '.test" value="' + esc(l.test) + '"></td><td><input data-l="' + i + '.value" value="' + esc(l.value) + '"></td><td><input data-l="' + i + '.unit" value="' + esc(l.unit) + '"></td><td><input data-l="' + i + '.range" value="' + esc(l.range) + '"></td><td>' + (fl && /high|low|عال|منخفض|H|L/i.test(fl) ? '<span class="sc-badge r">' + esc(fl) + '</span>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    return h + '</div>';
+  }
+  function revExp(rv){
+    var cats = []; try{ cats = finCats(); }catch(e){ cats = ['ماتريال', 'معمل', 'إيجار', 'مرتبات', 'كهرباء ومياه', 'صيانة', 'تسويق', 'أدوات ومستلزمات', 'نثريات', 'أخرى']; }
+    var h = '<div class="sc-sec"><h4>' + (rv.type === 'supplier_invoice' ? '📦 فاتورة المورد' : '🧾 الإيصال') + '</h4><div class="sc-f">' + fld('الجهة / المورّد', inp('ex.vendor', rv.ex.vendor)) + fld('رقم الفاتورة', inp('ex.no', rv.ex.no)) +
+      fld('الإجمالي (ج)', inp('ex.total', rv.ex.total, '', ' inputmode="decimal"')) + fld('التصنيف', sel(cats.map(function(c){ return [c, c]; }), rv.ex.cat, 'ex.cat')) + fld('وسيلة الدفع', sel([['cash', 'كاش'], ['card', 'كارت']], rv.ex.method, 'ex.method')) + '</div>';
+    if(rv.ex.items.length){ var sum = 0; h += '<div style="overflow-x:auto"><table class="sc-tb" style="margin-top:6px"><thead><tr><th>البند</th><th>كمية</th><th>سعر</th><th>إجمالي</th></tr></thead><tbody>' + rv.ex.items.map(function(it){ sum += fnum(it.total) || 0; return '<tr><td>' + esc(it.name) + '</td><td>' + esc(it.qty) + '</td><td>' + esc(it.unitPrice) + '</td><td>' + esc(it.total) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+      var tot = fnum(rv.ex.total); if(tot != null && sum && Math.abs(sum - tot) > 1) h += '<div class="sc-warn amber">⚠️ مجموع البنود (' + sum + ') مش مطابق للإجمالي (' + tot + ').</div>'; }
+    return h + '<p class="chart-hint" style="margin:8px 0 0">هتختار «اتدفع من» وتأكد في الخطوة الجاية، والصورة بتتحفظ مع المصروف.</p></div>';
+  }
+
+  /* ---------- ربط الأحداث ---------- */
+  function setPath(o, path, val){ var p = path.split('.'), t = o; for(var i = 0; i < p.length - 1; i++) t = t[p[i]]; t[p[p.length - 1]] = val; }
+  function collect(){
+    var rv = st.rv, f = ov.querySelector('#scForm'); if(!f) return;
+    Array.prototype.forEach.call(f.querySelectorAll('[data-k]'), function(e){
+      var k = e.getAttribute('data-k'); if(k === 'xraysText'){ rv.xrays = e.value.split('\n').map(function(x){ return x.trim(); }).filter(Boolean); return; }
+      try{ setPath(rv, k, e.value); }catch(x){} });
+    Array.prototype.forEach.call(f.querySelectorAll('[data-d]'), function(e){ var m = /^(\d+)\.(\w+)$/.exec(e.getAttribute('data-d')); if(!m) return; var d = rv.drugs[+m[1]]; if(!d) return; var k = m[2], v = e.value;
+      if(k === 'freq' || k === 'days'){ d[k] = fnum(v); } else if(k === 'unit'){ d.unit = fnum(v); } else if(k === 'customSig'){ d.customSig = v; d.note = ''; } else d[k] = v; });
+    Array.prototype.forEach.call(f.querySelectorAll('[data-l]'), function(e){ var m = /^(\d+)\.(\w+)$/.exec(e.getAttribute('data-l')); if(m && rv.labs[+m[1]]) rv.labs[+m[1]][m[2]] = e.value; });
+    var im = ov.querySelector('#scImgs'); if(im) rv.saveImgs = im.checked;
+    var r = f.querySelector('input[name=scPt]:checked'); if(r) rv.sel = r.value;
+  }
+  function bindRev(){
+    var rv = st.rv;
+    Array.prototype.forEach.call(body.querySelectorAll('[data-pg]'), function(b){ b.onclick = function(){ collect(); rv.page = +b.getAttribute('data-pg'); drawRev(); }; });
+    Array.prototype.forEach.call(body.querySelectorAll('[data-ty]'), function(b){ b.onclick = function(){ collect(); rv.type = b.getAttribute('data-ty'); rv.conf = Math.max(rv.conf, .5); drawRev(); }; });
+    Array.prototype.forEach.call(body.querySelectorAll('[data-rd]'), function(b){ b.onclick = function(){ collect(); rv.drugs.splice(+b.getAttribute('data-rd'), 1); drawRev(); }; });
+    var ad = $('#scAddDrug'); if(ad) ad.onclick = function(){ collect(); rv.drugs.push({ name: '', brand: '', form: 'Tablet', strength: '', freq: null, unit: 1, days: null, timing: 'none', customSig: '', note: '', matched: false, conf: 0.5, orig: '' }); drawRev(); };
+    var big = $('#scBig'); if(big) big.onclick = function(){ var z = document.createElement('div'); z.className = 'sc-z'; z.innerHTML = '<img src="' + renderPage(st.pages[rv.page], 2000, .9) + '">'; z.onclick = function(){ z.remove(); }; document.body.appendChild(z); };
+    Array.prototype.forEach.call(body.querySelectorAll('input[name=scPt]'), function(r){ r.onchange = function(){ collect(); Array.prototype.forEach.call(body.querySelectorAll('.sc-pt label'), function(l){ l.classList.toggle('sel', l.querySelector('input').checked); }); }; });
+    // إعادة مطابقة المريض لما الاسم/الموبايل يتغيروا
+    Array.prototype.forEach.call(body.querySelectorAll('[data-k="pt.name"],[data-k="pt.phone"]'), function(e){ e.onchange = function(){ collect(); rv.cands = candidates(rv.pt); if(rv.sel && rv.sel !== 'new' && !rv.cands.some(function(c){ return c.key === rv.sel; })) rv.sel = ''; drawRev(); }; });
+    // تحديث تحذيرات الدواء عند تغيير الجرعات
+    Array.prototype.forEach.call(body.querySelectorAll('[data-d]'), function(e){ e.onchange = function(){ collect(); drawRev(); }; });
+    $('#scBack').onclick = function(){ collect(); if(!confirm('الرجوع هيمسح القراءة الحالية وتقدر تقرا تاني. تكمّل؟')) return; st.step = 'cap'; st.rv = null; draw(); };
+    $('#scSave').onclick = function(){ collect(); save(); };
+  }
+
+  /* ============ الحفظ ============ */
+  function msg(t, cls){ var m = $('#scMsg2'); if(!m) return; m.className = 'sc-note ' + (cls || ''); m.style.display = ''; m.innerHTML = t; try{ m.scrollIntoView({ block: 'nearest' }); }catch(e){} }
+  function patientObj(rv){
+    if(rv.sel && rv.sel !== 'new'){ var c = rv.cands.filter(function(x){ return x.key === rv.sel; })[0]; if(c) return { key: c.key, name: c.name, phone: c.phone }; if(st.ctx && st.ctx.key === rv.sel) return st.ctx; }
+    if(rv.sel === 'new'){ var ph = normPhone(rv.pt.phone); if(!rv.pt.name.trim() || !/^01[0-9]{9}$/.test(ph)) return { err: 'المريض الجديد محتاج اسم وموبايل صحيح (11 رقم يبدأ بـ 01).' }; return { key: ph + '|' + rv.pt.name.trim().toLowerCase(), name: rv.pt.name.trim(), phone: ph, isNew: true }; }
+    return null;
+  }
+  function attachImages(p, rv, title){
+    if(!rv.saveImgs || !p || !p.key) return Promise.resolve(0);
+    var jobs = st.pages.map(function(pg, i){ var img = renderPage(pg, 1200, .72);
+      return db().collection('patientXrays').add({ patientKey: p.key, name: p.name, kind: 'doc', takenIso: rv.date || today(), tooth: '', note: (title || TYPES[rv.type][1]) + (st.pages.length > 1 ? ' (' + (i + 1) + '/' + st.pages.length + ')' : '') + ' — مسح ذكي', imageData: img, scan: true, ts: Date.now() + i }); });
+    return Promise.all(jobs).then(function(){ return jobs.length; });
+  }
+  function done(html){
+    st.rv.saved = true; st.busy = false;
+    body.innerHTML = '<div class="sc-spin" style="padding:34px 10px"><div style="font-size:3rem">✅</div><div style="font-weight:700;font-size:1.05rem">' + html + '</div><div class="sc-btns"><button class="sc-b g" id="scMore">📷 مسح مستند تاني</button><button class="sc-b o" id="scDone">إغلاق</button></div></div>';
+    $('#scMore').onclick = function(){ var c = st.ctx; open(c); }; $('#scDone').onclick = function(){ ov.classList.remove('open'); };
+  }
+  function fail(e){ st.busy = false; var b = $('#scSave'); if(b) b.disabled = false; msg('⚠️ ' + esc(e && e.message || e) + (/permission|insufficient/i.test(String(e && e.message)) ? ' — راجع قواعد Firebase (firestore.rules).' : ''), 'sc-err'); }
+  function save(){
+    var rv = st.rv, type = rv.type;
+    if(type === 'expense_receipt' || type === 'supplier_invoice') return saveExpense(rv);
+    var p = patientObj(rv);
+    if(p && p.err){ msg('⚠️ ' + p.err, 'sc-err'); return; }
+    if(type === 'prescription'){
+      if(!p){ msg('⚠️ اختار المريض أو «مريض جديد» الأول — الروشتة لازم تتربط بمريض.', 'sc-err'); return; }
+      if(!rv.drugs.length){ msg('⚠️ مفيش أدوية. ضيف دواء أو غيّر نوع المستند.', 'sc-err'); return; }
+      if(rv.drugs.some(function(d){ return !String(d.name).trim(); })){ msg('⚠️ في دواء من غير اسم.', 'sc-err'); return; }
+      var reds = []; try{ var cw = rxCheck({ drugs: rv.drugs.map(function(d){ var c = Object.assign({}, d); try{ rxUpgradeLegacy(c); }catch(e){} return c; }), age: fnum(rv.pt.age), weight: null, allergy: rv.allergy, meds: rv.meds, pregnant: false, mh: {} }); reds = cw.filter(function(x){ return x.lv === 'red'; }); }catch(e){}
+      if(reds.length && !confirm('في ' + reds.length + ' تحذير خطير على الأدوية دي. تحفظ برضه؟')) return;
+      st.busy = true; $('#scSave').disabled = true;
+      var drugs = rv.drugs.map(function(d){ var o = { name: String(d.name).trim(), brand: d.brand || '', form: d.form || 'Tablet', strength: d.strength || '', freq: d.freq, unit: d.unit, days: d.days, timing: d.timing || 'none', note: d.note || '', customSig: d.customSig || '' };
+        var mg = /^(\d+(?:\.\d+)?)\s*mg/i.exec(o.strength); if(mg) o.mg = parseFloat(mg[1]); if(!d.matched) o.manual = true; if(o.freq && o.unit && o.days) o.dosage = o.freq + '×' + o.unit + '×' + o.days; return o; });
+      var xr = rv.xrays.map(function(t){ var ty = /panor|بانورام/i.test(t) ? 'panorama' : /cbct|سي\s*بي|ct/i.test(t) ? 'cbct' : 'periapical'; return { type: ty, teeth: '', note: t }; });
+      var rxNo; try{ rxNo = rxGenNo(); }catch(e){ rxNo = 'RX-' + Date.now(); }
+      var data = { patientKey: p.key, name: p.name, gender: rv.pt.gender || '', age: fnum(rv.pt.age), date: rv.date || today(), diagnosis: rv.diagnosis || '', drugs: drugs, xrays: xr, weight: null, allergy: rv.allergy || '', meds: rv.meds || '', pregnant: false, rxNo: rxNo, ts: Date.now(), source: 'scan' };
+      db().collection('prescriptions').add(data).then(function(){ return attachImages(p, rv, 'روشتة بخط اليد'); }).then(function(n){
+        try{ logActivity('create', 'مسح ذكي — روشتة (' + drugs.length + ' دواء) — ' + p.name); }catch(e){}
+        done('اتسجلت روشتة <b>' + esc(p.name) + '</b> (' + esc(rxNo) + ') بـ ' + drugs.length + ' دواء' + (n ? ' + ' + n + ' صورة' : '') + '.<br><span style="font-size:.8rem;font-weight:400">تلاقيها في ملف المريض ← الروشتات.</span>');
+      }).catch(fail); return;
+    }
+    if(type === 'patient_file'){
+      if(!p){ msg('⚠️ اختار المريض أو «مريض جديد» الأول.', 'sc-err'); return; }
+      st.busy = true; $('#scSave').disabled = true; saveFile(p, rv).then(function(n){ done('اتضاف الكشف لملف <b>' + esc(p.name) + '</b>' + (n ? ' + ' + n + ' صورة' : '') + '.'); }).catch(fail); return;
+    }
+    if(type === 'registration_form'){
+      var go = function(open2){
+        st.busy = true; $('#scSave').disabled = true;
+        var pr = p ? attachImages(p, rv, 'استمارة بيانات') : Promise.resolve(0);
+        pr.then(function(n){ try{ logActivity('create', 'مسح ذكي — استمارة بيانات — ' + (rv.pt.name || '')); }catch(e){}
+          if(open2){ ov.classList.remove('open'); try{ openNewBookingModal(); document.getElementById('nbNameInput').value = rv.pt.name || ''; document.getElementById('nbPhoneInput').value = normPhone(rv.pt.phone); document.getElementById('nbAgeInput').value = rv.pt.age || ''; document.getElementById('nbGenderInput').value = rv.pt.gender || ''; }catch(e){ toast('افتح الحجز الجديد واكتب البيانات يدويًا.', true); } }
+          else done('اتحفظت الاستمارة' + (n ? ' (' + n + ' صورة)' : '') + '.'); st.busy = false; }).catch(fail);
+      };
+      var bx = confirm('تفتح «حجز جديد» بالبيانات دي؟\nOK = افتح حجز جديد • Cancel = احفظ الاستمارة كمرفق بس'); go(bx); return;
+    }
+    // تقرير أشعة / تحاليل / مستند آخر → مرفق في ملف المريض
+    if(!p){ msg('⚠️ اختار المريض أو «مريض جديد» عشان المستند يتربط بملفه.', 'sc-err'); return; }
+    st.busy = true; $('#scSave').disabled = true;
+    var note = [rv.title, rv.summary, rv.labs.map(function(l){ return l.test + ' ' + l.value + (l.unit ? ' ' + l.unit : ''); }).join('، ')].filter(Boolean).join(' — ').slice(0, 900);
+    var rvc = Object.assign({}, rv, { saveImgs: true });
+    var jobs = st.pages.map(function(pg, i){ return db().collection('patientXrays').add({ patientKey: p.key, name: p.name, kind: 'doc', takenIso: rv.date || today(), tooth: '', note: ((i === 0 ? note : '') || (TYPES[type][1] + ' (' + (i + 1) + ')')) + ' — مسح ذكي', imageData: renderPage(pg, 1200, .72), scan: true, ts: Date.now() + i }); });
+    Promise.all(jobs).then(function(){ try{ logActivity('create', 'مسح ذكي — ' + TYPES[type][1] + ' — ' + p.name); }catch(e){} done('اتحفظ <b>' + esc(TYPES[type][1]) + '</b> في ملف <b>' + esc(p.name) + '</b>.'); }).catch(fail);
+  }
+  function saveFile(p, rv){
+    var d = rv.date || today(), tag = '\n— من مسح ' + d + ': ';
+    var sheet = null; try{ sheet = pfSheetsSorted(p.key)[0] || null; }catch(e){}
+    function addTo(old, add){ add = String(add || '').trim(); old = String(old || '').trim(); if(!add) return old; return old ? old + tag + add : add; }
+    var upd = {}, mh = Object.assign({}, sheet && sheet.medicalHistory || {});
+    if(rv.history) mh.others = addTo(mh.others, rv.history); if(rv.allergy) mh.allergyText = addTo(mh.allergyText, rv.allergy); if(rv.meds) mh.meds = addTo(mh.meds, rv.meds);
+    upd.medicalHistory = mh;
+    if(rv.complaint) upd.chiefComplaint = addTo(sheet && sheet.chiefComplaint, rv.complaint);
+    if(rv.diagnosis) upd.diagnosis = addTo(sheet && sheet.diagnosis, rv.diagnosis);
+    if(rv.notes) upd.treatmentSteps = addTo(sheet && sheet.treatmentSteps, rv.notes);
+    upd.ts = Date.now();
+    var ref, op;
+    if(sheet){ ref = db().collection('patientFiles').doc(sheet.id); op = ref.set(upd, { merge: true }); }
+    else { ref = db().collection('patientFiles').doc(); var fn = ''; try{ fn = pfFileNo(p.key); }catch(e){} upd = Object.assign({ patientKey: p.key, name: p.name, gender: rv.pt.gender || '', age: fnum(rv.pt.age), date: d, doctorId: '', fileNo: fn || ('P-' + ref.id.slice(0, 6).toUpperCase()), source: 'scan' }, upd); op = ref.set(upd); }
+    return op.then(function(){ return attachImages(p, rv, 'كشف / ملف مريض'); }).then(function(n){ try{ logActivity('edit', 'مسح ذكي — إضافة كشف لملف ' + p.name); }catch(e){} return n; });
+  }
+  function saveExpense(rv){
+    var tot = fnum(rv.ex.total); if(!tot || tot <= 0){ msg('⚠️ اكتب إجمالي المبلغ.', 'sc-err'); return; }
+    var items = rv.ex.items.slice(0, 6).map(function(i){ return i.name + (i.qty ? ' ×' + i.qty : ''); }).join('، ');
+    var note = [rv.ex.no ? 'فاتورة ' + rv.ex.no : '', items].filter(Boolean).join(' — ').slice(0, 160);
+    var img = renderPage(st.pages[0], 1000, .6);
+    ov.classList.remove('open'); st.rv.saved = true;
+    window.__vyScanAttach = { img: img, pages: st.pages.length };
+    try{ finExpForm(null, { cat: rv.ex.cat, day: rv.date || today() }); }catch(e){ toast('افتح المحاسبة ← مصروف جديد واكتب البيانات يدويًا.', true); return; }
+    setTimeout(function(){
+      try{
+        var g = function(k){ return document.getElementById('fxF_' + k); };
+        var setv = function(k, v){ var e = g(k); if(e){ e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); } };
+        setv('amount', String(tot)); setv('note', note || ''); setv('vendor', rv.ex.vendor || ''); setv('day', rv.date || today());
+        var m = g('method'); if(m){ var bt = m.querySelector('[data-v="' + (rv.ex.method || 'cash') + '"]'); if(bt) bt.click(); }
+        var c = g('cat'); if(c){ var bc = c.querySelector('[data-v="' + rv.ex.cat + '"]'); if(bc) bc.click(); }
+      }catch(e){}
+    }, 120);
+  }
+  // الصورة بتتحفظ مع المصروف لما يتسجل من الفورم
+  function hookExpense(){
+    if(window.__vyScanHook || typeof finSaveExpense !== 'function') return; window.__vyScanHook = true;
+    var orig = finSaveExpense;
+    finSaveExpense = function(id, d, extra){ var a = window.__vyScanAttach; if(a && !id){ extra = Object.assign({}, extra || {}, { scanImg: a.img, scanPages: a.pages, scanBy: 'ai' }); window.__vyScanAttach = null; } return orig.call(this, id, d, extra); };
+  }
+
+  /* ============ نقاط الدخول ============ */
+  function addMenuBtn(){
+    var host = document.getElementById('wlBtn') || document.getElementById('fuBtn');
+    if(!host || document.getElementById('scBtn')) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'scBtn'; b.style.display = 'none'; b.innerHTML = '📷 مسح ذكي للمستندات';
+    b.onclick = function(){ try{ document.getElementById('moreActionsMenu').classList.remove('show'); }catch(e){} open(null); };
+    host.parentNode.insertBefore(b, host.nextSibling);
+  }
+  function addPatientBtn(){
+    var host = document.getElementById('pfMediaKind');
+    if(!host || document.getElementById('scPfBtn')) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'scPfBtn'; b.className = 'cta-btn gold'; b.style.cssText = 'margin:6px 0;padding:8px 14px;font-size:.85rem'; b.textContent = '📷 مسح مستند للمريض ده';
+    b.onclick = function(){ var p = window.pendingPatientFile || null; try{ p = pendingPatientFile; }catch(e){} open(p ? { key: pfPatientKey(p), name: p.name, phone: p.phone } : null); };
+    host.parentNode.insertBefore(b, host);
+  }
+  function addExpBtn(){
+    var host = document.getElementById('fxExpAdd');
+    if(!host || document.getElementById('scExpBtn')) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'scExpBtn'; b.className = 'fx-b'; b.textContent = '📷 مسح فاتورة'; b.onclick = function(){ open(null); st.hint = 'expense_receipt'; draw(); };
+    host.parentNode.insertBefore(b, host.nextSibling);
+  }
+  try{ if(window.PF_MEDIA_KIND || typeof PF_MEDIA_KIND !== 'undefined') PF_MEDIA_KIND.doc = '📄 مستند'; }catch(e){}
+  var t = 0, iv = setInterval(function(){
+    addMenuBtn(); addPatientBtn(); addExpBtn(); hookExpense();
+    var b = document.getElementById('scBtn'), r = role();
+    if(b && r){ if(r === 'admin' || r === 'team'){ b.style.display = ''; var pb = document.getElementById('scPfBtn'); if(pb) pb.style.display = ''; } else { var pb2 = document.getElementById('scPfBtn'); if(pb2) pb2.style.display = 'none'; } if(++t > 6) clearInterval(iv); }
+    else if(++t > 150) clearInterval(iv);
+  }, 1000);
+  window.vyScan = { open: open };
+})();
+
+</script><!--/SC-BODY-->
 <!--CL-BODY--><script>
 (function(){
 'use strict';
